@@ -8,15 +8,11 @@ A collection of AI automation, n8n, and Microsoft Power Automate Desktop project
 
 ## Featured Projects
 
-No projects have been published yet. Completed projects will be listed here as they are added.
-
-Each project entry will follow this format:
-
 | Project | Platform | What it does | Status |
 |---------|----------|--------------|--------|
-| _Project name (links to its folder)_ | _n8n / Power Automate Desktop / AI_ | _One-sentence description_ | _In progress / Complete_ |
+| [File Renaming Automation](power-automate-desktop/file-renaming-automation/) | Power Automate Desktop | Renames structured files automatically using loops, conditions, text extraction, error handling, and logging. | Complete |
 
-<!-- Add a row to the table above when a project is ready to show. Remove the format example when the first real row is added. -->
+<!-- Add a row to the table above when a project is ready to show. -->
 
 ---
 
