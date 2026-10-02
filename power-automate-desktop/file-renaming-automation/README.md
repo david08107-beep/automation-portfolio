@@ -63,6 +63,10 @@ The flow was tested with both success and failure cases.
 - Steps to import and run the flow
 -->
 
+## Artifacts
+
+The flow export and a screenshot of the flow will be added to this folder when available. They are not included yet.
+
 ## Limitations
 
 - Built for a specific structured filename format. Different formats would require changes to the extraction and validation steps.
