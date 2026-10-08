@@ -11,6 +11,7 @@ A collection of AI automation, n8n, and Microsoft Power Automate Desktop project
 | Project | Platform | What it does | Status |
 |---------|----------|--------------|--------|
 | [File Renaming Automation](power-automate-desktop/file-renaming-automation/) | Power Automate Desktop | Renames structured files automatically using loops, conditions, text extraction, error handling, and logging. | Complete |
+| [Shared Agent Operations](shared-agent-operations/) | Node.js simulation | Reconciles Orbit, AI OS, and Marketing Agent through exact-version review and idempotent simulated execution. | Integration simulation |
 
 <!-- Add a row to the table above when a project is ready to show. -->
 
