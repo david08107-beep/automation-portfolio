@@ -1,14 +1,20 @@
-# Shared Agent Operations — local dashboard 0.3
+# Orbit — Executive Assistant preview 0.3.1
 
-## Try the shared dashboard
+## Try Orbit
 
 Run `npm start` from this directory and open http://127.0.0.1:4317. Node 20 or newer is sufficient; no dependency installation is needed.
 
-The dashboard provides a shared brief form, workflow list, review queue, editable campaign drafts, exact-version approval, simulated execution, cancellation, and activity. The server runs the existing shared workflow core with fixture adapters. It does not load the three baseline applications, connect their storage, generate AI content, or merge their full feature sets. Campaign output is fixed fictional sample content regardless of the brief. The 0.2 baseline adapters remain available and independently tested.
+Orbit is the front door: Today shows the next draft needing review, browser-saved priorities, and a natural-language request form. My requests keeps each request, assistant response, draft, review, and history together. Preparation roles are behind a progress disclosure instead of an agent-management interface. Activity links back to the associated request.
 
-One fictional Dave/Work context is assigned by the local server. This is not sign-in or production tenant authorization. Records stay in process memory, survive browser reloads, and reset when the server stops. The server binds only to `127.0.0.1`, checks the local Host and mutation Origin, accepts JSON writes, limits body size, and serves only three allowlisted web assets. Do not expose it as a production service.
+The server runs the shared workflow core with fixture adapters. It does not load the complete baseline applications, connect their storage, generate AI content, or merge their full feature sets. Campaign output is fixed fictional sample content regardless of the request; the UI says so at the request and draft boundaries. Inbox, calendar, and publishing are not connected. The 0.2 baseline adapters remain available and independently tested.
 
-To try it: prepare a campaign, edit the launch post, save a new version, approve that version, and choose **Simulate approved send**. Edits invalidate previous approval. Unsaved browser edits block approval and execution until saved. Completed work records one simulated receipt, with no provider action.
+One fictional Dave/Work context is assigned by the local server. This is not sign-in or production tenant authorization. When started with `npm start`, the local server saves workflow records, Marketing source snapshots, and simulated receipts to ignored `local-data/history.json`. They survive server restarts. Writes use a temporary file plus replacement; an unreadable existing history file stops startup instead of overwriting it. Use one server process per history file. This is local plaintext demo storage, without cloud backup or multi-user access controls.
+
+Browser recovery copies preserve unfinished draft edits per request and original version, unsubmitted request text, priorities, and the current view. Navigation, Refresh, and reload keep those copies. A recovery copy never authorizes execution: submit changes as a new version and approve that exact version. If a different tab saved a newer server version, Orbit keeps the local edits separately and offers explicit restore or discard. If browser storage is unavailable, edits remain in the tab and closing it triggers a warning. Clearing browser site data removes recovery copies and priorities; clearing it does not remove server-saved history.
+
+The server binds only to `127.0.0.1`, checks local Host and mutation Origin, accepts bounded JSON writes, and serves four allowlisted web assets. Local history is not exposed as a static asset. Do not expose the server as a production service.
+
+To try it: enter a marketing request on Today, choose **Ask Orbit**, edit the launch post, navigate to Activity and return, choose **Save changes for review**, approve that version, and choose **Preview approved send**. Edits invalidate earlier approval. Browser recovery edits block approval and execution until submitted. Completed work records one simulated receipt, with no provider action.
 
 This package implements one dependency-free, fictional workflow across the verified Orbit, AI OS, and Marketing Agent baselines. Version 0.2 adds production-shaped adapters for the actual baseline service contracts while keeping every execution simulated. It does not merge or modify the preserved release branches and performs no network or provider action.
 

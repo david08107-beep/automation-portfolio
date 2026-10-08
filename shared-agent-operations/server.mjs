@@ -1,11 +1,13 @@
 import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {createDemoSystem} from './src/operations.js';
+import {createStoredDemoSystem} from './src/local-state.js';
+import {fileURLToPath} from 'node:url';
 
 // Local demonstration only: one fictional owner, in-memory records, no providers.
 export function createDashboardServer(system = createDemoSystem()) {
   const caller = {actorId: 'demo-dave', workspaceId: 'work'};
-  const files = {'/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/styles.css': ['styles.css', 'text/css']};
+  const files = {'/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/drafts.js': ['drafts.js', 'text/javascript'], '/styles.css': ['styles.css', 'text/css']};
   return createServer(async (req, res) => {
     const respond = (status, value) => {res.writeHead(status, {'Content-Type': 'application/json'}); res.end(JSON.stringify(value));};
     res.setHeader('Cache-Control', 'no-store');
@@ -40,6 +42,7 @@ export function createDashboardServer(system = createDemoSystem()) {
 }
 
 if (process.argv[1] && new URL(`file:///${process.argv[1].replaceAll('\\', '/')}`).href === import.meta.url) {
-  const server = createDashboardServer();
-  server.listen(4317, '127.0.0.1', () => console.log('AI Projects Hub: http://127.0.0.1:4317 — local simulation; records reset when the server stops.'));
+  const system = createStoredDemoSystem(fileURLToPath(new URL('./local-data/history.json', import.meta.url)));
+  const server = createDashboardServer(system);
+  server.listen(4317, '127.0.0.1', () => console.log('Orbit: http://127.0.0.1:4317 — local preview; history saved on this computer.'));
 }

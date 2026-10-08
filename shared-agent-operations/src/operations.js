@@ -68,6 +68,10 @@ export class MemoryWorkflowRepository {
   #workflows = new Map();
   #failNext = false;
 
+  constructor(records = []) { this.restore(records); }
+
+  restore(records) { this.#workflows = new Map(records.map(value => [value.id, clone(value)])); }
+
   failNextWrite() {
     this.#failNext = true;
   }
@@ -128,6 +132,10 @@ export class FixtureMarketingAdapter {
   #versions = new Map();
   #failGeneration = false;
 
+  constructor(records = []) { this.restore(records); }
+  snapshot() { return [...this.#versions.values()].map(clone); }
+  restore(records) { this.#versions = new Map(records.map(value => [value.versionId, clone(value)])); }
+
   failNextGeneration() {
     this.#failGeneration = true;
   }
@@ -167,6 +175,13 @@ export class FixtureOrbitExecutor {
   #receipts = new Map();
   #failNext = false;
   executionCount = 0;
+
+  constructor(records = []) { this.restore(records); }
+  snapshot() { return [...this.#receipts.values()].map(clone); }
+  restore(records) {
+    this.#receipts = new Map(records.map(value => [value.idempotencyKey, clone(value)]));
+    this.executionCount = this.#receipts.size;
+  }
 
   failNextExecution() {
     this.#failNext = true;
@@ -410,10 +425,10 @@ export class SharedAgentOperations {
   }
 }
 
-export function createDemoSystem() {
-  const repository = new MemoryWorkflowRepository();
-  const marketing = new FixtureMarketingAdapter();
-  const orbitExecutor = new FixtureOrbitExecutor();
+export function createDemoSystem(snapshot = {}) {
+  const repository = new MemoryWorkflowRepository(snapshot.workflows);
+  const marketing = new FixtureMarketingAdapter(snapshot.sources);
+  const orbitExecutor = new FixtureOrbitExecutor(snapshot.receipts);
   const operations = new SharedAgentOperations({repository, orbitBrief: new FixtureOrbitBriefAdapter(), aiOs: new FixtureAiOsAdapter(), marketing, orbitExecutor});
   return {operations, repository, marketing, orbitExecutor};
 }
