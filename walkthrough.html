@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orbit — Portfolio Walkthrough</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#070d14;color:#e7f1f4}body{margin:0;padding:clamp(20px,4vw,56px)}main{max-width:1200px;margin:auto}h1{font-size:clamp(24px,4vw,36px);margin-bottom:12px}p{color:#a9bcc4;line-height:1.6}video{display:block;width:100%;margin:24px 0;border:1px solid #2b414b;border-radius:16px;background:#020609;box-shadow:0 24px 80px #0008}nav{display:flex;flex-wrap:wrap;gap:16px}a{color:#a3ead5;text-underline-offset:4px}a:focus-visible{outline:2px solid #a3ead5;outline-offset:6px}#play{font:inherit;padding:12px 20px;background:#a3ead5;color:#09201a;border:0;border-radius:9px;cursor:pointer}#notice{min-height:1.6em}
+</style>
+</head>
+<body><main>
+<h1>Orbit in action</h1>
+<p>A 66-second walkthrough: daily briefing, an edited email sent in demo mode, and separate Personal and Work workspaces. No real email is sent.</p>
+<button id="play" type="button">Play walkthrough</button>
+<p id="notice" role="status">Press Play or use the video controls below.</p>
+<video id="video" controls playsinline preload="metadata" aria-label="Orbit dashboard walkthrough">
+<source src="walkthrough.mp4" type="video/mp4">
+<source src="walkthrough.webm" type="video/webm">
+Your browser cannot play this video. Use the download link below.
+</video>
+<nav aria-label="Walkthrough links"><a href="walkthrough.mp4" download>Download MP4</a><a href="walkthrough.webm" download>Download WebM</a><a href="preview.html">Open interactive dashboard</a></nav>
+</main><script>
+const video=document.getElementById('video'),notice=document.getElementById('notice');
+document.getElementById('play').addEventListener('click',async()=>{try{await video.play();notice.textContent='Playing — the recording has no narration.';video.scrollIntoView({block:'nearest'});}catch{notice.textContent='Playback is unavailable in this viewer. Download the MP4 below and open it in your browser or video player.';}});
+video.addEventListener('error',()=>{notice.textContent='The video could not load. Download the MP4 or open this page through the port 8000 preview.';});
+</script></body></html>
