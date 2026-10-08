@@ -1,0 +1,23 @@
+1
+00:00:00,000 --> 00:00:08,000
+Start in Work Workspace — all data is fictional.
+
+2
+00:00:08,000 --> 00:00:22,000
+Daily briefing: Orbit checks inbox, calendar, tasks and approvals.
+
+3
+00:00:22,000 --> 00:00:33,000
+Review and edit the prepared reply. Dave controls the message.
+
+4
+00:00:33,000 --> 00:00:41,000
+Save the draft, then explicitly Send Reply — demo simulation only.
+
+5
+00:00:41,000 --> 00:00:49,000
+Switch to Personal Workspace. Its saved decisions are separate.
+
+6
+00:00:49,000 --> 00:01:05,720
+Personal inbox: different demo messages, with no real account connected.

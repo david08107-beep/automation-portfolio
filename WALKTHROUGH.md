@@ -8,4 +8,4 @@ The roughly one-minute recording uses a fresh, isolated browser profile and fict
 4. Observe the approval count drop from three to two.
 5. Switch to Personal Workspace and review its distinct inbox; its three pending approvals remain untouched.
 
-Files: `walkthrough.mp4` (shareable recording) and `walkthrough.webm` (original browser capture). The recording has no narration. All sending is simulated.
+Files: `walkthrough.mp4` (shareable recording) and `walkthrough.webm` (original browser capture). The MP4 includes phase captions; the original WebM has no annotations. Neither recording has narration. All sending is simulated.

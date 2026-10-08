@@ -464,3 +464,7 @@ Typed commands do not execute actions or generate arbitrary replies. Requests su
 ## Try Orbit — guided portfolio walkthrough
 
 The header’s **Try Orbit** button starts fresh, temporary Work/Personal contexts. Run a daily briefing, review/edit a fictional reply and explicitly Send Reply, then switch to Personal and review its inbox. Finish or Exit restores the original selected workspace and saved progress. Refresh exits the tour and loads the existing saved state. The tour suppresses workspace-record persistence and proactive monitoring; Reset is disabled until exit. No external action occurs. The reply dialog includes its own Exit control.
+
+### Guided annotations
+
+Try Orbit outlines the current control or active specialist and explains each phase in its status bar. Responses are brought into view when ready. The reply editor includes a contextual note and a highlighted Send Reply control; Save Draft remains distinct from sending. Skip tour (or the dialog Exit control) restores progress and removes the cues. Highlights are static and work with reduced motion. The MP4 recording now includes readable phase captions; the WebM remains the original capture.

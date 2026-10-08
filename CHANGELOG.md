@@ -2,6 +2,12 @@
 
 Release milestones describe the implemented capability baseline and current development scope. Historical entries are reconstructed from the existing application; no release dates, published packages, or Git tags are implied. The current identifier is `1.5.0`, within **V1 — Portfolio Prototype**. All account data is fictional and all external-impact actions are simulations.
 
+## V1 maintenance — Guided annotations
+
+- Highlighted active specialists, briefing results, editable replies, Send Reply, and the workspace switcher.
+- Added short live phase explanations and reply-editor instructions; Skip tour restores saved progress and clears cues.
+- Captioned the shareable MP4 recording and refreshed asset URLs for the hosted demo.
+
 ## V1 maintenance — Guided portfolio walkthrough
 
 - Added Try Orbit with daily briefing, edited explicit demo reply, and Personal inbox handoff.

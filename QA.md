@@ -275,3 +275,7 @@ All outcomes remain fictional and browser-local. These checks establish the test
 ## Guided walkthrough
 
 Both canonical and bundled pages were checked for daily briefing, editable explicit simulated reply, Personal inbox handoff, Finish/Exit and refresh restoration, identical stored workspace records throughout the temporary tour, and preserved original task completion. Responsive checks covered 1440, 390 and 320 pixels without horizontal overflow; no browser errors were observed.
+
+### Annotation verification
+
+The full guided flow passed on canonical and bundled pages, including explicit edited send, isolated storage, exit/finish/refresh restoration, and responsive widths. Targeted desktop/mobile reduced-motion checks verified the active-agent highlight and explanation, response highlight, visible reply instructions, highlighted Send Reply, and cleanup on dialog exit. No browser errors were observed. The MP4 was regenerated from the original WebM with six phase captions.
