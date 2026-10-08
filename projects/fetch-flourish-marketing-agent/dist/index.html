@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Fetch & Flourish — your always-on marketing sidekick for a growing dog-care business." />
+    <title>Fetch & Flourish — Marketing Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#top" aria-label="Fetch & Flourish home">
+          <span class="brand-mark" aria-hidden="true">F<span>✦</span></span>
+          <span><strong>Fetch & Flourish</strong><small>MARKETING AGENT</small></span>
+        </a>
+        <div class="top-actions">
+          <button class="icon-button" id="historyButton" aria-label="Open creation history">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5M12 7v5l3 2"/></svg>
+          </button>
+          <button class="profile-chip" id="profileButton" aria-label="Edit business profile"><span id="profileInitials">PP</span></button>
+        </div>
+      </header>
+
+      <main id="top">
+        <section class="hero">
+          <div class="eyebrow"><span></span> BUILT FOR SMALL BUSINESSES WITH BIG HEART</div>
+          <h1>Good marketing.<br/><em>No tricks.</em></h1>
+          <p>Your always-on marketing sidekick—built to turn everyday business moments into content that connects and converts.</p>
+          <div class="trust-row"><span>✓ Knows your brand</span><span>✓ Ready in seconds</span><span>✓ Always sounds like you</span></div>
+        </section>
+
+        <section class="workspace" aria-labelledby="workspace-title">
+          <div class="workspace-heading">
+            <div><p class="section-kicker">YOUR CREATIVE DESK</p><h2 id="workspace-title">What are we making?</h2></div>
+            <span class="status"><i></i> Agent ready</span>
+          </div>
+
+          <div class="tool-grid" role="tablist" aria-label="Marketing tools">
+            <button class="tool-card active" data-tool="social" role="tab" aria-selected="true"><span class="tool-icon coral">✦</span><strong>Social post</strong><small>Stop the scroll</small></button>
+            <button class="tool-card" data-tool="campaign" role="tab" aria-selected="false"><span class="tool-icon yellow">☀</span><strong>Campaign idea</strong><small>Make some noise</small></button>
+            <button class="tool-card" data-tool="review" role="tab" aria-selected="false"><span class="tool-icon blue">♥</span><strong>Review reply</strong><small>Show you care</small></button>
+            <button class="tool-card" data-tool="calendar" role="tab" aria-selected="false"><span class="tool-icon green">▦</span><strong>Content calendar</strong><small>Plan with purpose</small></button>
+            <button class="tool-card" data-tool="followup" role="tab" aria-selected="false"><span class="tool-icon purple">↗</span><strong>Follow-up</strong><small>Stay top of mind</small></button>
+          </div>
+
+          <div class="studio">
+            <form id="creatorForm" class="brief-panel">
+              <div class="panel-title"><span id="stepNumber">01</span><div><small>GIVE ME THE SCOOP</small><h3 id="formTitle">Create a social post</h3></div></div>
+              <label id="topicLabel">What do you want to share?<textarea id="topic" rows="5" placeholder="e.g. We have three weekend grooming spots left and want to fill them..."></textarea></label>
+              <div class="field-row">
+                <label>Goal<select id="goal"><option>Build awareness</option><option>Get bookings</option><option>Start conversations</option><option>Thank customers</option></select></label>
+                <label>Tone<select id="tone"><option>Warm & playful</option><option>Polished & helpful</option><option>Bold & punchy</option><option>Neighborly & sincere</option></select></label>
+              </div>
+              <div class="quick-prompts" aria-label="Quick prompts">
+                <button type="button" data-prompt="A behind-the-scenes look at a happy pup after their grooming session">Behind the scenes</button>
+                <button type="button" data-prompt="A helpful seasonal tip for local dog parents">Share a tip</button>
+                <button type="button" data-prompt="A last-minute opening we would love to fill this week">Fill an opening</button>
+              </div>
+              <button class="generate-button" type="submit"><span>Make it shine</span><b>→</b></button>
+              <p class="form-note">Your agent uses your business profile to keep every idea on-brand.</p>
+            </form>
+
+            <section class="output-panel" aria-live="polite">
+              <div class="output-top"><div><small>YOUR DRAFT</small><span class="platform-badge" id="outputType">INSTAGRAM</span></div><button class="more-button" aria-label="More options">•••</button></div>
+              <div class="empty-state" id="emptyState">
+                <div class="dog-portrait" aria-hidden="true"><span class="ear left"></span><span class="ear right"></span><span class="face"><i></i><b></b><em></em></span></div>
+                <h3>Ready when you are.</h3>
+                <p>Give me a little context and I’ll turn it into something worth sharing.</p>
+              </div>
+              <article class="draft hidden" id="draft">
+                <p class="draft-copy" id="draftCopy"></p>
+                <div class="draft-meta" id="draftMeta"></div>
+                <div class="draft-actions">
+                  <button id="copyButton" type="button">Copy draft</button>
+                  <button id="regenerateButton" type="button">↻ Try another</button>
+                </div>
+              </article>
+            </section>
+          </div>
+        </section>
+
+        <section class="moment-strip">
+          <div><span>THIS WEEK’S NUDGE</span><h2>Turn a happy client moment into your next best post.</h2></div>
+          <button id="nudgeButton">Try this idea <b>→</b></button>
+        </section>
+      </main>
+
+      <footer><div class="footer-brand">Fetch <span>&</span> Flourish</div><p>Less time marketing. More time doing what you love.</p><small>Made with care for local businesses.</small></footer>
+    </div>
+
+    <dialog id="profileDialog">
+      <form method="dialog" id="profileForm">
+        <div class="dialog-head"><div><small>BUSINESS PROFILE</small><h2>Teach your agent your style</h2></div><button value="cancel" aria-label="Close">×</button></div>
+        <label>Business name<input id="businessName" value="Paws & Polish" /></label>
+        <label>What you do<input id="businessType" value="Boutique dog grooming and spa care" /></label>
+        <label>What makes you different<textarea id="businessDifference" rows="3">Gentle one-on-one care, stress-free appointments, and a personal touch for every pup.</textarea></label>
+        <label>Location<input id="businessLocation" value="our neighborhood" /></label>
+        <button class="save-button" value="save">Save profile</button>
+      </form>
+    </dialog>
+
+    <aside class="history-drawer" id="historyDrawer" aria-hidden="true">
+      <div class="drawer-head"><div><small>YOUR LIBRARY</small><h2>Recent creations</h2></div><button id="closeHistory" aria-label="Close history">×</button></div>
+      <div id="historyList" class="history-list"></div>
+    </aside>
+    <div class="scrim" id="scrim"></div>
+    <div class="toast" id="toast" role="status">Copied to clipboard</div>
+    <script src="app.js"></script>
+  </body>
+</html>
+
