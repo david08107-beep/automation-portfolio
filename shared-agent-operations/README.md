@@ -2,6 +2,10 @@
 
 ## Try Orbit
 
+After approving the current saved draft, use **Copy reviewed draft** or **Download reviewed draft (.txt)**. Both include the request, saved campaign brief when available, version reference, and all three content assets. They verify the latest saved workflow first, reject local unsaved edits and changed versions, and label exports as sample content. Clipboard denial has a download fallback. Completed simulated requests remain exportable; cancelled or unreviewed requests are not. Copy/download do not publish or record a send.
+
+Today offers a guided campaign brief (business/service, audience, platform, tone, desired result, and optional details), or a free-form request. Unfinished fields stay in browser recovery; submitting saves a structured brief with the workflow and clears the composer. The saved brief is available in request details. Fields do not turn sample output into AI-generated content: generation remains a fixed fixture. No provider or paid service is connected.
+
 Run `npm start` from this directory and open http://127.0.0.1:4317. Node 20 or newer is sufficient; no dependency installation is needed.
 
 Orbit is the front door: Today shows the next draft needing review, browser-saved priorities, and a natural-language request form. My requests keeps each request, assistant response, draft, review, and history together. Preparation roles are behind a progress disclosure instead of an agent-management interface. Activity links back to the associated request.
@@ -21,6 +25,8 @@ This package implements one dependency-free, fictional workflow across the verif
 See the [reconciled integration plan](INTEGRATION-PLAN.md) for ownership, versioning, approval, and production hold decisions.
 
 ## Workflow
+
+Draft saves require `baseVersionId`, naming the version the editor started from. Missing or outdated preconditions return `DRAFT_STALE` without changing saved history or approvals. The browser loads the newer saved version and keeps the older local edits separately for explicit comparison/restoration. Launch post, video script, and at least one calendar item must be non-empty before save, approval, or simulated execution; invalid legacy records cannot bypass those checks. Calendar input ignores empty lines. Today prioritizes failed requests. Explicit inbox and meeting-action requests are rejected with a capability explanation; this is a conservative preview guard, not an AI intent router.
 
 1. Orbit establishes a fictional campaign brief.
 2. AI OS schedules the preparation tasks and owns the workflow state.

@@ -140,7 +140,7 @@ test('baseline adapter system completes the shared workflow without an external 
   const aiState = {version: 2, workflows: [], activity: []};
   const campaign = {
     id: 'campaign-1', revision: 1, versions: [
-      {id: 'campaign-version-1', revision: 1, assets: {launchPost: 'Frozen campaign'}},
+      {id: 'campaign-version-1', revision: 1, assets: {launchPost: 'Frozen campaign', shortVideoScript: 'Show the fictional launch', calendar: ['Introduce the campaign']}},
     ],
   };
   const orbitExecutions = [];

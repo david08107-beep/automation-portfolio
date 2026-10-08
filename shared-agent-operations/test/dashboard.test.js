@@ -23,7 +23,7 @@ test('dashboard runs prepare, edit, exact approval and simulated execution throu
   assert.equal(prepared.status,'awaiting-review');
   let version = prepared.results.at(-1);
   const approved = await command({action:'approve', workflowId:prepared.id, versionId:version.id,payloadDigest:version.payloadDigest});
-  const edited = await command({action:'revise',workflowId:prepared.id,payload:{...version.payload,launchPost:'Edited launch post'}});
+  const edited = await command({action:'revise',workflowId:prepared.id,baseVersionId:version.id,payload:{...version.payload,launchPost:'Edited launch post'}});
   assert.equal(edited.approvals[0].status,'invalidated');
   const stale = await send({action:'execute',workflowId:prepared.id,approvalId:approved.approvals[0].id});
   assert.equal(stale.status,409);
@@ -35,6 +35,25 @@ test('dashboard runs prepare, edit, exact approval and simulated execution throu
   assert.equal(duplicate.status,409);
   const list = await (await fetch(`${url}/api/workflows`)).json();
   assert.equal(list.workflows.length,1); assert.equal(list.workflows[0].executions.length,1);
+});
+
+test('dashboard preserves newer edits and rejects blank drafts and unsupported connected tasks',async t=>{
+  const {command,send,url}=await dashboard(t);
+  const w=await command({action:'start',request:'Prepare an email marketing campaign about meeting preparation'}), v=w.results.at(-1);
+  await command({action:'revise',workflowId:w.id,baseVersionId:v.id,payload:{...v.payload,shortVideoScript:'Newer script'}});
+  const stale=await send({action:'revise',workflowId:w.id,baseVersionId:v.id,payload:{...v.payload,launchPost:'Older edit'}});
+  assert.equal(stale.status,409);
+  assert.equal((await stale.json()).error.code,'DRAFT_STALE');
+  const current=(await (await fetch(`${url}/api/workflows`)).json()).workflows[0];
+  assert.equal(current.results.at(-1).payload.shortVideoScript,'Newer script');
+  const empty=await send({action:'revise',workflowId:w.id,baseVersionId:current.results.at(-1).id,payload:{launchPost:'',shortVideoScript:'',calendar:[]}});
+  assert.equal((await empty.json()).error.code,'INVALID_INPUT');
+  for(const request of ['Summarize my inbox','Reschedule tomorrow’s meeting','Read my emails']) {
+    const unsupported=await send({action:'start',request});
+    assert.equal(unsupported.status,400);
+    assert.equal((await unsupported.json()).error.code,'UNSUPPORTED_REQUEST');
+  }
+  assert.equal((await (await fetch(`${url}/api/workflows`)).json()).workflows.length,1);
 });
 
 test('dashboard rejects foreign origins, oversized input, unknown actions, traversal and malformed drafts', async t => {
@@ -59,4 +78,13 @@ test('cancelled dashboard work cannot be approved or executed', async t => {
   assert.equal(cancelled.status,'cancelled');
   const v = w.results.at(-1);
   assert.equal((await send({action:'approve',workflowId:w.id,versionId:v.id,payloadDigest:v.payloadDigest})).status,409);
+});
+
+test('dashboard saves structured campaign fields and rejects malformed briefs',async t=>{
+  const {command,send,url}=await dashboard(t);
+  const campaignBrief={business:'Dog boarding',audience:'Local owners',platform:'Facebook',tone:'Educational',goal:'Request availability'};
+  const w=await command({action:'start',request:'Prepare a campaign for dog boarding',campaignBrief});
+  assert.deepEqual(w.command.campaignBrief,campaignBrief);
+  assert.equal((await send({action:'start',request:'Prepare a campaign',campaignBrief:{...campaignBrief,goal:''}})).status,409);
+  assert.equal((await fetch(`${url}/campaign.js`)).status,200);
 });

@@ -1,4 +1,6 @@
 import {DraftRecovery} from './drafts.js';
+import {emptyCampaign, campaignRequest} from './campaign.js';
+import {reviewedExport} from './export.js';
 
 const $ = id => document.getElementById(id);
 const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -35,6 +37,7 @@ function draftStatus(w) {
 }
 function render() {
   const review = workflows.filter(w => w.status === 'awaiting-review');
+  const failed = workflows.filter(w => w.status === 'failed');
   $('total').textContent = workflows.length;
   $('pending').textContent = review.length;
   $('completed').textContent = workflows.filter(w => w.status === 'completed').length;
@@ -49,9 +52,9 @@ function render() {
   document.querySelector('.work-grid').hidden = view === 'activity';
   $('list-title').textContent = view === 'review' ? 'Ready for your decision' : view === 'overview' ? 'Recent requests' : 'My requests';
   document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
-  $('next-heading').textContent = review.length ? review.length+' draft'+(review.length===1?'':'s')+' need your review.' : 'You have room to get started.';
-  $('next-summary').textContent = review.length ? 'Your next useful step is to review a draft. Orbit keeps the preparation and history together for you.' : 'Start with a marketing request. I’ll bring a sample draft back here for you to review.';
-  $('next-action').textContent = review.length ? 'Review next draft' : 'Plan a campaign';
+  $('next-heading').textContent = failed.length ? failed.length+' request'+(failed.length===1?' needs':'s need')+' attention.' : review.length ? review.length+' draft'+(review.length===1?' needs':'s need')+' your review.' : 'You have room to get started.';
+  $('next-summary').textContent = failed.length ? 'A step failed. Open the request to see what happened and retry safely.' : review.length ? 'Your next useful step is to review a draft. Orbit keeps the preparation and history together for you.' : 'Start with a marketing request. I’ll bring a sample draft back here for you to review.';
+  $('next-action').textContent = failed.length ? 'Open request needing attention' : review.length ? 'Review next draft' : 'Plan a campaign';
   const visible = view === 'review' ? review : workflows;
   if (!visible.some(w => w.id === selected)) selected = visible[0]?.id ?? null;
   $('workflow-list').innerHTML = visible.map(w => '<button class="workflow '+(w.id===selected?'selected':'')+'" data-id="'+escape(w.id)+'"><strong>'+escape(title(w))+'</strong><small>'+time(w.createdAt)+' · '+w.results.length+' saved version'+(w.results.length===1?'':'s')+(recovery.get(w.id)?' · Local edits':'')+'</small><span class="badge '+escape(w.status)+'">'+escape(labels[w.status]??w.status)+'</span></button>').join('') || '<p class="brief">Nothing waiting here. Ask Orbit for help from Today.</p>';
@@ -73,6 +76,7 @@ function renderDetail(w) {
   const payload = editable && draft && !stale ? draft.payload : v?.payload;
   let html = '<span class="badge '+escape(w.status)+'">'+escape(labels[w.status]??w.status)+'</span>';
   html += '<div class="conversation-request"><p class="eyebrow">YOU ASKED</p><p class="brief">'+escape(w.command.request)+'</p></div>';
+  if(w.command.campaignBrief) html += '<details class="plan"><summary>Saved campaign brief</summary><dl class="brief-summary">'+Object.entries(w.command.campaignBrief).map(([key,value])=>'<dt>'+escape({business:'Business or service',audience:'Audience',platform:'Platform',tone:'Tone',goal:'Desired result'}[key]??key)+'</dt><dd>'+escape(value)+'</dd>').join('')+'</dl></details>';
   html += '<div class="assistant-reply"><p class="eyebrow">ORBIT</p><p>'+escape(nextStep(w))+'</p></div>';
   html += '<details class="plan"><summary>How this request is progressing</summary><div class="steps">'+w.tasks.map(t => '<div class="step '+escape(t.status)+'"><span>'+(t.status==='completed'?'✓':t.status==='running'?'◉':'○')+'</span><span>'+escape(t.title)+'</span></div>').join('')+'</div></details>';
   if (v) {
@@ -85,6 +89,7 @@ function renderDetail(w) {
   }
   if (w.status==='completed') html += '<div class="receipt">✓ Preview completed. One simulated send was recorded. Nothing was sent or published.</div>';
   if (w.failure) html += '<p class="error">'+escape(w.failure.code)+' · Retry the failed step below.</p>';
+  try {reviewedExport(w); html += '<div class="actions"><button class="secondary" data-action="copyReviewed">Copy reviewed draft</button><button class="secondary" data-action="downloadReviewed">Download reviewed draft (.txt)</button></div><p class="sample-note">Uses only the current reviewed saved version, not unsaved edits. This does not publish.</p>';} catch {}
   html += '<div class="actions">';
   if (editable) html += '<button class="secondary" data-action="revise">Save changes for review</button>';
   if (editable&&!a) html += '<button class="primary" data-action="approve">Approve this version</button>';
@@ -97,7 +102,7 @@ function renderDetail(w) {
   if (busy) setBusy(true);
 }
 function editedPayload(w) {
-  return {...last(w).payload,launchPost:$('launch').value,shortVideoScript:$('video').value,calendar:$('calendar').value.split('\n')};
+  return {...last(w).payload,launchPost:$('launch').value,shortVideoScript:$('video').value,calendar:$('calendar').value.split('\n').map(item=>item.trim()).filter(Boolean)};
 }
 function captureDraft() {
   const w = workflows.find(w => w.id===selected);
@@ -111,7 +116,7 @@ function captureDraft() {
   $('detail').querySelector('[data-action="discardDraft"]').hidden = !recovery.get(w.id);
 }
 function setBusy(value) {
-  document.querySelectorAll('button,textarea').forEach(element => element.disabled = value);
+  document.querySelectorAll('button,textarea,input,select').forEach(element => element.disabled = value);
 }
 async function refresh() {
   const res = await fetch('/api/workflows');
@@ -128,9 +133,12 @@ async function command(action,extras={}) {
   try {
     const res = await fetch('/api/commands',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...extras})});
     const result = await res.json();
-    if (!res.ok || !result.ok) throw Error(result.error?.message??'Could not complete the action.');
+    if (!res.ok || !result.ok) {
+      if (result.error?.code === 'DRAFT_STALE') await refresh();
+      throw Error(result.error?.message??'Could not complete the action.');
+    }
     if (action==='revise' || action==='cancel') recovery.discard(result.value.id);
-    if (action==='start') {view='work'; recovery.note('request',''); $('request').value='';}
+    if (action==='start') {view='work'; recovery.note('request',''); $('request').value=''; recovery.campaignNote(emptyCampaign(),$('brief-mode').value); fillCampaign();}
     selected = result.value.id;
     await refresh();
     message({start:'Your sample draft is ready. Review it below.',revise:'Changes saved as a new version. Review this version before approving.',approve:'This version is approved. You can preview the send.',execute:'Preview completed. Nothing was sent externally.',cancel:'Request cancelled.',retryPreparation:'Your sample draft is ready for review.'}[action]);
@@ -144,8 +152,44 @@ function changeView(nextView,nextId=selected) {
   message('');
   $('view-title').scrollIntoView({block:'start'});
 }
+async function exportReviewed(w,action) {
+  captureDraft();
+  if(recovery.get(w.id)) {message('Save and approve your local edits, or discard them, before exporting.',true); return;}
+  busy=true; setBusy(true);
+  try {
+    const res=await fetch('/api/workflows');
+    if(!res.ok) throw Error('Could not verify the saved version. Nothing was exported.');
+    const current=(await res.json()).workflows.find(item=>item.id===w.id);
+    if(!current||current.revision!==w.revision) {await refresh(); throw Error('The request changed. Review the loaded saved version before exporting.');}
+    const {content,filename}=reviewedExport(current);
+    if(action==='copyReviewed') {
+      if(!navigator.clipboard?.writeText) throw Error('Clipboard access is unavailable. Use Download reviewed draft instead.');
+      await navigator.clipboard.writeText(content);
+      message('Reviewed draft copied. Nothing was published.');
+    } else {
+      const url=URL.createObjectURL(new Blob([content],{type:'text/plain;charset=utf-8'}));
+      const link=document.createElement('a'); link.href=url; link.download=filename; document.body.append(link); link.click(); link.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+      message('Reviewed draft download requested. Nothing was published.');
+    }
+  } catch(error) {message(action==='copyReviewed'&&error.name==='NotAllowedError'?'Clipboard access was denied. Use Download reviewed draft instead.':error.message,true);}
+  finally {busy=false; setBusy(false);}
+}
 $('request').value=recovery.state.request;
 $('priorities').value=recovery.state.priorities;
+function readCampaign() {return Object.fromEntries(['business','audience','platform','tone','goal'].map(field=>[field,$('campaign-'+field).value]));}
+function fillCampaign() {for(const [field,value] of Object.entries(recovery.state.campaign)) $('campaign-'+field).value=value;}
+function updateBriefMode() {
+  const guided=$('brief-mode').value==='guided';
+  $('campaign-fields').hidden=!guided;
+  for(const field of ['business','audience','goal']) $('campaign-'+field).required=guided;
+  $('request').required=!guided;
+  $('request').maxLength=guided?12000:20000;
+  $('request-label').textContent=guided?'Additional details (optional)':'Tell Orbit what you need';
+}
+fillCampaign(); $('brief-mode').value=recovery.state.briefMode; updateBriefMode();
+$('campaign-fields').addEventListener('input',()=>{if(!recovery.campaignNote(readCampaign(),$('brief-mode').value)) message('Campaign brief kept in this tab only; browser storage is unavailable.',true);});
+$('brief-mode').addEventListener('change',()=>{updateBriefMode(); recovery.campaignNote(readCampaign(),$('brief-mode').value);});
 $('request').addEventListener('input',() => {
   if (!recovery.note('request',$('request').value)) message('Browser storage is unavailable. Keep this tab open to retain your notes.',true);
 });
@@ -153,14 +197,23 @@ $('priorities').addEventListener('input',() => {
   $('priority-status').textContent=recovery.note('priorities',$('priorities').value)?'Saved on this browser':'Kept in this tab only';
 });
 $('detail').addEventListener('input',captureDraft);
-$('brief-form').addEventListener('submit',e => {e.preventDefault(); command('start',{request:$('request').value});});
+$('brief-form').addEventListener('submit',e => {
+  e.preventDefault();
+  try {
+    const guided=$('brief-mode').value==='guided', campaignBrief=readCampaign();
+    command('start',{request:guided?campaignRequest(campaignBrief,$('request').value):$('request').value,...(guided?{campaignBrief}: {})});
+  } catch(error) {message(error.message,true);}
+});
 document.querySelector('.suggestions').addEventListener('click',e => {
   const button=e.target.closest('[data-prompt]');
   if (!button) return;
   if ($('request').value.trim()) {message('Your current request is kept. Clear it first to use a starter.',true); return;}
+  $('brief-mode').value='free'; updateBriefMode(); recovery.campaignNote(readCampaign(),'free');
   $('request').value=button.dataset.prompt; recovery.note('request',$('request').value); $('request').focus();
 });
 $('next-action').addEventListener('click',() => {
+  const failed=workflows.find(w => w.status==='failed');
+  if (failed) {changeView('work',failed.id); return;}
   const next=workflows.find(w => w.status==='awaiting-review');
   if (next) changeView('review',next.id);
   else {$('request').focus(); $('request').scrollIntoView({block:'center'});}
@@ -178,18 +231,19 @@ document.addEventListener('click',e => {
 $('detail').addEventListener('click',e => {
   const button=e.target.closest('[data-action]'); if (!button || busy) return;
   const w=workflows.find(w => w.id===selected),v=last(w),action=button.dataset.action;
+  if(['copyReviewed','downloadReviewed'].includes(action)) {exportReviewed(w,action); return;}
   if (action==='discardDraft') {recovery.discard(w.id); render(); return;}
-  if (action==='restoreDraft') {recovery.remember(w.id,v.id,{...v.payload,...recovery.get(w.id).payload}); render(); return;}
+  if (action==='restoreDraft') {recovery.remember(w.id,v.id,{...v.payload,...recovery.get(w.id).payload}); render(); message('Local edits restored. Compare them with the saved version before saving.'); return;}
   if (recovery.get(w.id)?.baseVersionId && recovery.get(w.id).baseVersionId!==v.id && ['revise','approve','execute'].includes(action)) {message('Restore or discard your local edits before continuing with the newer version.',true); return;}
   if (['approve','execute'].includes(action) && !same(editedPayload(w),v.payload)) {message('Save your changes for review before approving or previewing the send.',true); return;}
   if (action==='revise' && same(editedPayload(w),v.payload)) {message('No changes to save. You can approve this version.'); return;}
-  command(action,{workflowId:w.id,...(action==='revise'?{payload:editedPayload(w)}:{}),...(action==='approve'?{versionId:v.id,payloadDigest:v.payloadDigest}:{}),...(action==='execute'?{approvalId:approval(w).id}:{})});
+  command(action,{workflowId:w.id,...(action==='revise'?{payload:editedPayload(w),baseVersionId:v.id}:{}),...(action==='approve'?{versionId:v.id,payloadDigest:v.payloadDigest}:{}),...(action==='execute'?{approvalId:approval(w).id}:{})});
 });
 window.addEventListener('storage',e => {
   if (e.key==='orbit.assistant.recovery.v1') message('Another tab changed its recovery copies. Your current tab is kept; save important edits before switching.',true);
 });
 window.addEventListener('beforeunload',e => {
   captureDraft();
-  if (!recovery.persistent && (Object.keys(recovery.state.drafts).length || $('request').value || $('priorities').value)) {e.preventDefault(); e.returnValue='';}
+  if (!recovery.persistent && (Object.keys(recovery.state.drafts).length || $('request').value || $('priorities').value || ['business','audience','goal'].some(field=>$('campaign-'+field).value))) {e.preventDefault(); e.returnValue='';}
 });
 refresh().catch(e => message(e.message,true));

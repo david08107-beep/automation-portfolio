@@ -22,7 +22,7 @@ test('saved history and source references survive a restart and remain reviewabl
   const started=system.operations.start({...caller,request:'Fictional launch campaign'});
   assert.equal(started.ok,true);
   const w=started.value,v=w.results.at(-1);
-  const revised=system.operations.revise({...caller,workflowId:w.id,payload:{...v.payload,launchPost:'Saved revision'}});
+  const revised=system.operations.revise({...caller,workflowId:w.id,baseVersionId:v.id,payload:{...v.payload,launchPost:'Saved revision'}});
   assert.equal(revised.ok,true);
   const restored=createStoredDemoSystem(path);
   const loaded=restored.operations.get({...caller,workflowId:w.id}).value;
@@ -62,7 +62,7 @@ test('a failed disk replacement leaves the saved version and in-memory record un
   const w=system.operations.start({...caller,request:'Fictional storage test'}).value;
   const previous=readFileSync(path,'utf8');
   mkdirSync(path+'.tmp');
-  const failed=system.operations.revise({...caller,workflowId:w.id,payload:{...w.results.at(-1).payload,launchPost:'Unsaved revision'}});
+  const failed=system.operations.revise({...caller,workflowId:w.id,baseVersionId:w.results.at(-1).id,payload:{...w.results.at(-1).payload,launchPost:'Unsaved revision'}});
   assert.equal(failed.error.code,'PERSISTENCE_FAILED');
   assert.equal(readFileSync(path,'utf8'),previous);
   assert.deepEqual(system.repository.get(w.id),w);

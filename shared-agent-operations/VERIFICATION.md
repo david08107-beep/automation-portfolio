@@ -1,5 +1,7 @@
 # Verification record — 2026-10-08
 
+Latest local iteration: 32/32 automated tests pass. Added regression coverage for stale/missing draft-save preconditions, empty/whitespace content at save/approval/execution, explicit unsupported connected-task requests, guided campaign validation/recovery, HTTP brief persistence, and exact-reviewed-version export. Browser checks verified concurrent stale-save rejection with newer content preserved, local edit recovery, empty save rejection, failure priority, capability explanations, structured brief reload/submission, and reviewed export. Copy showed its success message (clipboard readback was unavailable in this browser session); a downloaded text file was inspected and contained the saved version, request, all content assets, and sample-content disclaimer. Export is local-only and does not create a send. Mobile viewport and complete keyboard/screen-reader testing remain pending. No AI provider, account connection, merge, deployment, or preserved release change occurred.
+
 All checks used detached worktrees at the exact source commits listed in the package README. Generated files and test dependencies stayed in those detached verification copies.
 
 | Scope | Result |

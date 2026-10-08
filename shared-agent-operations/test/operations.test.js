@@ -32,11 +32,38 @@ test('rejects stale approval and invalidates approval when the draft changes', (
   assert.equal(stale.error.code, 'APPROVAL_STALE');
 
   const approved = approve(system, prepared).value;
-  const revised = system.operations.revise({...caller, workflowId: prepared.id, payload: {...prepared.results.at(-1).payload, launchPost: 'Dave edited this fictional post.'}});
+  const revised = system.operations.revise({...caller, workflowId: prepared.id, baseVersionId: prepared.results.at(-1).id, payload: {...prepared.results.at(-1).payload, launchPost: 'Dave edited this fictional post.'}});
   assert.equal(revised.ok, true);
   assert.equal(revised.value.approvals.at(-1).status, 'invalidated');
   const execute = system.operations.execute({...caller, workflowId: prepared.id, approvalId: approved.approvals.at(-1).id});
   assert.equal(execute.error.code, 'APPROVAL_REQUIRED');
+});
+
+test('stale or missing save preconditions cannot overwrite a newer draft', () => {
+  const system = createDemoSystem(), w = start(system).value, v = w.results.at(-1);
+  const updated = system.operations.revise({...caller, workflowId:w.id, baseVersionId:v.id, payload:{...v.payload,shortVideoScript:'Newer reviewer script'}});
+  assert.equal(updated.ok,true);
+  for (const baseVersionId of [v.id, undefined]) {
+    const stale=system.operations.revise({...caller,workflowId:w.id,baseVersionId,payload:{...v.payload,launchPost:'Older tab edit'}});
+    assert.equal(stale.error.code,'DRAFT_STALE');
+  }
+  const current=system.repository.get(w.id);
+  assert.equal(current.results.length,2);
+  assert.equal(current.results.at(-1).payload.shortVideoScript,'Newer reviewer script');
+});
+
+test('invalid drafts cannot be saved, approved or executed, including legacy records', () => {
+  const system=createDemoSystem(), w=start(system).value, v=w.results.at(-1);
+  for (const payload of [{...v.payload,launchPost:'  '},{...v.payload,shortVideoScript:''},{...v.payload,calendar:[]},{...v.payload,calendar:['  ']},{...v.payload,calendar:[42]}]) {
+    assert.equal(system.operations.revise({...caller,workflowId:w.id,baseVersionId:v.id,payload}).error.code,'INVALID_INPUT');
+  }
+  const approved=approve(system,w).value;
+  const legacy=system.repository.get(w.id);
+  legacy.results.at(-1).payload.launchPost='';
+  system.repository.save(legacy,legacy.revision);
+  assert.equal(approve(system,legacy).error.code,'INVALID_INPUT');
+  assert.equal(system.operations.execute({...caller,workflowId:w.id,approvalId:approved.approvals.at(-1).id}).error.code,'INVALID_INPUT');
+  assert.equal(system.orbitExecutor.executionCount,0);
 });
 
 test('detects changed Marketing source content before approval', () => {

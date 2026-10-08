@@ -7,7 +7,7 @@ import {fileURLToPath} from 'node:url';
 // Local demonstration only: one fictional owner, in-memory records, no providers.
 export function createDashboardServer(system = createDemoSystem()) {
   const caller = {actorId: 'demo-dave', workspaceId: 'work'};
-  const files = {'/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/drafts.js': ['drafts.js', 'text/javascript'], '/styles.css': ['styles.css', 'text/css']};
+  const files = {'/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/drafts.js': ['drafts.js', 'text/javascript'], '/campaign.js': ['campaign.js', 'text/javascript'], '/export.js': ['export.js', 'text/javascript'], '/styles.css': ['styles.css', 'text/css']};
   return createServer(async (req, res) => {
     const respond = (status, value) => {res.writeHead(status, {'Content-Type': 'application/json'}); res.end(JSON.stringify(value));};
     res.setHeader('Cache-Control', 'no-store');
@@ -32,10 +32,13 @@ export function createDashboardServer(system = createDemoSystem()) {
       let input;
       try {input = JSON.parse(body);} catch {return respond(400, {error: {message: 'Invalid request.'}});}
       if (!input || typeof input !== 'object' || Array.isArray(input)) return respond(400, {error: {message: 'Invalid request.'}});
-      const {action, workflowId, request, payload, versionId, payloadDigest, approvalId} = input;
+      const {action, workflowId, request, campaignBrief, payload, versionId, baseVersionId, payloadDigest, approvalId} = input;
       if (!['start', 'revise', 'approve', 'execute', 'cancel', 'retryPreparation'].includes(action)) return respond(400, {error: {message: 'Unknown action.'}});
+      if (action === 'start' && typeof request === 'string' && /\binbox\b|\b(reschedule|schedule|cancel|move|book)\b[^.!?\n]{0,80}\b(meetings?|appointments?)\b|\b(summarize|read|check)\b[^.!?\n]{0,40}\b(my|our)\s+emails?\b/i.test(request)) {
+        return respond(400, {error: {code: 'UNSUPPORTED_REQUEST', message: 'Inbox and meeting tasks are not connected in this preview. Try a marketing campaign, launch post, or video script instead. Your request is kept for editing.'}});
+      }
       if (action === 'revise' && (!payload || typeof payload.launchPost !== 'string' || typeof payload.shortVideoScript !== 'string' || !Array.isArray(payload.calendar) || !payload.calendar.every(v => typeof v === 'string'))) return respond(400, {error: {message: 'Draft must contain a launch post, video script, and calendar.'}});
-      const result = system.operations[action]({...caller, workflowId, request, payload, versionId, payloadDigest, approvalId});
+      const result = system.operations[action]({...caller, workflowId, request, campaignBrief, payload, versionId, baseVersionId, payloadDigest, approvalId});
       return respond(result.ok ? 200 : 409, result);
     } catch {return respond(500, {error: {message: 'The local dashboard could not complete this request.'}});}
   });
