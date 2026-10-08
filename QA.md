@@ -279,3 +279,39 @@ Both canonical and bundled pages were checked for daily briefing, editable expli
 ### Annotation verification
 
 The full guided flow passed on canonical and bundled pages, including explicit edited send, isolated storage, exit/finish/refresh restoration, and responsive widths. Targeted desktop/mobile reduced-motion checks verified the active-agent highlight and explanation, response highlight, visible reply instructions, highlighted Send Reply, and cleanup on dialog exit. No browser errors were observed. The MP4 was regenerated from the original WebM with six phase captions.
+
+## Reply robustness adaptation
+
+Browser checks on canonical and bundled pages verified distinct consecutive alternatives, selected goal/tone/assessment and Dave/recipient context, exact original draft/brief/settings restoration, literal hostile-looking text without executable HTML, reload persistence, downloaded text contents, denied clipboard feedback, and history close/focus at 390 and 320 pixels. Dedicated cases exercised malformed JSON, one corrupt workspace with valid Work tasks/draft retained, invalid history entries, blocked storage reads, and quota/write failures. Existing complete CEO and guided-tour journeys passed on both versions. All generation and execution remain fictional. Publishing has not been performed for this local refinement; existing Pages branch and preserved tag remain intact.
+
+## Integration/security preparation — October 8, 2026
+
+- `node tests/security-browser.cjs` passed on canonical and bundled pages: CSP blocked injected inline scripts, connector requests and injected base URLs; hostile draft/history text rendered literally; invalid dates and single-line metadata failed validation; non-explicit and closed-review submissions did not execute; duplicate confirmations retained the first result; Personal/Work local decisions remained separate; oversized storage recovered.
+- Draft improvements, original version/settings restoration, downloads, denied clipboard, and 390/320-pixel history controls passed on both pages. Corrupt JSON, partially valid contexts, blocked reads and quota failures passed dedicated storage checks.
+- Complete CEO decision journeys and guided-tour restoration passed on canonical and bundled pages; JavaScript syntax passed.
+- Secret-pattern scan inspected 17 project text files before this report update with zero matches for the checked private-key/GitHub/AWS/model-key patterns. This is a heuristic scan, not proof that secrets cannot exist.
+- No application dependency manifest or bundled third-party runtime was found; a dependency CVE audit was not performed. Test tooling is not a shipped application dependency.
+- Server authentication/session, MFA, OAuth redirect/token lifecycle, CSRF and cross-user backend authorization tests were NOT RUN: those systems do not exist here. No external penetration test or hosting header assessment was performed.
+- No publication, branch/tag update, identity-provider configuration, account connection or hosting change occurred.
+
+
+## Local milestone — DOM-independent Reply Application Service (2026-10-08)
+
+Unpublished working tree, branch `work`, HEAD `f5697a2`; `VERSION` remains `1.5.0`. Preserved `v1.5.0-demo` resolves to `08f1b03a6cd5e19a90c4a3014cfe17731131862b`. No commit, push, deployment, provider integration or hosting change was performed.
+
+- `node --test tests/reply-service.cjs`: 20/20 pass with no DOM. Covers fixtures, immutable revisions, original settings, exact-version reviews/approvals, expiry/invalidation, duplicate rejection, wrong context, invalid input, persistence and execution failures, receipt retry without another simulated send, reloadable records, alternatives, malformed receipts and corrupt nested data.
+- `node tests/reply-ui.cjs`: pass for index and bundled preview. Covers editable exact-version confirmation, injected failure/retry, one execution, persistence, receipt-to-dashboard reconciliation, Personal/Work separation, 320/390px history controls, Reset and corrupt-core preservation.
+- `node tests/security-browser.cjs`: pass for both entry points. Covers CSP, literal hostile content, invalid metadata/dates, explicit/open review requirements, duplicate guards, context separation and oversized-state recovery.
+- Existing environment regression suites passed for both entry points: reply alternatives/history/settings/downloads/clipboard and mobile focus; CEO morning decisions; guided walkthrough; full tasks and meeting briefs; document-sharing's 17 acceptance steps. Storage suite passed invalid/partial/blocked/quota cases.
+- Syntax checks passed for app/core/fixtures/browser adapter. Preview rebuilt successfully with all service modules and an updated inline-script CSP hash. Static core/fixture/adapter inspection found no DOM or direct browser-storage access.
+
+Corrections during verification: legacy migration initially picked default tone for a new draft rather than current selection; fixed and retested original settings restoration. The new receipt test initially used the real clock against fixed historical approval timestamps; corrected its injected clock. Mobile tests wait for the existing width transition to settle. No failing checks are waived.
+
+Limits: Chromium/local demo validation only; no auth, OAuth, server tenant-isolation, backend concurrency, provider execution, or distributed crash recovery is implemented or claimed tested. Browser records remain owner-editable. Historical legacy sends remain read-only rather than fabricated as newly approved operations. This milestone creates a reply-only service attachment point; shared Agent Operations remains HOLD.
+
+
+## V1 maintenance candidate — Floating close controls (2026-10-08)
+
+Prepared for the existing GitHub Pages site after user authorization. Package version stays `1.5.0`; the preserved demo tag stays at its original commit. The independent 48px X remains visible as dialog content scrolls; headers scroll normally. Clicking/tapping the backdrop closes the dialog, while inside clicks and inside-to-outside drags remain protected. Existing close handlers retain focus restoration and explicit action confirmation.
+
+Fresh release checks passed: 20/20 headless service tests; reply UI and security browser suites; long-content floating-close/backdrop checks for all six dialogs on desktop/mobile. Canonical and generated pages passed. Asset identifiers changed to `orbit-floating-close-20261008`; preview was rebuilt from canonical sources. This remains a fictional demo with no real account connection, authentication or external execution. Deployment must be confirmed by comparing public assets to the release commit.

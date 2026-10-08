@@ -5,6 +5,16 @@ A portfolio demo for Dave: Orbit observes fictional workspace signals, prioritiz
 **HTML, CSS, vanilla JavaScript, and inline SVG only. No real AI model, external libraries, account connections, API calls, or real messages.**
 
 
+## Local foundation milestone — Reply Application Service
+
+Replies now have a DOM-independent boundary: UI → browser adapter → `reply/core.js` → injected repository/demo executor. Explicit fictional messages live in `reply/fixtures.js`; reply business data is no longer read from inbox markup. The core loads messages, creates/revises/version-saves replies, prepares alternatives, requests review, approves an exact revision, simulates execution, and returns history/domain events. See [reply contracts](reply/CONTRACTS.md) for inputs, record types, errors, migration and failure semantics.
+
+Immutable versions retain body, brief and selected settings. Editing invalidates prior approval; approvals expire after ten minutes. Send Reply explicitly confirms the current version. Duplicate execution is blocked; receipts reconcile into the dashboard after refresh. Personal/Work repositories remain separate and Reset Demo clears both. No UI redesign or real sending was introduced.
+
+Run `node --test tests/reply-service.cjs` for headless checks. With the existing server on port 8000 and Playwright/Chromium available as environment tools, run `node tests/reply-ui.cjs` and `node tests/security-browser.cjs`. `python3 build_preview.py` bundles the reply modules into the standalone preview and regenerates its CSP hash. No runtime dependencies were added.
+
+This is a credible attachment point for the **reply workflow only**. Overall Agent Operations readiness remains HOLD: no shared layer, backend authorization, durable outbox, connector, authentication, or autonomous agent exists. Browser receipts are not a distributed exactly-once guarantee or tamper-proof audit. This maintenance milestone keeps `VERSION` and the preserved demo tag unchanged. Publication uses the existing GitHub Pages site; it does not introduce real accounts or shared agent execution.
+
 ## Product version and roadmap
 
 **Current Version:** `1.5.0` — v1.5 Collapsible Navigation (Completed)  
@@ -468,3 +478,19 @@ The header’s **Try Orbit** button starts fresh, temporary Work/Personal contex
 ### Guided annotations
 
 Try Orbit outlines the current control or active specialist and explains each phase in its status bar. Responses are brought into view when ready. The reply editor includes a contextual note and a highlighted Send Reply control; Save Draft remains distinct from sending. Skip tour (or the dialog Exit control) restores progress and removes the cues. Highlights are static and work with reduced motion. The MP4 recording now includes readable phase captions; the WebM remains the original capture.
+
+## Reply alternatives and history
+
+Orbit now supports explicitly requested, deterministic reply alternatives in the inbox composer. The editable brief, goal (clarify/confirm/decline), tone, and assessment inform each variation alongside the selected fictional message/workspace and Dave’s existing identity. This does not add a Marketing Agent, editable user profile, live AI model, or automatic sending.
+
+Save Draft and New alternative retain up to 20 message-specific snapshots. Draft history restores the exact brief, body, recipient, subject, and selected settings; subsequent edits are preserved before restoration. Plain-text downloads and clipboard copy are local actions with clear failure messages. History uses literal text nodes for user-entered content. Dialogs support native keyboard dismissal, named close controls, and mobile wrapping.
+
+Invalid stored workspace data is recovered independently where possible; a valid other workspace is retained. Blocked reads/writes and full storage report session-only state and recommend downloading a draft. The V1 baseline tag and existing GitHub Pages project remain unchanged by these local refinements.
+
+## Integration and security preparation
+
+See [integration plan](docs/INTEGRATION-PLAN.md) for proposed cross-module contracts and [threat model](docs/THREAT-MODEL.md) for the implemented/future protection boundary. No shared contracts from AI OS/Marketing Agent were present in this checkout; these proposals need reconciliation before adoption. No authentication, MFA, OAuth accounts, backend authorization, or real provider execution was added.
+
+The main app has a restrictive meta content policy. `python3 build_preview.py` must be rerun after modifying JavaScript: it generates the inline preview script hash. Both pages retain dynamic inline styling but block untrusted inline scripts, external connections, embeds and base URL changes. Meta policy cannot implement all HTTP security headers or framing protection.
+
+Run `node tests/security-browser.cjs` with an existing local server on port 8000 and Playwright installed as an environment test tool. Set `ORBIT_TEST_URL` and `ORBIT_CHROMIUM` if needed. The test uses only synthetic local data; it does not assess third-party infrastructure. Browser workspaces are not a tenant authorization system. No real-user release is approved by these checks.

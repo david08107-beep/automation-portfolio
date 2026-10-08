@@ -2,6 +2,34 @@
 
 Release milestones describe the implemented capability baseline and current development scope. Historical entries are reconstructed from the existing application; no release dates, published packages, or Git tags are implied. The current identifier is `1.5.0`, within **V1 — Portfolio Prototype**. All account data is fictional and all external-impact actions are simulations.
 
+## V1 maintenance — Floating dialog close controls
+
+- Kept the 48px close button independently visible as dialog content scrolls; headings scroll normally.
+- Added consistent backdrop click/tap dismissal with inside-click and drag protection, retaining existing focus and explicit confirmation handlers.
+- Updated dashboard CSS/JavaScript asset versions and regenerated the standalone preview for the existing Pages site.
+- Preserved package version `1.5.0`, the `v1.5.0-demo` tag and fictional account/action boundaries.
+
+## Local foundation — DOM-independent reply application service
+
+- Extracted explicit message fixtures, generation/versioning, review/approval, simulated execution and history into injected service/repository/executor boundaries.
+- Bound approvals to exact revisions with expiry, stale-revision checks and structured errors; added receipt idempotency and failure injection.
+- Adapted the existing UI with additive workspace-specific storage, legacy draft migration, receipt projection recovery and corrupt-core fail-closed handling.
+- Added 20 headless tests and repeatable browser integration tests. This is unpublished local work; no shared agent layer, real connectors, version/tag or hosting changes.
+
+## Local refinement — Integration/security preparation
+
+- Documented provisional shared contracts, migration phases, threat boundaries, and real-account release gates.
+- Bound simulated confirmation to open reviews/current workspace and rejected malformed dates/email metadata.
+- Bounded stored state/history ingestion and added restrictive meta CSP with a generated preview script hash and no-referrer policy.
+- Added repeatable local security browser checks; retained the existing host and preserved demo tag without publishing.
+
+## Local refinement — Reply robustness
+
+- Added distinct scripted alternatives tailored to reply brief, goal, tone, assessment, and workspace context.
+- Added message-specific restorable history, draft downloads, clipboard feedback, and accessible mobile history controls.
+- Preserved valid contexts during corrupt-storage recovery and reported unreadable/session-only storage accurately.
+- Left the preserved V1 tag and hosting project unchanged.
+
 ## V1 maintenance — Guided annotations
 
 - Highlighted active specialists, briefing results, editable replies, Send Reply, and the workspace switcher.

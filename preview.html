@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-aQx7CDjy6CRokScFGjQGaI2vj9/oWYdwwj8tY0g3xM4='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; media-src 'self';">
+  <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#101214">
   <title>Orbit — Executive Assistant</title>
@@ -227,9 +229,31 @@ body[data-sidebar] .topbar .workspace{display:flex}
 /* Guided annotations identify the active area without blocking interaction. */
 .tour-highlight{outline:2px solid #b5f1d8!important;outline-offset:5px;box-shadow:0 0 0 7px #a6f3d814,0 0 35px #a6f3d82b!important;scroll-margin-top:120px;scroll-margin-bottom:220px}.tour-confirm-highlight{outline:2px solid #b5f1d8;outline-offset:4px;box-shadow:0 0 20px #a6f3d855}.tour-editor-note{position:sticky;top:0;z-index:3;padding:12px 14px;border:1px solid #a6f3d866;border-radius:10px;background:#142f36;color:#d4f5e6;font-size:12px;line-height:1.7;box-shadow:0 8px 24px #0004}.orbit-tour .eyebrow{color:#b5f1d8}.orbit-tour-copy{min-width:0}.orbit-tour p{overflow-wrap:anywhere}
 @media(max-width:650px){.tour-editor-note{font-size:11px;padding:10px}.tour-highlight{outline-offset:3px}}
+.reply-draft-tools{padding:14px;margin:14px 0;border:1px solid #a6c8be35;border-radius:12px;background:#a6f3d805}.draft-settings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.draft-settings select{width:100%;max-width:100%;padding:10px;background:#101e29;color:var(--text);border:1px solid #a6c8be35;border-radius:8px}.reply-draft-tools .muted,#draft-notice{font-size:11px;line-height:1.7}.draft-history-dialog{width:min(720px,calc(100% - 24px));max-height:88dvh;overflow:auto;overflow-wrap:anywhere}.draft-history-dialog .dialog-top{position:sticky;top:0;z-index:2;background:#14232f;padding:10px 0}.draft-history-dialog .close-button{min-width:44px;min-height:44px}.draft-history-card{padding:14px;margin:12px 0;border:1px solid #a6c8be35;border-radius:10px}.draft-history-card pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:1.7}.draft-history-card p{white-space:pre-wrap;line-height:1.7}button:focus-visible,select:focus-visible{outline:2px solid var(--mint);outline-offset:3px}@media(max-width:650px){.draft-settings{grid-template-columns:1fr}.draft-history-dialog{padding:14px}.reply-draft-tools{padding:12px}.reply-draft-tools .message-actions button{min-height:40px}}
+
+/* Consistent touch targets for every modal and the mobile navigation drawer. */
+dialog .close-button,dialog .close-dialog,dialog #drawer-close{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:8px;border:1px solid #a6c8be35;border-radius:10px;background:#a6f3d80a;color:var(--text);line-height:1;cursor:pointer;transition:background .15s,border-color .15s}
+dialog .close-button:hover,dialog .close-dialog:hover,dialog #drawer-close:hover{background:#a6f3d81f;border-color:#a6c8be80}
+dialog .close-button:focus-visible,dialog .close-dialog:focus-visible,dialog #drawer-close:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
+
+/* Close controls stay in view within each scrolling dialog. */
+.action-dialog .dialog-top,.task-list-dialog .dialog-top,.meeting-detail-dialog .dialog-top,#navigation-drawer .drawer-heading{position:sticky;top:0;z-index:10;gap:12px;padding:8px 0;background:#14232f;border-bottom:1px solid #a6c8be25}
+.message-dialog .message-dialog-top .close-dialog{float:none}
+#navigation-drawer .drawer-heading{background:#0d1823}
+/* Only the X floats; the dialog title and details scroll normally. */
+.action-dialog .dialog-top,.task-list-dialog .dialog-top,.meeting-detail-dialog .dialog-top,#navigation-drawer .drawer-heading{position:static;background:transparent;border-bottom:0;padding-right:64px;min-height:56px}
+.dialog-floating-close{position:sticky;top:12px;height:0;display:flex;justify-content:flex-end;z-index:30;pointer-events:none}
+dialog .dialog-floating-close button{pointer-events:auto;float:none;width:48px;height:48px;min-width:48px;min-height:48px;font-size:28px;background:#172a36;border-color:#a6c8be70;box-shadow:0 6px 22px #0008}
+dialog .dialog-floating-close button:hover{background:#254139;border-color:var(--mint)}
+
+.sidebar > .dialog-floating-close{display:none}
+#navigation-drawer .sidebar > .dialog-floating-close{display:flex}
 
 </style>
-  
+
+
+
+
 </head>
 <body>
   <div class="ambient-scene" aria-hidden="true"><div class="ambient-orb orb-one"></div><div class="ambient-orb orb-two"></div><div class="ambient-orb orb-three"></div><div class="ambient-grid"></div></div>
@@ -378,8 +402,7 @@ body[data-sidebar] .topbar .workspace{display:flex}
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <dialog id="message-dialog" class="action-dialog message-dialog" aria-labelledby="message-title">
-    <button type="button" id="message-close" class="close-dialog" aria-label="Close message">×</button>
-    <span class="eyebrow">PRIORITY INBOX · FICTIONAL MESSAGE</span>
+    <div class="dialog-top message-dialog-top"><span class="eyebrow">PRIORITY INBOX · FICTIONAL MESSAGE</span><button type="button" id="message-close" class="close-dialog" aria-label="Close message">×</button></div>
     <h2 id="message-title"></h2>
     <dl class="action-facts"><div><dt>Sender</dt><dd id="message-sender"></dd></div><div><dt>Received</dt><dd id="message-received"></dd></div><div><dt>Message state</dt><dd id="message-state"></dd></div><div><dt>Priority</dt><dd id="message-priority"></dd></div></dl>
     <p id="message-full-body" class="message-full-body"></p>
@@ -414,6 +437,499 @@ body[data-sidebar] .topbar .workspace{display:flex}
   </dialog>
   <dialog id="navigation-drawer" aria-labelledby="drawer-title"></dialog>
 <script>
+(function(root){
+  'use strict';
+  const clone=v=>JSON.parse(JSON.stringify(v));
+  const empty=()=>({
+    schemaVersion:1,drafts:[],reviews:[],approvals:[],executions:[],activity:[]
+  });
+  function validateStore(v){
+    const invalid=()=>{
+      throw new Error('Invalid reply repository');
+    };
+    const text=x=>typeof x==='string'&&x.length>0;
+    const date=x=>text(x)&&Number.isFinite(Date.parse(x));
+    const identity=x=>x&&['id','messageId','workspaceId','actorId'].every(k=>text(x[k]));
+    const same=(a,b)=>['messageId','workspaceId','actorId'].every(k=>a[k]===b[k]);
+    if(!v || v.schemaVersion!==1 || !['drafts','reviews','approvals','executions','activity'].every(k=>Array.isArray(v[k])))invalid();
+    const ids=new Set(),versions=new Map(),drafts=new Map(),reviews=new Map(),approvals=new Map(),keys=new Set();
+    const unique=x=>{
+      if(!text(x.id)||ids.has(x.id))invalid();
+      ids.add(x.id);
+    };
+    for(const d of v.drafts){
+      if(!identity(d)||!Number.isInteger(d.currentRevision)||d.currentRevision<1||!Array.isArray(d.versions)||d.versions.length!==d.currentRevision)invalid();
+      unique(d);
+      drafts.set(d.id,d);
+      d.versions.forEach((version,index)=>{
+        if(!identity(version)||!same(d,version)||version.draftId!==d.id||version.revision!==index+1||version.status!=='saved'||!date(version.createdAt)||!text(version.body)||version.body.length>10000||!text(version.to)||!text(version.subject)||typeof version.brief!=='string'||!version.settings||typeof version.settings!=='object'||Array.isArray(version.settings))invalid();
+        unique(version);
+        versions.set(version.id,version);
+      });
+    }
+    const linked=x=>{
+      const version=versions.get(x?.versionId);
+      return identity(x)&&version&&same(x,version)&&x.draftId===version.draftId&&x.revision===version.revision;
+    };
+    for(const r of v.reviews){
+      if(!linked(r)||r.status!=='requested'||!date(r.createdAt))invalid();
+      unique(r);
+      reviews.set(r.id,r);
+    }
+    for(const a of v.approvals){
+      const r=reviews.get(a?.reviewId);
+      if(!linked(a)||!r||r.versionId!==a.versionId||!same(r,a)||!['approved','invalidated','executed'].includes(a.status)||!date(a.approvedAt)||!date(a.expiresAt)||Date.parse(a.expiresAt)<=Date.parse(a.approvedAt))invalid();
+      unique(a);
+      approvals.set(a.id,a);
+    }
+    for(const e of v.executions){
+      const version=versions.get(e?.versionId),approval=approvals.get(e?.approvalId);
+      if(!identity(e)||!version||!approval||!same(e,version)||e.draftId!==version.draftId||approval.versionId!==e.versionId||approval.status!=='executed'||e.idempotencyKey!==`${e.workspaceId}:${e.draftId}:${e.versionId}`||keys.has(e.idempotencyKey)||e.status!=='Sent'||e.simulated!==true||!date(e.at)||!e.payload||['to','subject','body'].some(k=>e.payload[k]!==version[k]))invalid();
+      unique(e);
+      keys.add(e.idempotencyKey);
+    }
+    for(const e of v.activity){
+      if(!identity(e)||!date(e.at)||!text(e.kind))invalid();
+      unique(e);
+    }
+    return clone(v);
+  }
+  function memoryRepository(initial=empty()){
+    let data=validateStore(initial);
+    return {
+      read:()=>clone(data),write:next=>{
+        data=validateStore(next);
+        return {
+          durable:true
+        };
+      }
+    };
+  }
+  function demoExecutor(){
+    const receipts=new Map();
+    let fail=false,calls=0;
+    return {
+      failNext:()=>{
+        fail=true;
+      },get calls(){
+        return calls;
+      },execute({
+        version,approval,idempotencyKey,now
+      }){
+        if(!approval || approval.versionId!==version.id || approval.status!=='approved')throw Error('Unapproved demo execution');
+        if(receipts.has(idempotencyKey))return clone(receipts.get(idempotencyKey));
+        if(fail){
+          fail=false;
+          throw Error('Simulated execution failure');
+        }
+        calls++;
+        const receipt={
+          id:'demo:'+idempotencyKey,idempotencyKey,versionId:version.id,status:'Sent',simulated:true,at:now,payload:{
+            to:version.to,subject:version.subject,body:version.body
+          }
+        };
+        receipts.set(idempotencyKey,receipt);
+        return clone(receipt);
+      }
+    };
+  }
+  function alternativeBody({
+    message,settings,brief,variant
+  }){
+    const i=(variant-1)%3;
+    const greetings=settings.tone==='warm'?['Hi','Hello','Hey']:['Hello','Hi','Dear'];
+    const response={
+      positive:['The direction looks promising.','I appreciate the progress so far.','This looks like a constructive next step.'],mixed:['There are useful points here, and a few details still need review.','I see potential, but I need to resolve the open questions first.','Some elements work well; others need clarification.'],negative:['I have concerns about proceeding as proposed.','The current proposal does not meet what I need.','I cannot support the proposal in its current form.']
+    }
+    [settings.feedback][i];
+    const action={
+      clarify:['Please clarify the details and any outstanding constraints before I decide.','Could you send the missing information so I can review the next step?','I need more context on the proposal before making a commitment.'],confirm:['I confirm the proposed next step as described in this fictional message.','Please proceed with the next step outlined in this demo conversation.','The proposed next step works for me in this fictional scenario.'],decline:['I will not proceed with this proposal. Thank you for understanding.','Please treat this as a respectful decline of the proposed next step.','I am declining the proposal for now; thank you for sharing it.']
+    }
+    [settings.goal][i];
+    const effectiveAction=settings.goal==='confirm' && settings.feedback==='negative'?'I can confirm a further review, but not acceptance of the proposal while these concerns remain.':settings.goal==='confirm' && settings.feedback==='mixed'?'I can confirm the next review step, subject to resolving the points above.':action;
+    const ending=settings.tone==='warm'?'Thanks again,':settings.tone==='concise'?'Regards,':'Best regards,';
+    const body=`${greetings[i]} ${message.sender.split(' ')[0]},\n\n${(settings.tone==='concise'?{positive:'Looks promising.',mixed:'Some points need review.',negative:'I have concerns.'}[settings.feedback]:response)+'\n\n'}Regarding ${message.subject}: ${effectiveAction}${brief?'\n\nMy review notes: '+brief:''}\n\n${ending}\nDave`;
+    return body;
+  }
+  function createService({
+    repository,messages,executor=demoExecutor(),clock=()=>new Date().toISOString(),id=()=>globalThis.crypto.randomUUID()
+  }){
+    const fault=(code,message,details={
+    })=>{
+      const e=Error(message);
+      e.code=code;
+      e.details=details;
+      throw e;
+    };
+    const header=(v,max)=>typeof v==='string'&&v.trim()&&v.length<=max&&!/[\r\n\x00]/.test(v);
+    const address=v=>header(v,320)&&/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(v);
+    function context(input){
+      if(!input || !header(input.actor?.id,100) || !header(input.workspace?.id,100) || !header(input.messageId,100))fault('INVALID_INPUT','Provide actor, workspace, and message identity.');
+      const message=messages.find(m=>m.id===input.messageId);
+      if(!message)fault('MESSAGE_NOT_FOUND','Fictional message was not found.');
+      if(message.workspaceId!==input.workspace.id)fault('WORKSPACE_MISMATCH','Message does not belong to this workspace.');
+      return clone(message);
+    }
+    function run(input,fn){
+      try{
+        const message=context(input);
+        let data;
+        try{
+          data=validateStore(repository.read());
+        }
+        catch{
+          fault('PERSISTENCE_FAILED','Reply history could not be read.');
+        }
+        const now=clock();
+        const event=(kind,record)=>{
+          data.activity.push({
+            id:id(),workspaceId:input.workspace.id,actorId:input.actor.id,messageId:message.id,kind,at:now,...record
+          });
+        };
+        const persist=()=>{
+          let result;
+          try{
+            result=repository.write(clone(data));
+          }
+          catch{
+            fault('PERSISTENCE_FAILED','Reply changes could not be persisted.');
+          }
+          return {
+            durable:result?.durable!==false
+          };
+        };
+        return {
+          ok:true,value:fn({
+            message,data,now,event,persist
+          })
+        };
+      }
+      catch(e){
+        return {
+          ok:false,error:{
+            code:e.code||'INVALID_INPUT',message:e.code?e.message:'Invalid reply operation.',retryable:['PERSISTENCE_FAILED','EXECUTION_FAILED'].includes(e.code),details:e.details||{
+            }
+          }
+        };
+      }
+    }
+    function findDraft(data,input){
+      const d=data.drafts.find(d=>d.id===input.draftId);
+      if(!d)fault('INVALID_INPUT','Draft was not found.');
+      if(d.workspaceId!==input.workspace.id || d.messageId!==input.messageId || d.actorId!==input.actor.id)fault('WORKSPACE_MISMATCH','Draft context does not match.');
+      return d;
+    }
+    function append({
+      data,message,now,event
+    },draft,input){
+      if(input.expectedRevision!==draft.currentRevision)fault('STALE_REVISION','Draft changed; reload before saving.');
+      if(data.executions.some(e=>e.draftId===draft.id))fault('ALREADY_EXECUTED','This message reply already executed.');
+      const body=input.body;
+      if(typeof body!=='string'||!body.trim()||body.length>10000||!address(input.to??message.to)||!header(input.subject??('Re: '+message.subject),300)||typeof (input.brief??'')!=='string'||(input.brief??'').length>4000)fault('INVALID_INPUT','Provide a valid reply body, brief, recipient, and subject.');
+      const settings=clone(input.settings||{
+      });
+      if(Object.keys(settings).some(k=>!['goal','tone','feedback'].includes(k)) || (settings.goal!==undefined&&!['clarify','confirm','decline'].includes(settings.goal)) || (settings.tone!==undefined&&!['professional','warm','concise'].includes(settings.tone)) || (settings.feedback!==undefined&&!['positive','mixed','negative'].includes(settings.feedback)))fault('INVALID_INPUT','Invalid reply settings.');
+      const value={
+        body,to:input.to??message.to,subject:input.subject??('Re: '+message.subject),brief:input.brief??'',settings
+      };
+      const previous=draft.versions.at(-1);
+      if(previous && JSON.stringify(value)===JSON.stringify({
+        body:previous.body,to:previous.to,subject:previous.subject,brief:previous.brief,settings:previous.settings
+      }))return previous;
+      const revision=draft.currentRevision+1;
+      const version={
+        id:id(),draftId:draft.id,revision,messageId:message.id,workspaceId:input.workspace.id,actorId:input.actor.id,createdAt:now,status:'saved',...value
+      };
+      draft.currentRevision=revision;
+      draft.versions.push(version);
+      for(const approval of data.approvals.filter(a=>a.draftId===draft.id&&a.status==='approved'))approval.status='invalidated';
+      event('draft.saved',{
+        draftId:draft.id,versionId:version.id,revision
+      });
+      return version;
+    }
+    const service={
+      prepareReplyAlternative:input=>run(input,c=>{
+        const draft=findDraft(c.data,input);
+        if(input.expectedRevision!==draft.currentRevision)fault('STALE_REVISION','Draft changed.');
+        draft.alternativeIndex=(draft.alternativeIndex||0)+1;
+        const body=alternativeBody({
+          message:c.message,settings:input.settings||{
+            goal:'clarify',tone:'professional',feedback:'mixed'
+          },brief:input.brief||'',variant:draft.alternativeIndex
+        });
+        const version=append(c,draft,{
+          ...input,body
+        });
+        return {
+          draft:clone(draft),version:clone(version),...c.persist()
+        };
+      }),
+      loadMessage:input=>run(input,({
+        message
+      })=>message),
+      createReplyDraft:input=>run(input,c=>{
+        const existing=c.data.drafts.find(d=>d.messageId===c.message.id&&d.workspaceId===input.workspace.id&&d.actorId===input.actor.id);
+        if(existing)return {
+          draft:clone(existing),version:clone(existing.versions.at(-1))
+        };
+        const draft={
+          id:id(),messageId:c.message.id,workspaceId:input.workspace.id,actorId:input.actor.id,currentRevision:0,versions:[]
+        };
+        c.data.drafts.push(draft);
+        const version=append(c,draft,{
+          ...input,expectedRevision:0,body:input.body??c.message.draft,brief:input.brief??c.message.summary
+        });
+        const persistence=c.persist();
+        return {
+          draft:clone(draft),version:clone(version),...persistence
+        };
+      }),
+      reviseReplyDraft:input=>run(input,c=>{
+        const draft=findDraft(c.data,input),version=append(c,draft,input);
+        return {
+          draft:clone(draft),version:clone(version),...c.persist()
+        };
+      }),
+      saveReplyDraftVersion:input=>service.reviseReplyDraft(input),
+      requestReplyReview:input=>run(input,c=>{
+        const draft=findDraft(c.data,input);
+        const version=draft.versions.find(v=>v.id===input.versionId);
+        if(!version)fault('INVALID_INPUT','Draft version does not exist.');
+        if(version.revision!==draft.currentRevision)fault('STALE_REVISION','Only the current draft can be reviewed.');
+        const review={
+          id:id(),draftId:draft.id,versionId:version.id,revision:version.revision,messageId:c.message.id,workspaceId:input.workspace.id,actorId:input.actor.id,createdAt:c.now,status:'requested'
+        };
+        c.data.reviews.push(review);
+        c.event('review.requested',{
+          reviewId:review.id,versionId:version.id
+        });
+        return {
+          review:clone(review),...c.persist()
+        };
+      }),
+      approveReplyVersion:input=>run(input,c=>{
+        const draft=findDraft(c.data,input);
+        const review=c.data.reviews.find(r=>r.id===input.reviewId&&r.draftId===draft.id);
+        if(!review)fault('APPROVAL_REQUIRED','Review this draft before approval.');
+        if(review.workspaceId!==input.workspace.id||review.actorId!==input.actor.id)fault('WORKSPACE_MISMATCH','Review context does not match.');
+        if(review.revision!==draft.currentRevision)fault('APPROVAL_STALE','Review refers to an older draft.');
+        if(c.data.executions.some(e=>e.draftId===draft.id))fault('ALREADY_EXECUTED','Reply already executed.');
+        const approval={
+          id:id(),draftId:draft.id,reviewId:review.id,versionId:review.versionId,revision:review.revision,messageId:c.message.id,workspaceId:input.workspace.id,actorId:input.actor.id,approvedAt:c.now,expiresAt:new Date(Date.parse(c.now)+10*60*1000).toISOString(),status:'approved'
+        };
+        c.data.approvals.push(approval);
+        c.event('reply.approved',{
+          approvalId:approval.id,versionId:approval.versionId
+        });
+        return {
+          approval:clone(approval),...c.persist()
+        };
+      }),
+      executeApprovedReply:input=>run(input,c=>{
+        const draft=findDraft(c.data,input);
+        const approval=c.data.approvals.find(a=>a.id===input.approvalId&&a.draftId===draft.id);
+        if(!approval)fault('APPROVAL_REQUIRED','An exact-version approval is required.');
+        if(approval.workspaceId!==input.workspace.id||approval.actorId!==input.actor.id||approval.messageId!==c.message.id)fault('WORKSPACE_MISMATCH','Approval context does not match.');
+        const previous=c.data.executions.find(e=>e.versionId===approval.versionId);
+        if(previous)fault('ALREADY_EXECUTED','Approved revision already executed.',{
+          execution:clone(previous)
+        });
+        if(approval.status!=='approved'||approval.revision!==draft.currentRevision||Date.parse(approval.expiresAt)<=Date.parse(c.now))fault('APPROVAL_STALE','Approval is expired or invalidated.');
+        const version=draft.versions.find(v=>v.id===approval.versionId);
+        if(!version||version.revision!==approval.revision)fault('APPROVAL_STALE','Approved version does not exist.');
+        const idempotencyKey=`${input.workspace.id}:${draft.id}:${version.id}`;
+        let receipt;
+        try{
+          receipt=executor.execute({
+            version:clone(version),approval:clone(approval),idempotencyKey,now:c.now
+          });
+        }
+        catch{
+          fault('EXECUTION_FAILED','Demo execution failed; nothing was sent.',{
+            idempotencyKey
+          });
+        }
+        if(!receipt||receipt.versionId!==version.id||receipt.idempotencyKey!==idempotencyKey||receipt.status!=='Sent'||receipt.simulated!==true||!receipt.id||!Number.isFinite(Date.parse(receipt.at))||!receipt.payload||['to','subject','body'].some(k=>receipt.payload[k]!==version[k]))fault('EXECUTION_FAILED','Demo executor returned an invalid receipt.',{
+          idempotencyKey
+        });
+        const execution={
+          ...receipt,draftId:draft.id,messageId:c.message.id,workspaceId:input.workspace.id,actorId:input.actor.id,approvalId:approval.id
+        };
+        c.data.executions.push(execution);
+        approval.status='executed';
+        c.event('reply.executed',{
+          executionId:execution.id,versionId:version.id,simulated:true
+        });
+        try{
+          const persistence=c.persist();
+          return {
+            execution:clone(execution),...persistence
+          };
+        }
+        catch(e){
+          e.details={
+            ...e.details,idempotencyKey,phase:'receipt-not-persisted'
+          };
+          throw e;
+        }
+      }),
+      getReplyHistory:input=>run(input,c=>{
+        const draft=c.data.drafts.find(d=>d.messageId===c.message.id&&d.workspaceId===input.workspace.id&&d.actorId===input.actor.id);
+        return {
+          draft:clone(draft||null),versions:clone(draft?.versions||[]),reviews:clone(c.data.reviews.filter(r=>r.draftId===draft?.id)),approvals:clone(c.data.approvals.filter(a=>a.draftId===draft?.id)),executions:clone(c.data.executions.filter(e=>e.draftId===draft?.id)),activity:clone(c.data.activity.filter(e=>e.messageId===c.message.id&&e.actorId===input.actor.id))
+        };
+      })
+    };
+    return service;
+  }
+  const api={
+    empty,validateStore,memoryRepository,demoExecutor,createService
+  };
+  if(typeof module!=='undefined'&&module.exports)module.exports=api;
+  else root.OrbitReplyCore=api;
+})(globalThis);
+
+(function(root){const messages={
+  "personal": [
+    {
+      "sender": "Alex Rivera",
+      "subject": "Family lunch — can you confirm Saturday?",
+      "to": "alex.rivera@family.example",
+      "body": "Hi Dave,\n\nLet’s meet Saturday at noon. Can you confirm by tonight and bring something for the table? Jamie will join us. Let me know what would be easiest for you.\n\nAlex",
+      "summary": "Alex needs your lunch confirmation and an offer to bring something.",
+      "recommendation": "Review the prepared reply, edit it, and explicitly send when ready.",
+      "received": "8:42 AM",
+      "priority": "High",
+      "draft": "Hi Alex,\n\nSaturday at noon works for me. I can bring groceries and a salad. Looking forward to catching up!\n\nBest,\nDave",
+      "id": "personal-message-0",
+      "workspaceId": "personal",
+      "index": 0
+    },
+    {
+      "sender": "Harbor Care Desk",
+      "subject": "Appointment reminder for Friday",
+      "to": "care@harbor.example",
+      "body": "Hi Dave,\n\nThis is a fictional reminder for your Friday, October 9 appointment at 10:00 AM Eastern. Please arrive 10 minutes early. The appointment lasts one hour. No real appointment or health account is connected.\n\nHarbor Care Desk",
+      "summary": "Friday’s appointment starts at 10:00 AM; arrive 10 minutes early.",
+      "recommendation": "Create a local reminder or add the appointment to the demo calendar.",
+      "received": "8:15 AM",
+      "priority": "High",
+      "draft": "Hi Harbor,\n\nThanks for the update. I’ll review the plan and follow up with you.\n\nBest,\nDave",
+      "id": "personal-message-1",
+      "workspaceId": "personal",
+      "index": 1
+    },
+    {
+      "sender": "Harbor Utilities",
+      "subject": "Monthly bill reminder",
+      "to": "billing@utilities.example",
+      "body": "Hi Dave,\n\nYour fictional household utility bill of $86.40 is due Friday, October 9. Please review your household plan. Marking this message handled does not pay a bill. No payment service is connected.\n\nHarbor Utilities",
+      "summary": "A fictional $86.40 bill needs review before Friday; no payment is connected.",
+      "recommendation": "Create a reminder, snooze, or mark handled after reviewing; this does not pay it.",
+      "received": "Yesterday",
+      "priority": "Normal",
+      "draft": "Hi Harbor,\n\nThanks for the update. I’ll review the plan and follow up with you.\n\nBest,\nDave",
+      "id": "personal-message-2",
+      "workspaceId": "personal",
+      "index": 2
+    },
+    {
+      "sender": "Jamie Chen",
+      "subject": "Weekend errands and grocery list",
+      "to": "jamie.chen@family.example",
+      "body": "Hi Dave,\n\nI added pantry items to our weekend grocery plan. Could you confirm which errands you can cover? We can group grocery pickup and the library return after Saturday’s lunch.\n\nJamie",
+      "summary": "Jamie is coordinating pantry items and weekend errands.",
+      "recommendation": "Reply to coordinate errands and optionally add the lunch to the demo calendar.",
+      "received": "Yesterday",
+      "priority": "Normal",
+      "draft": "Hi Jamie,\n\nThanks for the update. I’ll review the plan and follow up with you.\n\nBest,\nDave",
+      "id": "personal-message-3",
+      "workspaceId": "personal",
+      "index": 3
+    }
+  ],
+  "work": [
+    {
+      "sender": "Sarah Mitchell",
+      "subject": "Q4 partnership — ready for your sign-off",
+      "to": "sarah.mitchell@northstar.example",
+      "body": "Hi Dave,\n\nThe updated Northstar partnership proposal is ready for your review. Can you confirm the revised terms before Friday? If they work for you, we can discuss a kickoff next Tuesday at 10:00 AM Eastern.\n\nSarah",
+      "summary": "Sarah needs confirmation of the partnership terms before Friday.",
+      "recommendation": "Review Orbit’s draft and confirm the response before Friday.",
+      "received": "8:42 AM",
+      "priority": "High",
+      "draft": "Hi Sarah,\n\nThanks for sharing the revised proposal. The updated terms look good to me. Let’s plan a kickoff for next Tuesday at 10:00 AM Eastern, subject to your availability.\n\nBest,\nDave",
+      "id": "work-message-0",
+      "workspaceId": "work",
+      "index": 0
+    },
+    {
+      "sender": "Daniel Kim",
+      "subject": "Board meeting: final agenda & materials",
+      "to": "daniel.kim@board.example",
+      "body": "Hi Dave,\n\nThe final agenda and revised board deck are ready for tomorrow’s meeting. Please review the budget section and bring any open questions. These materials are fictional.\n\nDaniel",
+      "summary": "Daniel’s board materials need review before tomorrow’s meeting.",
+      "recommendation": "Create a review task or follow-up; reply if you have questions.",
+      "received": "8:15 AM",
+      "priority": "High",
+      "draft": "Hi Daniel,\n\nThanks for the update. I’ll review the details and follow up with the next steps.\n\nBest,\nDave",
+      "id": "work-message-1",
+      "workspaceId": "work",
+      "index": 1
+    },
+    {
+      "sender": "Aisha Patel",
+      "subject": "Design sprint recap + next steps",
+      "to": "aisha.patel@project.example",
+      "body": "Hi Dave,\n\nThe design sprint recap identifies three decisions: onboarding scope, prototype ownership, and the review deadline. Please create a follow-up for next week’s sprint planning.\n\nAisha",
+      "summary": "Aisha needs three sprint decisions and a follow-up.",
+      "recommendation": "Create a sprint task or follow-up and reply with your decisions.",
+      "received": "Yesterday",
+      "priority": "Normal",
+      "draft": "Hi Aisha,\n\nThanks for the update. I’ll review the details and follow up with the next steps.\n\nBest,\nDave",
+      "id": "work-message-2",
+      "workspaceId": "work",
+      "index": 2
+    },
+    {
+      "sender": "Thomas Wright",
+      "subject": "October offsite — venue shortlist",
+      "to": "thomas.wright@team.example",
+      "body": "Hi Dave,\n\nI shortlisted two fictional offsite venues. Please compare team capacity, travel time, and budget, then let me know which option we should explore.\n\nThomas",
+      "summary": "Thomas needs a venue preference after reviewing constraints.",
+      "recommendation": "Create a comparison task or reply with your preference.",
+      "received": "Yesterday",
+      "priority": "Normal",
+      "draft": "Hi Thomas,\n\nThanks for the update. I’ll review the details and follow up with the next steps.\n\nBest,\nDave",
+      "id": "work-message-3",
+      "workspaceId": "work",
+      "index": 3
+    }
+  ]
+};if(typeof module!=="undefined" && module.exports)module.exports=messages;else root.OrbitReplyFixtures=messages;})(globalThis);
+
+(function(root){
+  'use strict';
+  // Storage belongs to the UI adapter; the service knows only read/write.
+  function create({
+    workspaceId,read,write,executor
+  }){
+    const messages=root.OrbitReplyFixtures[workspaceId];
+    return root.OrbitReplyCore.createService({
+      messages,executor,repository:{
+        read:()=>{
+          const stored=read();
+          return stored===undefined?root.OrbitReplyCore.empty():stored;
+        },write:next=>write(next)
+      }
+    });
+  }
+  root.OrbitReplyBrowserAdapter={
+    create
+  };
+})(globalThis);
+
 let guidedSession = null;
 const approvalDetails = {
   reply: 'Hi Sarah,\n\nThanks for sharing the revised proposal. The updated terms look good to me. Let’s plan a kickoff for next Tuesday at 10:00 AM Eastern, subject to your availability.\n\nBest,\nDave',
@@ -461,8 +977,10 @@ const demo = {
 const freshState = () => ({version:2, decisions:{}, approvals:[], executions:{}, drafts:{}, legacyReviewed:[], tasks:[], activity:[], proactiveScanned:false, monitoringSeen:[], monitoringReplay:0, monitoringPaused:false, meetingBriefPrepared:false, motionPaused:null, messages:{}});
 let state = freshState();
 let storageAvailable = true;
+let storageReadable = true;
 let selectedCard = null;
 let reviewOrigin = null;
+let reviewWorkspace = null;
 let toastTimer;
 let commandTimer;
 let commandGeneration = 0;
@@ -483,6 +1001,9 @@ function notify(message) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => $('#toast').classList.remove('visible'), 5500);
 }
+const MAX_STORED_STATE_LENGTH=4*1024*1024;
+function safeHeader(value,max=320){return typeof value==='string' && value.length<=max && value.trim().length>0 && !/[\r\n\x00]/.test(value);}
+function safeAddress(value){return safeHeader(value) && /^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(value);}
 function validDate(value) { return typeof value === 'string' && Number.isFinite(Date.parse(value)); }
 function normalizeState(saved) {
   if (!saved || saved.version !== 2) throw new Error('Unsupported state');
@@ -515,12 +1036,13 @@ function normalizeState(saved) {
   result.monitoringPaused = saved.monitoringPaused === true;
   result.meetingBriefPrepared = saved.meetingBriefPrepared === true;
   result.motionPaused = typeof saved.motionPaused === 'boolean' ? saved.motionPaused : null;
+  if(saved.replyCore!==undefined)result.replyCore=structuredClone(saved.replyCore); // Preserve evidence; service validates and fails closed, never silently replaces history.
   return result;
 }
 function loadLegacyState() {
   let raw;
   try { raw = localStorage.getItem(STORAGE_KEY); }
-  catch { storageAvailable = false; stateNotice = 'Browser storage is unavailable. This demo will work for the current session only.'; return; }
+  catch { storageReadable=false; storageAvailable = false; stateNotice = 'Browser storage is unavailable. This demo will work for the current session only.'; return; }
   try {
     if (raw) { const saved = JSON.parse(raw); state = normalizeState(saved); if (!saved.executions && state.legacyReviewed.length) { stateNotice = 'Previously reviewed items now require an action-specific confirmation. No demo actions were executed automatically.'; saveState(); } return; }
     const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY) || '[]');
@@ -534,6 +1056,7 @@ function loadLegacyState() {
   } catch { state = freshState(); stateNotice = 'Saved demo data could not be read. A fresh demo has been loaded.'; }
 }
 function saveState() {
+  if(!storageReadable){workspaceStates[activeWorkspace]=state;storageAvailable=false;return;}
   if (guidedSession) { workspaceStates[activeWorkspace] = state; return; }
   try { workspaceStates[activeWorkspace] = state; localStorage.setItem(WORKSPACE_KEY, JSON.stringify({version:1, selected:activeWorkspace, contexts:workspaceStates})); storageAvailable = true; }
   catch { storageAvailable = false; }
@@ -616,13 +1139,14 @@ function render(animate = false) {
 }
 function normalizePayload(id,payload) {
   if (!payload || typeof payload !== 'object') return null;
-  if (id === 'reply') return typeof payload.body === 'string' && payload.body.trim() && payload.body.length <= MAX_REPLY_LENGTH ? {to:typeof payload.to==='string' && payload.to.trim() && payload.to.length<=320 ? payload.to : actionProfiles.reply.defaultPayload.to,subject:typeof payload.subject==='string' && payload.subject.trim() && payload.subject.length<=300 ? payload.subject : actionProfiles.reply.defaultPayload.subject,body:payload.body} : null;
+  if(id==='reply' && ((payload.to!==undefined && !safeAddress(payload.to)) || (payload.subject!==undefined && !safeHeader(payload.subject,300))))return null;
+  if (id === 'reply') return typeof payload.body === 'string' && payload.body.trim() && payload.body.length <= MAX_REPLY_LENGTH ? {to:safeAddress(payload.to) ? payload.to : actionProfiles.reply.defaultPayload.to,subject:safeHeader(payload.subject,300) ? payload.subject : actionProfiles.reply.defaultPayload.subject,body:payload.body} : null;
   if (id === 'meeting') return validLocalTime(payload.start) && validLocalTime(payload.end) && payload.end > payload.start ? {start:payload.start,end:payload.end,notify:payload.notify === true} : null;
   if (id === 'report') return normalizeSharePayload(payload);
   return null;
 }
 function validLocalTime(value) {
-  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value) && Number.isFinite(Date.parse(value));
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value) && Number.isFinite(Date.parse(value+'Z')) && new Date(value+'Z').toISOString().slice(0,16)===value;
 }
 function formatLocal(value) {
   // datetime-local is interpreted as the selected Eastern wall time, not host timezone.
@@ -651,6 +1175,7 @@ function showValidation(message) {
 function validateAction(payload) {
   const id = selectedCard.dataset.approval;
   $('#review-validation').hidden = true;
+  if(id==='reply' && (!safeAddress(payload.to) || !safeHeader(payload.subject,300))){showValidation('Use a valid recipient and single-line subject. Nothing sent.');return false;}
   if (id === 'reply' && !payload.body.trim()) { showValidation('Add a message body before saving or sending.'); $('#email-body').focus(); return false; }
   if (!normalizePayload(id,payload)) { showValidation(id === 'meeting' ? 'Choose valid dates with an end after the start.' : id === 'reply' ? 'Keep the message body within 10,000 characters.' : 'Choose a supported delivery and access level, and keep the accompanying message within 2,000 characters.'); if (id === 'meeting') { $('#calendar-editor').hidden = false; $('#calendar-start').focus(); } return false; }
   if (id === 'meeting' && meetingConflicts(payload)) { showValidation(`That time overlaps ${currentContext.conflictLabel}. Choose another time.`); $('#calendar-editor').hidden = false; $('#calendar-start').focus(); return false; }
@@ -678,7 +1203,7 @@ function openAction(card,origin) {
   if(card.dataset.approval==='reply' && !state.executions.reply){openMessage(0,origin,true);return;}
   if (workflowMode === 'proactive') cancelProactive();
   clearTimeout(monitorTimer);
-  selectedCard = card; reviewOrigin = origin;
+  selectedCard = card; reviewOrigin = origin; reviewWorkspace=activeWorkspace;
   const id = card.dataset.approval;
   const profile = actionProfiles[id];
   const payload = state.executions[id]?.payload || state.drafts[id] || profile.defaultPayload;
@@ -732,7 +1257,7 @@ $('#action-form').addEventListener('keydown',event => {
 });
 $('#action-form').addEventListener('submit',event => {
   event.preventDefault();
-  if (event.submitter !== $('#dialog-execute') || !selectedCard) return;
+  if (event.submitter !== $('#dialog-execute') || !dialog.open || !selectedCard || reviewWorkspace!==activeWorkspace) return;
   const id = selectedCard.dataset.approval;
   if (state.executions[id] || decisionPaused(id)) return;
   const payload = currentPayload(); if (!validateAction(payload)) return;
@@ -754,10 +1279,7 @@ dialog.addEventListener('close',() => {
   else { const review=selectedCard?.querySelector('.review-button'); if(review?.getClientRects().length) review.focus({preventScroll:true}); else $('#attention-title').focus({preventScroll:true}); }
   scheduleMonitoring(3500);
 });
-dialog.addEventListener('click',event => {
-  const b = dialog.getBoundingClientRect();
-  if (event.target === dialog && (event.clientX < b.left || event.clientX > b.right || event.clientY < b.top || event.clientY > b.bottom)) dialog.close();
-});
+
 function checkVisibleControl(element){return element.checkVisibility?element.checkVisibility({visibilityProperty:true}):Boolean(element.getClientRects().length);}
 function containDialogFocus(event) {
   if (event.key !== 'Tab') return;
@@ -894,7 +1416,7 @@ taskListDialog.addEventListener('close',()=>{
   const origin=taskListOrigin?.isConnected?taskListOrigin:replacement;
   if(origin?.getClientRects().length)origin.focus({preventScroll:true});else $('#attention-title').focus({preventScroll:true});scheduleMonitoring(3500);
 });
-taskListDialog.addEventListener('click',event=>{const box=taskListDialog.getBoundingClientRect();if(event.target===taskListDialog && (event.clientX<box.left || event.clientX>box.right || event.clientY<box.top || event.clientY>box.bottom))taskListDialog.close();});
+
 function renderOperator() {
   const focusedTask=document.activeElement.dataset.attentionTask;
   const items=attentionItems(),urgent=items.filter(item=>item.severity==='urgent');
@@ -1260,13 +1782,12 @@ function applyWorkspace(id) {
   refreshDemoData();
 }
 function loadState() {
+  let raw;
+  try {raw=localStorage.getItem(WORKSPACE_KEY);}catch {storageReadable=false;storageAvailable=false;stateNotice='Browser storage is blocked. Changes work for this session only.';applyWorkspace('personal');state=workspaceStates.personal;return;}
   try {
-    const raw=localStorage.getItem(WORKSPACE_KEY);
-    if(raw){const saved=JSON.parse(raw);if(saved.version!==1 || !saved.contexts)throw new Error('Unsupported workspace state');workspaceStates=saved.contexts;activeWorkspace=saved.selected==='work'?'work':'personal';applyWorkspace(activeWorkspace);state=normalizeState(workspaceStates[activeWorkspace] || freshState());workspaceStates[activeWorkspace]=state;return;}
-    // Prior business data belongs to Work, regardless of the old sidebar label.
-    applyWorkspace('work');loadLegacyState();workspaceStates.work=state;
-    applyWorkspace('personal');state=workspaceStates.personal;saveState();
-  } catch {workspaceStates={personal:freshState(),work:freshState()};applyWorkspace('personal');state=workspaceStates.personal;stateNotice='Browser data is unavailable or unreadable. A fresh personal demo is ready.';}
+    if(raw){if(raw.length>MAX_STORED_STATE_LENGTH)throw Error('Saved data exceeds demo limits');const saved=JSON.parse(raw);if(saved?.version!==1 || !saved.contexts || typeof saved.contexts!=='object')throw Error('Invalid workspace data');workspaceStates={personal:freshState(),work:freshState()};let recovered=false;for(const id of ['personal','work']){applyWorkspace(id);try{workspaceStates[id]=normalizeState(saved.contexts[id]);}catch{recovered=true;}}applyWorkspace(saved.selected==='work'?'work':'personal');state=workspaceStates[activeWorkspace];if(recovered)stateNotice='An invalid workspace was reset. Valid workspace data was retained.';return;}
+    applyWorkspace('work');loadLegacyState();workspaceStates.work=state;applyWorkspace('personal');state=workspaceStates.personal;saveState();
+  } catch {workspaceStates={personal:freshState(),work:freshState()};applyWorkspace('personal');state=workspaceStates.personal;stateNotice='Saved browser data was invalid. A fresh demo is ready; new saves replace the invalid data.';}
 }
 function closeWorkspaceMenu(restoreFocus=false){$('#workspace-menu').hidden=true;$('#workspace-toggle').setAttribute('aria-expanded','false');if(restoreFocus)$('#workspace-toggle').focus();}
 $('#workspace-toggle').addEventListener('click',()=>{const opening=$('#workspace-menu').hidden;$('#workspace-menu').hidden=!opening;$('#workspace-toggle').setAttribute('aria-expanded',String(opening));if(opening)$(`[data-workspace="${activeWorkspace}"]`).focus();});
@@ -1333,7 +1854,7 @@ function renderShareSummary(){
 const messageDialog = $('#message-dialog');
 messageDialog.addEventListener('keydown',containDialogFocus);
 $('#reply-body').maxLength=MAX_REPLY_LENGTH;$('#email-body').maxLength=MAX_REPLY_LENGTH;
-let selectedMessage = null, messageOrigin = null;
+let selectedMessage = null, messageOrigin = null, messageWorkspace = null;
 const MESSAGE_STATUSES=['New','Important','Draft Ready','Draft Saved','Replied','Handled','Snoozed','Reminder Created'];
 function normalizeMessages(saved){
   const output={};
@@ -1342,6 +1863,8 @@ function normalizeMessages(saved){
     const record={read:value.read===true};
     if(MESSAGE_STATUSES.includes(value.status))record.status=value.status;
     if(typeof value.draft==='string')record.draft=value.draft.slice(0,MAX_REPLY_LENGTH);
+    record.replySettings=cleanReplySettings(value.replySettings);record.draftHistory=cleanDraftHistory(value.draftHistory);record.draftVariant=Number.isInteger(value.draftVariant)?Math.max(0,value.draftVariant):0;
+    if(typeof value.replyBrief==='string')record.replyBrief=value.replyBrief.slice(0,4000);
     if(validDate(value.snoozeUntil))record.snoozeUntil=value.snoozeUntil;
     if(typeof value.handledLinkedTaskWasDone==='boolean')record.handledLinkedTaskWasDone=value.handledLinkedTaskWasDone;
     if(value.handledLinkedTaskChanged===true)record.handledLinkedTaskChanged=true;
@@ -1352,28 +1875,35 @@ function normalizeMessages(saved){
 }
 function messageRecord(i){return state.messages?.[i] || {};}
 function messageResolved(){return Boolean(state.executions.reply) || ['Handled','Replied','Snoozed'].includes(messageRecord(0).status);}
-function messageData(i){
-  const personal=activeWorkspace==='personal',row=$$('.email-row')[i];
-  const sender=row.querySelector('strong').textContent,subject=row.querySelector('h3').textContent;
-  const addresses=personal?['alex.rivera@family.example','care@harbor.example','billing@utilities.example','jamie.chen@family.example']:['sarah.mitchell@northstar.example','daniel.kim@board.example','aisha.patel@project.example','thomas.wright@team.example'];
-  const bodies=personal?[
-    'Hi Dave,\n\nLet’s meet Saturday at noon. Can you confirm by tonight and bring something for the table? Jamie will join us. Let me know what would be easiest for you.\n\nAlex',
-    'Hi Dave,\n\nThis is a fictional reminder for your Friday, October 9 appointment at 10:00 AM Eastern. Please arrive 10 minutes early. The appointment lasts one hour. No real appointment or health account is connected.\n\nHarbor Care Desk',
-    'Hi Dave,\n\nYour fictional household utility bill of $86.40 is due Friday, October 9. Please review your household plan. Marking this message handled does not pay a bill. No payment service is connected.\n\nHarbor Utilities',
-    'Hi Dave,\n\nI added pantry items to our weekend grocery plan. Could you confirm which errands you can cover? We can group grocery pickup and the library return after Saturday’s lunch.\n\nJamie'
-  ]:[
-    'Hi Dave,\n\nThe updated Northstar partnership proposal is ready for your review. Can you confirm the revised terms before Friday? If they work for you, we can discuss a kickoff next Tuesday at 10:00 AM Eastern.\n\nSarah',
-    'Hi Dave,\n\nThe final agenda and revised board deck are ready for tomorrow’s meeting. Please review the budget section and bring any open questions. These materials are fictional.\n\nDaniel',
-    'Hi Dave,\n\nThe design sprint recap identifies three decisions: onboarding scope, prototype ownership, and the review deadline. Please create a follow-up for next week’s sprint planning.\n\nAisha',
-    'Hi Dave,\n\nI shortlisted two fictional offsite venues. Please compare team capacity, travel time, and budget, then let me know which option we should explore.\n\nThomas'
-  ];
-  const summaries=personal?['Alex needs your lunch confirmation and an offer to bring something.','Friday’s appointment starts at 10:00 AM; arrive 10 minutes early.','A fictional $86.40 bill needs review before Friday; no payment is connected.','Jamie is coordinating pantry items and weekend errands.']:['Sarah needs confirmation of the partnership terms before Friday.','Daniel’s board materials need review before tomorrow’s meeting.','Aisha needs three sprint decisions and a follow-up.','Thomas needs a venue preference after reviewing constraints.'];
-  const recommendations=personal?['Review the prepared reply, edit it, and explicitly send when ready.','Create a local reminder or add the appointment to the demo calendar.','Create a reminder, snooze, or mark handled after reviewing; this does not pay it.','Reply to coordinate errands and optionally add the lunch to the demo calendar.']:['Review Orbit’s draft and confirm the response before Friday.','Create a review task or follow-up; reply if you have questions.','Create a sprint task or follow-up and reply with your decisions.','Create a comparison task or reply with your preference.'];
-  return {sender,subject,to:addresses[i],body:bodies[i],summary:summaries[i],recommendation:recommendations[i],received:row.querySelector('time').textContent,priority:i<2?'High':'Normal',draft:i===0?actionProfiles.reply.defaultPayload.body:`Hi ${sender.split(' ')[0]},\n\nThanks for the update. ${personal?'I’ll review the plan and follow up with you.':'I’ll review the details and follow up with the next steps.'}\n\nBest,\nDave`};
+function messageData(i){return structuredClone(OrbitReplyFixtures[activeWorkspace][i]);}
+const replyExecutors=new Map();
+function replyContext(i){return {workspace:{id:activeWorkspace},actor:{id:'demo-dave'},messageId:`${activeWorkspace}-message-${i}`};}
+function replyService(){const ws=activeWorkspace;if(!replyExecutors.has(ws))replyExecutors.set(ws,OrbitReplyCore.demoExecutor());return OrbitReplyBrowserAdapter.create({workspaceId:ws,executor:replyExecutors.get(ws),read:()=>workspaceStates[ws].replyCore,write:next=>{workspaceStates[ws].replyCore=next;if(ws===activeWorkspace)state.replyCore=next;saveState();return {durable:storageAvailable&&!guidedSession};}});}
+function replyServiceError(result){if(result.ok)return false;$('#reply-validation').hidden=false;$('#reply-validation').textContent=result.error.code+': '+result.error.message;return true;}
+function syncReplyVersion(i,input,label='Saved draft'){
+ const service=replyService(),context=replyContext(i);let history=service.getReplyHistory(context);if(replyServiceError(history))return null;
+ if(!history.value.draft){const record=messageRecord(i),data=messageData(i);const versions=record.draftHistory || [];
+  let created=service.createReplyDraft({...context,body:versions[0]?.body || record.draft || (i===0?state.drafts.reply?.body:null) || input.body || data.draft,brief:versions[0]?.brief ?? (record.draft!==undefined?record.replyBrief:input.brief) ?? data.summary,settings:versions[0]?.settings || (record.draft!==undefined?record.replySettings:input.settings) || cleanReplySettings({})});if(replyServiceError(created))return null;
+  for(const version of versions.slice(1)){const saved=service.saveReplyDraftVersion({...context,draftId:created.value.draft.id,expectedRevision:created.value.draft.currentRevision,...version});if(replyServiceError(saved))return null;created=saved;}
+  history=service.getReplyHistory(context);
+ }
+ const result=service.saveReplyDraftVersion({...context,draftId:history.value.draft.id,expectedRevision:history.value.draft.currentRevision,...input});if(replyServiceError(result))return null;
+ projectReplyDraft(i,result.value.version,label);return result.value;
 }
+function projectReplyDraft(i,version,label){const record=state.messages[i] ||= {};record.draft=version.body;record.replyBrief=version.brief;record.replySettings=version.settings;record.status='Draft Saved';const history=replyService().getReplyHistory(replyContext(i));record.draftHistory=history.value.versions.slice(-20).map(v=>({body:v.body,brief:v.brief,to:v.to,subject:v.subject,settings:v.settings,at:v.createdAt,label:v.id===version.id?label:'Saved version '+v.revision,versionId:v.id,revision:v.revision}));if(i===0)state.drafts.reply={to:version.to,subject:version.subject,body:version.body};}
 function messageStatus(i){return i===0 && state.executions.reply?'Replied':messageRecord(i).status || (i===0?'Draft Ready':i===1?'Important':'New');}
 function renderInbox(){
   state.messages ||= {};
+  // Reconcile an authoritative receipt if refresh interrupted the legacy UI projection.
+  if(state.replyCore!==undefined){try{
+    const core=OrbitReplyCore.validateStore(state.replyCore);
+    for(const execution of core.executions){
+      if(execution.workspaceId!==activeWorkspace || execution.actorId!=='demo-dave')continue;
+      const i=OrbitReplyFixtures[activeWorkspace].findIndex(m=>m.id===execution.messageId);if(i<0)continue;
+      const record=state.messages[i] ||= {};record.status='Replied';record.sentBody=execution.payload.body;delete record.draft;
+      if(i===0){state.executions.reply={status:'Sent',at:execution.at,payload:structuredClone(execution.payload)};delete state.drafts.reply;state.approvals=Object.keys(state.executions);}
+    }
+  }catch{/* Retain invalid snapshots for the service to report; never replace them. */}}
   $$('.email-row').forEach((row,i)=>{
     row.dataset.message=i;row.tabIndex=-1;row.setAttribute('role','group');row.removeAttribute('aria-haspopup');row.setAttribute('aria-label',`Message from ${row.querySelector('strong').textContent}: ${row.querySelector('h3').textContent}`);
     let status=row.querySelector('.message-state-tag');if(!status){status=document.createElement('span');status.className='tag message-state-tag';row.querySelector('.email-tags').append(status);}status.textContent=messageStatus(i);
@@ -1409,7 +1939,7 @@ function renderMessageDestinations(){
 
 function openMessage(i,origin,compose=false){
   if(workflowMode==='proactive')cancelProactive();clearTimeout(monitorTimer);
-  selectedMessage=i;messageOrigin=origin;const data=messageData(i);
+  selectedMessage=i;messageOrigin=origin;messageWorkspace=activeWorkspace;const data=messageData(i);
   state.messages ||= {};const record=state.messages[i] ||= {};record.read=true;saveState();render();
   $('#message-title').textContent=data.subject;$('#message-sender').textContent=`${data.sender} <${data.to}>`;$('#message-received').textContent=`${data.received} · Fictional October 7 scenario`;$('#message-priority').textContent=data.priority;
   $('#message-full-body').textContent=data.body;$('#message-summary').textContent=data.summary;$('#message-recommendation').textContent=data.recommendation;$('#message-feedback').textContent='';$('#message-action-editor').hidden=true;$('#reply-composer').hidden=true;$('#reply-validation').hidden=true;
@@ -1431,7 +1961,7 @@ function composeReply(useDraft){
   const i=selectedMessage,data=messageData(i),record=messageRecord(i);$('#reply-composer').hidden=false;$('#reply-validation').hidden=true;
   $('#reply-to').value=data.to;$('#reply-subject').value='Re: '+data.subject;
   $('#reply-body').value=useDraft?(record.draft ?? (i===0?state.drafts.reply?.body:undefined) ?? data.draft):'';
-  $('#reply-body').focus();
+  restoreReplySettings(record);$('#reply-body').focus();
 }
 function replyBody(){const body=$('#reply-body').value.trim();if(body.length>MAX_REPLY_LENGTH){$('#reply-validation').textContent='Keep the reply within 10,000 characters.';$('#reply-validation').hidden=false;$('#reply-body').focus();return null;}if(!body){$('#reply-validation').textContent='Write a reply before saving or sending.';$('#reply-validation').hidden=false;$('#reply-body').focus();return null;}$('#reply-validation').hidden=true;return body;}
 function renderMessageArtifacts(){const target=$('#message-artifacts');target.replaceChildren();for(const item of messageRecord(selectedMessage).artifacts || []){const line=document.createElement('p');line.textContent=`${item.kind}: ${item.title} · Demo simulation`;target.append(line);}const body=messageRecord(selectedMessage).sentBody || (selectedMessage===0?state.executions.reply?.payload.body:null);if(body){const line=document.createElement('p');line.className='message-full-body';line.textContent='Sent reply (demo):\n'+body;target.append(line);}}
@@ -1465,18 +1995,21 @@ function resolveMessage(status){
   openMessage(selectedMessage,messageOrigin);$('#message-feedback').textContent='Recorded locally. No email was sent.';
 }
 $('#reply-save').addEventListener('click',()=>{
-  if(['Replied','Handled','Snoozed'].includes(messageStatus(selectedMessage)))return;
-  const body=replyBody();if(body===null)return;const record=state.messages[selectedMessage] ||= {};if(record.draft===body && record.status==='Draft Saved'){$('#message-feedback').textContent='This draft is already saved. Nothing sent.';return;}record.draft=body;record.status='Draft Saved';
-  if(selectedMessage===0)state.drafts.reply={to:$('#reply-to').value,subject:$('#reply-subject').value,body};
-  logActivity('message',`Draft saved: ${messageData(selectedMessage).subject}`,'Editable draft only · Nothing sent','inbox');commit('Draft saved. Nothing sent.');$('#message-feedback').textContent='Draft saved. Send Reply still requires your explicit confirmation.';
+ if(['Replied','Handled','Snoozed'].includes(messageStatus(selectedMessage)))return;
+ const body=replyBody();if(body===null)return;const value=syncReplyVersion(selectedMessage,{body,brief:$('#draft-brief').value,settings:currentReplySettings(),to:$('#reply-to').value,subject:$('#reply-subject').value});if(!value)return;
+ logActivity('message',`Draft saved: ${messageData(selectedMessage).subject}`,'Versioned editable draft only · Nothing sent','inbox');commit('Draft saved. Nothing sent.');$('#message-feedback').textContent=guidedSession?'Draft saved in temporary guided session only. Nothing sent.':storageAvailable?'Draft saved. Send Reply still requires your explicit confirmation.':'Browser storage is unavailable or full. Draft retained for this session only; download a backup.';
 });
 $('#reply-composer').addEventListener('keydown',event=>{if(event.key==='Enter' && event.target.tagName==='INPUT')event.preventDefault();});
 $('#reply-composer').addEventListener('submit',event=>{
-  event.preventDefault();if(event.submitter!==$('#reply-send') || ['Replied','Handled','Snoozed'].includes(messageStatus(selectedMessage)))return;
-  const body=replyBody();if(body===null)return;const i=selectedMessage,record=state.messages[i] ||= {},payload={to:$('#reply-to').value,subject:$('#reply-subject').value,body};
-  record.status='Replied';record.sentBody=body;delete record.draft;
-  if(i===0){state.executions.reply={status:'Sent',at:new Date().toISOString(),payload};state.approvals=Object.keys(state.executions);delete state.drafts.reply;if(activeWorkspace==='personal' && !state.tasks.includes('family-reply'))state.tasks.push('family-reply');}
-  logActivity('message',`Reply sent: ${messageData(i).subject}`,`To ${payload.to} · Dave confirmed · Demo simulation — no real email sent`,'inbox');commit('Demo simulation — no real email sent');openMessage(i,messageOrigin);$('#message-feedback').textContent='Demo simulation — no real email sent';
+  event.preventDefault();if(event.submitter!==$('#reply-send') || !messageDialog.open || $('#reply-composer').hidden || messageWorkspace!==activeWorkspace || !Number.isInteger(selectedMessage) || selectedMessage<0 || selectedMessage>3 || ['Replied','Handled','Snoozed'].includes(messageStatus(selectedMessage)))return;
+  const body=replyBody();if(body===null)return;const i=selectedMessage,context=replyContext(i),service=replyService();
+  const saved=syncReplyVersion(i,{body,brief:$('#draft-brief').value,settings:currentReplySettings(),to:$('#reply-to').value,subject:$('#reply-subject').value});if(!saved)return;
+  const reviewed=service.requestReplyReview({...context,draftId:saved.draft.id,versionId:saved.version.id});if(replyServiceError(reviewed))return;
+  const approved=service.approveReplyVersion({...context,draftId:saved.draft.id,reviewId:reviewed.value.review.id});if(replyServiceError(approved))return;
+  const executed=service.executeApprovedReply({...context,draftId:saved.draft.id,approvalId:approved.value.approval.id});if(replyServiceError(executed))return;
+  const execution=executed.value.execution,record=state.messages[i] ||= {};record.status='Replied';record.sentBody=execution.payload.body;delete record.draft;
+  if(i===0){state.executions.reply={status:'Sent',at:execution.at,payload:execution.payload};state.approvals=Object.keys(state.executions);delete state.drafts.reply;if(activeWorkspace==='personal'&&!state.tasks.includes('family-reply'))state.tasks.push('family-reply');}
+  logActivity('message',`Reply sent: ${messageData(i).subject}`,`To ${execution.payload.to} · Dave confirmed exact revision ${saved.version.revision} · Demo simulation — no real email sent`,'inbox');commit('Demo simulation — no real email sent');openMessage(i,messageOrigin);$('#message-feedback').textContent='Demo simulation — no real email sent';
 });
 $('#reply-cancel').addEventListener('click',()=>{$('#reply-composer').hidden=true;$('#reply-validation').hidden=true;$('#message-feedback').textContent='Unsaved edits discarded. Any saved draft is retained.';$('#message-actions button')?.focus();});
 $('#message-close').addEventListener('click',()=>messageDialog.close());
@@ -1515,7 +2048,7 @@ sidebarToggle.addEventListener('click',()=>{
 $('#drawer-close').addEventListener('click',closeNavigationDrawer);
 navigationDrawer.addEventListener('close',()=>{closeWorkspaceMenu();renderNavigation();sidebarToggle.focus({preventScroll:true});});
 navigationDrawer.addEventListener('keydown',containDialogFocus);
-navigationDrawer.addEventListener('click',event=>{if(event.target!==navigationDrawer)return;const box=navigationDrawer.getBoundingClientRect();if(event.clientX<box.left || event.clientX>box.right || event.clientY<box.top || event.clientY>box.bottom)closeNavigationDrawer();});
+
 mobileNavigation.addEventListener('change',configureNavigation);
 $$('.nav-link').forEach(link=>{
   const label=[...link.childNodes].filter(node=>node.nodeType===Node.TEXT_NODE).map(node=>node.textContent).join('').trim();link.dataset.navLabel=label;link.setAttribute('aria-label',label);
@@ -1736,7 +2269,7 @@ $('#calendar').addEventListener('click',event=>{if(event.target.closest('#calend
 $('#meeting-detail-close').addEventListener('click',()=>meetingDialog.close());
 meetingDialog.addEventListener('keydown',containDialogFocus);
 meetingDialog.addEventListener('close',()=>{if(meetingReviewHandoff){meetingReviewHandoff=false;return;}if(restoreResponseFocus(meetingOrigin)){scheduleMonitoring(3500);return;}if(meetingOrigin?.isConnected && meetingOrigin.getClientRects().length)meetingOrigin.focus({preventScroll:true});else $('#calendar-action-summary').focus({preventScroll:true});scheduleMonitoring(3500);});
-meetingDialog.addEventListener('click',event=>{const b=meetingDialog.getBoundingClientRect();if(event.target===meetingDialog && (event.clientX<b.left || event.clientX>b.right || event.clientY<b.top || event.clientY>b.bottom))meetingDialog.close();});
+
 $('#meeting-review-change').addEventListener('click',()=>{
   meetingReviewReturn={key:selectedMeetingKey,workspace:activeWorkspace,origin:meetingOrigin};meetingReviewHandoff=true;meetingDialog.close();
   if(decisionPaused('meeting'))restoreDecision('meeting');
@@ -1776,6 +2309,58 @@ if ('IntersectionObserver' in window) {
   $('#tour-next').addEventListener('click',()=>{if(tourBusy)return;if(tourStep===3){end();return;}if(tourStep===1){if(activeWorkspace!=='work')$('[data-workspace="work"]').click();openMessage(0,$('#tour-next'),true);$('#reply-body').focus();annotate();return;}tourBusy=true;paint();if(tourStep===0){if(activeWorkspace!=='work')$('[data-workspace="work"]').click();submitCommand('Give me my daily briefing');}else{$('[data-workspace="personal"]').click();submitCommand('Review my inbox');}$('#operations').scrollIntoView({block:'center',behavior:reducedMotion.matches?'auto':'smooth'});annotate();});
   $('#tour-exit').addEventListener('click',end);modalExit.addEventListener('click',end);
 })();
+
+// Local reply alternatives and snapshots; no model or delivery service.
+function cleanReplySettings(v){const pick=(key,allowed,fallback)=>allowed.includes(v?.[key])?v[key]:fallback;return {goal:pick('goal',['clarify','confirm','decline'],'clarify'),tone:pick('tone',['professional','warm','concise'],'professional'),feedback:pick('feedback',['positive','mixed','negative'],'mixed')};}
+function cleanDraftHistory(value){return (Array.isArray(value)?value.slice(-100):[]).filter(v=>v && typeof v.body==='string' && validDate(v.at) && typeof v.brief==='string').slice(-20).map(v=>({body:v.body.slice(0,MAX_REPLY_LENGTH),brief:v.brief.slice(0,4000),to:safeAddress(v.to)?v.to:'',subject:safeHeader(v.subject,300)?v.subject:'',settings:cleanReplySettings(v.settings),label:typeof v.label==='string'?v.label.slice(0,100):'Draft',at:v.at}));}
+function currentReplySettings(){return cleanReplySettings({goal:$('#draft-goal').value,tone:$('#draft-tone').value,feedback:$('#draft-feedback').value});}
+function restoreReplySettings(record){const settings=cleanReplySettings(record.replySettings);$('#draft-goal').value=settings.goal;$('#draft-tone').value=settings.tone;$('#draft-feedback').value=settings.feedback;$('#draft-brief').value=record.replyBrief || messageData(selectedMessage).summary;}
+function draftSnapshot(label){return {label,body:$('#reply-body').value,brief:$('#draft-brief').value,to:$('#reply-to').value,subject:$('#reply-subject').value,settings:currentReplySettings(),at:new Date().toISOString()};}
+function recordDraftVersion(label){return syncReplyVersion(selectedMessage,{body:$('#reply-body').value,brief:$('#draft-brief').value,to:$('#reply-to').value,subject:$('#reply-subject').value,settings:currentReplySettings()},label);}
+(() => {
+ const tools=document.createElement('section');tools.className='reply-draft-tools';tools.setAttribute('aria-label','Scripted reply preparation');tools.innerHTML='<p class="muted">Scripted alternatives · Uses this message, Dave’s identity, and the selected workspace. No AI model connected.</p><label class="action-field">Reply brief<textarea id="draft-brief" rows="2" maxlength="4000"></textarea></label><div class="draft-settings"><label class="action-field">Goal<select id="draft-goal"><option value="clarify">Request clarification</option><option value="confirm">Confirm next step</option><option value="decline">Decline respectfully</option></select></label><label class="action-field">Tone<select id="draft-tone"><option value="professional">Professional</option><option value="warm">Warm</option><option value="concise">Concise</option></select></label><label class="action-field">Your assessment<select id="draft-feedback"><option value="positive">Positive</option><option value="mixed" selected>Mixed</option><option value="negative">Negative</option></select></label></div><div class="message-actions"><button type="button" id="draft-regenerate">New alternative</button><button type="button" id="draft-history-open" aria-haspopup="dialog">Draft history</button><button type="button" id="draft-download">Download draft</button><button type="button" id="draft-copy">Copy draft</button></div><p id="draft-notice" role="status" aria-live="polite"></p>';
+ $('#reply-body').closest('label').before(tools);
+ const history=document.createElement('dialog');history.id='draft-history-dialog';history.className='action-dialog draft-history-dialog';history.setAttribute('aria-labelledby','draft-history-title');history.innerHTML='<div class="dialog-top"><h2 id="draft-history-title">Reply draft history</h2><button type="button" id="draft-history-close" class="close-button" aria-label="Close draft history">×</button></div><p>Versions are specific to this message and workspace. Restore brings back the brief, body, and selected settings; nothing is sent.</p><div id="draft-history-items"></div>';document.body.append(history);history.addEventListener('keydown',containDialogFocus);$('#draft-history-close').addEventListener('click',()=>history.close());history.addEventListener('close',()=>{if(messageDialog.open)$('#draft-history-open').focus();});
+ const notice=text=>$('#draft-notice').textContent=text;
+ const persist=()=>{saveState();return guidedSession?'Temporary guided session only.':storageAvailable?'Saved in this browser.':'Browser storage is unavailable or full. Changes are retained only for this session; download a backup.';};
+ $('#draft-regenerate').addEventListener('click',()=>{const saved=recordDraftVersion('Before alternative');if(!saved)return;const result=replyService().prepareReplyAlternative({...replyContext(selectedMessage),draftId:saved.draft.id,expectedRevision:saved.draft.currentRevision,settings:currentReplySettings(),brief:$('#draft-brief').value,to:$('#reply-to').value,subject:$('#reply-subject').value});if(replyServiceError(result))return;projectReplyDraft(selectedMessage,result.value.version,'New alternative');$('#reply-body').value=result.value.version.body;notice('Distinct scripted alternative prepared. '+persist()+' Nothing sent.');});
+ function renderHistory(){const target=$('#draft-history-items');target.replaceChildren();const stored=replyService().getReplyHistory(replyContext(selectedMessage));if(!stored.ok){notice(stored.error.code+': '+stored.error.message);return false;}const versions=stored.value.draft?stored.value.versions.slice(-20).map(v=>({...v,at:v.createdAt,label:'Saved version '+v.revision})):messageRecord(selectedMessage).draftHistory || [];if(!versions.length){const p=document.createElement('p');p.textContent='No saved versions yet. Save Draft or prepare an alternative first.';target.append(p);}versions.slice().reverse().forEach((v,index)=>{const card=document.createElement('article');card.className='draft-history-card';const title=document.createElement('h3');title.textContent=v.label+' · '+new Date(v.at).toLocaleString();const summary=document.createElement('p');summary.textContent=`${v.settings.goal} · ${v.settings.tone} · ${v.settings.feedback}\nBrief: ${v.brief}`;const preview=document.createElement('pre');preview.textContent=v.body;const button=document.createElement('button');button.type='button';button.className='review-button';button.textContent='Restore this version';button.addEventListener('click',()=>{if(!recordDraftVersion('Before restoration'))return;const restored=syncReplyVersion(selectedMessage,{body:v.body,brief:v.brief,settings:v.settings,to:safeAddress(v.to)?v.to:messageData(selectedMessage).to,subject:safeHeader(v.subject,300)?v.subject:'Re: '+messageData(selectedMessage).subject},'Restored version');if(!restored)return;restoreReplySettings(messageRecord(selectedMessage));$('#reply-body').value=v.body;$('#reply-to').value=restored.version.to;$('#reply-subject').value=restored.version.subject;notice('Original brief, draft, and settings restored. '+persist()+' Nothing sent.');history.close();});card.append(title,summary,preview,button);target.append(card);});}
+ $('#draft-history-open').addEventListener('click',()=>{if(renderHistory()===false)return;history.showModal();$('#draft-history-close').focus();});
+ $('#draft-download').addEventListener('click',()=>{const body=replyBody();if(body===null)return;try{const text=`Orbit fictional draft — nothing sent\nWorkspace: ${currentContext.name}\nTo: ${$('#reply-to').value}\nSubject: ${$('#reply-subject').value}\n\n${body}\n`;const url=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='orbit-'+activeWorkspace+'-reply.txt';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);notice('Draft download requested. No email sent.');}catch{notice('Download could not start. Copy the draft or select its text manually.');}});
+ $('#draft-copy').addEventListener('click',async()=>{try{if(!navigator.clipboard?.writeText)throw Error('Unavailable');await navigator.clipboard.writeText($('#reply-body').value);notice('Draft copied. Nothing sent.');}catch{notice('Clipboard access was blocked or unavailable. Select the draft text and copy it manually, or download it.');}});
+ messageDialog.addEventListener('close',()=>{if(history.open)history.close();notice('');});
+})();
+
+
+// Dismiss only a press and release on the backdrop, never an inside-to-outside drag.
+function enableBackdropDismiss(overlay) {
+  let pressedOutside = false;
+  const outside = event => {
+    const bounds = overlay.getBoundingClientRect();
+    return event.target === overlay && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom);
+  };
+  overlay.addEventListener('pointerdown', event => { pressedOutside = event.button === 0 && outside(event); });
+  overlay.addEventListener('pointercancel', () => { pressedOutside = false; });
+  overlay.addEventListener('close', () => { pressedOutside = false; });
+  overlay.addEventListener('click', event => {
+    const dismiss = pressedOutside && outside(event);
+    pressedOutside = false;
+    if (dismiss && overlay.open) overlay.close();
+  });
+}
+$$('dialog').forEach(enableBackdropDismiss);
+
+// Keep the close control independent of the content/header that scrolls away.
+$$('dialog').forEach(overlay => {
+  const host = overlay.id === 'navigation-drawer' ? sidebar : overlay;
+  const button = host.querySelector('.close-button,.close-dialog,#drawer-close');
+  if (!button) return;
+  const floating = document.createElement('div');
+  floating.className = 'dialog-floating-close';
+  floating.append(button); // Moving the existing button preserves its listeners and accessible name.
+  host.prepend(floating);
+  host.classList.add('has-floating-close');
+});
 
 </script>
 </body>

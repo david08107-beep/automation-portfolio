@@ -2,12 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; media-src 'self';">
+  <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#101214">
   <title>Orbit — Executive Assistant</title>
   <link rel="icon" href='data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"%3E%3Crect width="64" height="64" rx="16" fill="%23080d15"/%3E%3Ccircle cx="32" cy="32" r="17" fill="none" stroke="%23a6f3d8" stroke-width="3"/%3E%3Ccircle cx="32" cy="32" r="6" fill="%23a6f3d8"/%3E%3C/svg%3E'>
-  <link rel="stylesheet" href="styles.css?v=orbit-guided-annotations">
-  <script src="app.js?v=orbit-guided-annotations" defer></script>
+  <link rel="stylesheet" href="styles.css?v=orbit-floating-close-20261008">
+  <script src="reply/core.js" defer></script>
+  <script src="reply/fixtures.js" defer></script>
+  <script src="reply/browser-adapter.js" defer></script>
+  <script src="app.js?v=orbit-floating-close-20261008" defer></script>
 </head>
 <body>
   <div class="ambient-scene" aria-hidden="true"><div class="ambient-orb orb-one"></div><div class="ambient-orb orb-two"></div><div class="ambient-orb orb-three"></div><div class="ambient-grid"></div></div>
@@ -156,8 +161,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <dialog id="message-dialog" class="action-dialog message-dialog" aria-labelledby="message-title">
-    <button type="button" id="message-close" class="close-dialog" aria-label="Close message">×</button>
-    <span class="eyebrow">PRIORITY INBOX · FICTIONAL MESSAGE</span>
+    <div class="dialog-top message-dialog-top"><span class="eyebrow">PRIORITY INBOX · FICTIONAL MESSAGE</span><button type="button" id="message-close" class="close-dialog" aria-label="Close message">×</button></div>
     <h2 id="message-title"></h2>
     <dl class="action-facts"><div><dt>Sender</dt><dd id="message-sender"></dd></div><div><dt>Received</dt><dd id="message-received"></dd></div><div><dt>Message state</dt><dd id="message-state"></dd></div><div><dt>Priority</dt><dd id="message-priority"></dd></div></dl>
     <p id="message-full-body" class="message-full-body"></p>

@@ -45,8 +45,10 @@ const demo = {
 const freshState = () => ({version:2, decisions:{}, approvals:[], executions:{}, drafts:{}, legacyReviewed:[], tasks:[], activity:[], proactiveScanned:false, monitoringSeen:[], monitoringReplay:0, monitoringPaused:false, meetingBriefPrepared:false, motionPaused:null, messages:{}});
 let state = freshState();
 let storageAvailable = true;
+let storageReadable = true;
 let selectedCard = null;
 let reviewOrigin = null;
+let reviewWorkspace = null;
 let toastTimer;
 let commandTimer;
 let commandGeneration = 0;
@@ -67,6 +69,9 @@ function notify(message) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => $('#toast').classList.remove('visible'), 5500);
 }
+const MAX_STORED_STATE_LENGTH=4*1024*1024;
+function safeHeader(value,max=320){return typeof value==='string' && value.length<=max && value.trim().length>0 && !/[\r\n\x00]/.test(value);}
+function safeAddress(value){return safeHeader(value) && /^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(value);}
 function validDate(value) { return typeof value === 'string' && Number.isFinite(Date.parse(value)); }
 function normalizeState(saved) {
   if (!saved || saved.version !== 2) throw new Error('Unsupported state');
@@ -99,12 +104,13 @@ function normalizeState(saved) {
   result.monitoringPaused = saved.monitoringPaused === true;
   result.meetingBriefPrepared = saved.meetingBriefPrepared === true;
   result.motionPaused = typeof saved.motionPaused === 'boolean' ? saved.motionPaused : null;
+  if(saved.replyCore!==undefined)result.replyCore=structuredClone(saved.replyCore); // Preserve evidence; service validates and fails closed, never silently replaces history.
   return result;
 }
 function loadLegacyState() {
   let raw;
   try { raw = localStorage.getItem(STORAGE_KEY); }
-  catch { storageAvailable = false; stateNotice = 'Browser storage is unavailable. This demo will work for the current session only.'; return; }
+  catch { storageReadable=false; storageAvailable = false; stateNotice = 'Browser storage is unavailable. This demo will work for the current session only.'; return; }
   try {
     if (raw) { const saved = JSON.parse(raw); state = normalizeState(saved); if (!saved.executions && state.legacyReviewed.length) { stateNotice = 'Previously reviewed items now require an action-specific confirmation. No demo actions were executed automatically.'; saveState(); } return; }
     const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY) || '[]');
@@ -118,6 +124,7 @@ function loadLegacyState() {
   } catch { state = freshState(); stateNotice = 'Saved demo data could not be read. A fresh demo has been loaded.'; }
 }
 function saveState() {
+  if(!storageReadable){workspaceStates[activeWorkspace]=state;storageAvailable=false;return;}
   if (guidedSession) { workspaceStates[activeWorkspace] = state; return; }
   try { workspaceStates[activeWorkspace] = state; localStorage.setItem(WORKSPACE_KEY, JSON.stringify({version:1, selected:activeWorkspace, contexts:workspaceStates})); storageAvailable = true; }
   catch { storageAvailable = false; }
@@ -200,13 +207,14 @@ function render(animate = false) {
 }
 function normalizePayload(id,payload) {
   if (!payload || typeof payload !== 'object') return null;
-  if (id === 'reply') return typeof payload.body === 'string' && payload.body.trim() && payload.body.length <= MAX_REPLY_LENGTH ? {to:typeof payload.to==='string' && payload.to.trim() && payload.to.length<=320 ? payload.to : actionProfiles.reply.defaultPayload.to,subject:typeof payload.subject==='string' && payload.subject.trim() && payload.subject.length<=300 ? payload.subject : actionProfiles.reply.defaultPayload.subject,body:payload.body} : null;
+  if(id==='reply' && ((payload.to!==undefined && !safeAddress(payload.to)) || (payload.subject!==undefined && !safeHeader(payload.subject,300))))return null;
+  if (id === 'reply') return typeof payload.body === 'string' && payload.body.trim() && payload.body.length <= MAX_REPLY_LENGTH ? {to:safeAddress(payload.to) ? payload.to : actionProfiles.reply.defaultPayload.to,subject:safeHeader(payload.subject,300) ? payload.subject : actionProfiles.reply.defaultPayload.subject,body:payload.body} : null;
   if (id === 'meeting') return validLocalTime(payload.start) && validLocalTime(payload.end) && payload.end > payload.start ? {start:payload.start,end:payload.end,notify:payload.notify === true} : null;
   if (id === 'report') return normalizeSharePayload(payload);
   return null;
 }
 function validLocalTime(value) {
-  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value) && Number.isFinite(Date.parse(value));
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value) && Number.isFinite(Date.parse(value+'Z')) && new Date(value+'Z').toISOString().slice(0,16)===value;
 }
 function formatLocal(value) {
   // datetime-local is interpreted as the selected Eastern wall time, not host timezone.
@@ -235,6 +243,7 @@ function showValidation(message) {
 function validateAction(payload) {
   const id = selectedCard.dataset.approval;
   $('#review-validation').hidden = true;
+  if(id==='reply' && (!safeAddress(payload.to) || !safeHeader(payload.subject,300))){showValidation('Use a valid recipient and single-line subject. Nothing sent.');return false;}
   if (id === 'reply' && !payload.body.trim()) { showValidation('Add a message body before saving or sending.'); $('#email-body').focus(); return false; }
   if (!normalizePayload(id,payload)) { showValidation(id === 'meeting' ? 'Choose valid dates with an end after the start.' : id === 'reply' ? 'Keep the message body within 10,000 characters.' : 'Choose a supported delivery and access level, and keep the accompanying message within 2,000 characters.'); if (id === 'meeting') { $('#calendar-editor').hidden = false; $('#calendar-start').focus(); } return false; }
   if (id === 'meeting' && meetingConflicts(payload)) { showValidation(`That time overlaps ${currentContext.conflictLabel}. Choose another time.`); $('#calendar-editor').hidden = false; $('#calendar-start').focus(); return false; }
@@ -262,7 +271,7 @@ function openAction(card,origin) {
   if(card.dataset.approval==='reply' && !state.executions.reply){openMessage(0,origin,true);return;}
   if (workflowMode === 'proactive') cancelProactive();
   clearTimeout(monitorTimer);
-  selectedCard = card; reviewOrigin = origin;
+  selectedCard = card; reviewOrigin = origin; reviewWorkspace=activeWorkspace;
   const id = card.dataset.approval;
   const profile = actionProfiles[id];
   const payload = state.executions[id]?.payload || state.drafts[id] || profile.defaultPayload;
@@ -316,7 +325,7 @@ $('#action-form').addEventListener('keydown',event => {
 });
 $('#action-form').addEventListener('submit',event => {
   event.preventDefault();
-  if (event.submitter !== $('#dialog-execute') || !selectedCard) return;
+  if (event.submitter !== $('#dialog-execute') || !dialog.open || !selectedCard || reviewWorkspace!==activeWorkspace) return;
   const id = selectedCard.dataset.approval;
   if (state.executions[id] || decisionPaused(id)) return;
   const payload = currentPayload(); if (!validateAction(payload)) return;
@@ -338,10 +347,7 @@ dialog.addEventListener('close',() => {
   else { const review=selectedCard?.querySelector('.review-button'); if(review?.getClientRects().length) review.focus({preventScroll:true}); else $('#attention-title').focus({preventScroll:true}); }
   scheduleMonitoring(3500);
 });
-dialog.addEventListener('click',event => {
-  const b = dialog.getBoundingClientRect();
-  if (event.target === dialog && (event.clientX < b.left || event.clientX > b.right || event.clientY < b.top || event.clientY > b.bottom)) dialog.close();
-});
+
 function checkVisibleControl(element){return element.checkVisibility?element.checkVisibility({visibilityProperty:true}):Boolean(element.getClientRects().length);}
 function containDialogFocus(event) {
   if (event.key !== 'Tab') return;
@@ -478,7 +484,7 @@ taskListDialog.addEventListener('close',()=>{
   const origin=taskListOrigin?.isConnected?taskListOrigin:replacement;
   if(origin?.getClientRects().length)origin.focus({preventScroll:true});else $('#attention-title').focus({preventScroll:true});scheduleMonitoring(3500);
 });
-taskListDialog.addEventListener('click',event=>{const box=taskListDialog.getBoundingClientRect();if(event.target===taskListDialog && (event.clientX<box.left || event.clientX>box.right || event.clientY<box.top || event.clientY>box.bottom))taskListDialog.close();});
+
 function renderOperator() {
   const focusedTask=document.activeElement.dataset.attentionTask;
   const items=attentionItems(),urgent=items.filter(item=>item.severity==='urgent');
@@ -844,13 +850,12 @@ function applyWorkspace(id) {
   refreshDemoData();
 }
 function loadState() {
+  let raw;
+  try {raw=localStorage.getItem(WORKSPACE_KEY);}catch {storageReadable=false;storageAvailable=false;stateNotice='Browser storage is blocked. Changes work for this session only.';applyWorkspace('personal');state=workspaceStates.personal;return;}
   try {
-    const raw=localStorage.getItem(WORKSPACE_KEY);
-    if(raw){const saved=JSON.parse(raw);if(saved.version!==1 || !saved.contexts)throw new Error('Unsupported workspace state');workspaceStates=saved.contexts;activeWorkspace=saved.selected==='work'?'work':'personal';applyWorkspace(activeWorkspace);state=normalizeState(workspaceStates[activeWorkspace] || freshState());workspaceStates[activeWorkspace]=state;return;}
-    // Prior business data belongs to Work, regardless of the old sidebar label.
-    applyWorkspace('work');loadLegacyState();workspaceStates.work=state;
-    applyWorkspace('personal');state=workspaceStates.personal;saveState();
-  } catch {workspaceStates={personal:freshState(),work:freshState()};applyWorkspace('personal');state=workspaceStates.personal;stateNotice='Browser data is unavailable or unreadable. A fresh personal demo is ready.';}
+    if(raw){if(raw.length>MAX_STORED_STATE_LENGTH)throw Error('Saved data exceeds demo limits');const saved=JSON.parse(raw);if(saved?.version!==1 || !saved.contexts || typeof saved.contexts!=='object')throw Error('Invalid workspace data');workspaceStates={personal:freshState(),work:freshState()};let recovered=false;for(const id of ['personal','work']){applyWorkspace(id);try{workspaceStates[id]=normalizeState(saved.contexts[id]);}catch{recovered=true;}}applyWorkspace(saved.selected==='work'?'work':'personal');state=workspaceStates[activeWorkspace];if(recovered)stateNotice='An invalid workspace was reset. Valid workspace data was retained.';return;}
+    applyWorkspace('work');loadLegacyState();workspaceStates.work=state;applyWorkspace('personal');state=workspaceStates.personal;saveState();
+  } catch {workspaceStates={personal:freshState(),work:freshState()};applyWorkspace('personal');state=workspaceStates.personal;stateNotice='Saved browser data was invalid. A fresh demo is ready; new saves replace the invalid data.';}
 }
 function closeWorkspaceMenu(restoreFocus=false){$('#workspace-menu').hidden=true;$('#workspace-toggle').setAttribute('aria-expanded','false');if(restoreFocus)$('#workspace-toggle').focus();}
 $('#workspace-toggle').addEventListener('click',()=>{const opening=$('#workspace-menu').hidden;$('#workspace-menu').hidden=!opening;$('#workspace-toggle').setAttribute('aria-expanded',String(opening));if(opening)$(`[data-workspace="${activeWorkspace}"]`).focus();});
@@ -917,7 +922,7 @@ function renderShareSummary(){
 const messageDialog = $('#message-dialog');
 messageDialog.addEventListener('keydown',containDialogFocus);
 $('#reply-body').maxLength=MAX_REPLY_LENGTH;$('#email-body').maxLength=MAX_REPLY_LENGTH;
-let selectedMessage = null, messageOrigin = null;
+let selectedMessage = null, messageOrigin = null, messageWorkspace = null;
 const MESSAGE_STATUSES=['New','Important','Draft Ready','Draft Saved','Replied','Handled','Snoozed','Reminder Created'];
 function normalizeMessages(saved){
   const output={};
@@ -926,6 +931,8 @@ function normalizeMessages(saved){
     const record={read:value.read===true};
     if(MESSAGE_STATUSES.includes(value.status))record.status=value.status;
     if(typeof value.draft==='string')record.draft=value.draft.slice(0,MAX_REPLY_LENGTH);
+    record.replySettings=cleanReplySettings(value.replySettings);record.draftHistory=cleanDraftHistory(value.draftHistory);record.draftVariant=Number.isInteger(value.draftVariant)?Math.max(0,value.draftVariant):0;
+    if(typeof value.replyBrief==='string')record.replyBrief=value.replyBrief.slice(0,4000);
     if(validDate(value.snoozeUntil))record.snoozeUntil=value.snoozeUntil;
     if(typeof value.handledLinkedTaskWasDone==='boolean')record.handledLinkedTaskWasDone=value.handledLinkedTaskWasDone;
     if(value.handledLinkedTaskChanged===true)record.handledLinkedTaskChanged=true;
@@ -936,28 +943,35 @@ function normalizeMessages(saved){
 }
 function messageRecord(i){return state.messages?.[i] || {};}
 function messageResolved(){return Boolean(state.executions.reply) || ['Handled','Replied','Snoozed'].includes(messageRecord(0).status);}
-function messageData(i){
-  const personal=activeWorkspace==='personal',row=$$('.email-row')[i];
-  const sender=row.querySelector('strong').textContent,subject=row.querySelector('h3').textContent;
-  const addresses=personal?['alex.rivera@family.example','care@harbor.example','billing@utilities.example','jamie.chen@family.example']:['sarah.mitchell@northstar.example','daniel.kim@board.example','aisha.patel@project.example','thomas.wright@team.example'];
-  const bodies=personal?[
-    'Hi Dave,\n\nLet’s meet Saturday at noon. Can you confirm by tonight and bring something for the table? Jamie will join us. Let me know what would be easiest for you.\n\nAlex',
-    'Hi Dave,\n\nThis is a fictional reminder for your Friday, October 9 appointment at 10:00 AM Eastern. Please arrive 10 minutes early. The appointment lasts one hour. No real appointment or health account is connected.\n\nHarbor Care Desk',
-    'Hi Dave,\n\nYour fictional household utility bill of $86.40 is due Friday, October 9. Please review your household plan. Marking this message handled does not pay a bill. No payment service is connected.\n\nHarbor Utilities',
-    'Hi Dave,\n\nI added pantry items to our weekend grocery plan. Could you confirm which errands you can cover? We can group grocery pickup and the library return after Saturday’s lunch.\n\nJamie'
-  ]:[
-    'Hi Dave,\n\nThe updated Northstar partnership proposal is ready for your review. Can you confirm the revised terms before Friday? If they work for you, we can discuss a kickoff next Tuesday at 10:00 AM Eastern.\n\nSarah',
-    'Hi Dave,\n\nThe final agenda and revised board deck are ready for tomorrow’s meeting. Please review the budget section and bring any open questions. These materials are fictional.\n\nDaniel',
-    'Hi Dave,\n\nThe design sprint recap identifies three decisions: onboarding scope, prototype ownership, and the review deadline. Please create a follow-up for next week’s sprint planning.\n\nAisha',
-    'Hi Dave,\n\nI shortlisted two fictional offsite venues. Please compare team capacity, travel time, and budget, then let me know which option we should explore.\n\nThomas'
-  ];
-  const summaries=personal?['Alex needs your lunch confirmation and an offer to bring something.','Friday’s appointment starts at 10:00 AM; arrive 10 minutes early.','A fictional $86.40 bill needs review before Friday; no payment is connected.','Jamie is coordinating pantry items and weekend errands.']:['Sarah needs confirmation of the partnership terms before Friday.','Daniel’s board materials need review before tomorrow’s meeting.','Aisha needs three sprint decisions and a follow-up.','Thomas needs a venue preference after reviewing constraints.'];
-  const recommendations=personal?['Review the prepared reply, edit it, and explicitly send when ready.','Create a local reminder or add the appointment to the demo calendar.','Create a reminder, snooze, or mark handled after reviewing; this does not pay it.','Reply to coordinate errands and optionally add the lunch to the demo calendar.']:['Review Orbit’s draft and confirm the response before Friday.','Create a review task or follow-up; reply if you have questions.','Create a sprint task or follow-up and reply with your decisions.','Create a comparison task or reply with your preference.'];
-  return {sender,subject,to:addresses[i],body:bodies[i],summary:summaries[i],recommendation:recommendations[i],received:row.querySelector('time').textContent,priority:i<2?'High':'Normal',draft:i===0?actionProfiles.reply.defaultPayload.body:`Hi ${sender.split(' ')[0]},\n\nThanks for the update. ${personal?'I’ll review the plan and follow up with you.':'I’ll review the details and follow up with the next steps.'}\n\nBest,\nDave`};
+function messageData(i){return structuredClone(OrbitReplyFixtures[activeWorkspace][i]);}
+const replyExecutors=new Map();
+function replyContext(i){return {workspace:{id:activeWorkspace},actor:{id:'demo-dave'},messageId:`${activeWorkspace}-message-${i}`};}
+function replyService(){const ws=activeWorkspace;if(!replyExecutors.has(ws))replyExecutors.set(ws,OrbitReplyCore.demoExecutor());return OrbitReplyBrowserAdapter.create({workspaceId:ws,executor:replyExecutors.get(ws),read:()=>workspaceStates[ws].replyCore,write:next=>{workspaceStates[ws].replyCore=next;if(ws===activeWorkspace)state.replyCore=next;saveState();return {durable:storageAvailable&&!guidedSession};}});}
+function replyServiceError(result){if(result.ok)return false;$('#reply-validation').hidden=false;$('#reply-validation').textContent=result.error.code+': '+result.error.message;return true;}
+function syncReplyVersion(i,input,label='Saved draft'){
+ const service=replyService(),context=replyContext(i);let history=service.getReplyHistory(context);if(replyServiceError(history))return null;
+ if(!history.value.draft){const record=messageRecord(i),data=messageData(i);const versions=record.draftHistory || [];
+  let created=service.createReplyDraft({...context,body:versions[0]?.body || record.draft || (i===0?state.drafts.reply?.body:null) || input.body || data.draft,brief:versions[0]?.brief ?? (record.draft!==undefined?record.replyBrief:input.brief) ?? data.summary,settings:versions[0]?.settings || (record.draft!==undefined?record.replySettings:input.settings) || cleanReplySettings({})});if(replyServiceError(created))return null;
+  for(const version of versions.slice(1)){const saved=service.saveReplyDraftVersion({...context,draftId:created.value.draft.id,expectedRevision:created.value.draft.currentRevision,...version});if(replyServiceError(saved))return null;created=saved;}
+  history=service.getReplyHistory(context);
+ }
+ const result=service.saveReplyDraftVersion({...context,draftId:history.value.draft.id,expectedRevision:history.value.draft.currentRevision,...input});if(replyServiceError(result))return null;
+ projectReplyDraft(i,result.value.version,label);return result.value;
 }
+function projectReplyDraft(i,version,label){const record=state.messages[i] ||= {};record.draft=version.body;record.replyBrief=version.brief;record.replySettings=version.settings;record.status='Draft Saved';const history=replyService().getReplyHistory(replyContext(i));record.draftHistory=history.value.versions.slice(-20).map(v=>({body:v.body,brief:v.brief,to:v.to,subject:v.subject,settings:v.settings,at:v.createdAt,label:v.id===version.id?label:'Saved version '+v.revision,versionId:v.id,revision:v.revision}));if(i===0)state.drafts.reply={to:version.to,subject:version.subject,body:version.body};}
 function messageStatus(i){return i===0 && state.executions.reply?'Replied':messageRecord(i).status || (i===0?'Draft Ready':i===1?'Important':'New');}
 function renderInbox(){
   state.messages ||= {};
+  // Reconcile an authoritative receipt if refresh interrupted the legacy UI projection.
+  if(state.replyCore!==undefined){try{
+    const core=OrbitReplyCore.validateStore(state.replyCore);
+    for(const execution of core.executions){
+      if(execution.workspaceId!==activeWorkspace || execution.actorId!=='demo-dave')continue;
+      const i=OrbitReplyFixtures[activeWorkspace].findIndex(m=>m.id===execution.messageId);if(i<0)continue;
+      const record=state.messages[i] ||= {};record.status='Replied';record.sentBody=execution.payload.body;delete record.draft;
+      if(i===0){state.executions.reply={status:'Sent',at:execution.at,payload:structuredClone(execution.payload)};delete state.drafts.reply;state.approvals=Object.keys(state.executions);}
+    }
+  }catch{/* Retain invalid snapshots for the service to report; never replace them. */}}
   $$('.email-row').forEach((row,i)=>{
     row.dataset.message=i;row.tabIndex=-1;row.setAttribute('role','group');row.removeAttribute('aria-haspopup');row.setAttribute('aria-label',`Message from ${row.querySelector('strong').textContent}: ${row.querySelector('h3').textContent}`);
     let status=row.querySelector('.message-state-tag');if(!status){status=document.createElement('span');status.className='tag message-state-tag';row.querySelector('.email-tags').append(status);}status.textContent=messageStatus(i);
@@ -993,7 +1007,7 @@ function renderMessageDestinations(){
 
 function openMessage(i,origin,compose=false){
   if(workflowMode==='proactive')cancelProactive();clearTimeout(monitorTimer);
-  selectedMessage=i;messageOrigin=origin;const data=messageData(i);
+  selectedMessage=i;messageOrigin=origin;messageWorkspace=activeWorkspace;const data=messageData(i);
   state.messages ||= {};const record=state.messages[i] ||= {};record.read=true;saveState();render();
   $('#message-title').textContent=data.subject;$('#message-sender').textContent=`${data.sender} <${data.to}>`;$('#message-received').textContent=`${data.received} · Fictional October 7 scenario`;$('#message-priority').textContent=data.priority;
   $('#message-full-body').textContent=data.body;$('#message-summary').textContent=data.summary;$('#message-recommendation').textContent=data.recommendation;$('#message-feedback').textContent='';$('#message-action-editor').hidden=true;$('#reply-composer').hidden=true;$('#reply-validation').hidden=true;
@@ -1015,7 +1029,7 @@ function composeReply(useDraft){
   const i=selectedMessage,data=messageData(i),record=messageRecord(i);$('#reply-composer').hidden=false;$('#reply-validation').hidden=true;
   $('#reply-to').value=data.to;$('#reply-subject').value='Re: '+data.subject;
   $('#reply-body').value=useDraft?(record.draft ?? (i===0?state.drafts.reply?.body:undefined) ?? data.draft):'';
-  $('#reply-body').focus();
+  restoreReplySettings(record);$('#reply-body').focus();
 }
 function replyBody(){const body=$('#reply-body').value.trim();if(body.length>MAX_REPLY_LENGTH){$('#reply-validation').textContent='Keep the reply within 10,000 characters.';$('#reply-validation').hidden=false;$('#reply-body').focus();return null;}if(!body){$('#reply-validation').textContent='Write a reply before saving or sending.';$('#reply-validation').hidden=false;$('#reply-body').focus();return null;}$('#reply-validation').hidden=true;return body;}
 function renderMessageArtifacts(){const target=$('#message-artifacts');target.replaceChildren();for(const item of messageRecord(selectedMessage).artifacts || []){const line=document.createElement('p');line.textContent=`${item.kind}: ${item.title} · Demo simulation`;target.append(line);}const body=messageRecord(selectedMessage).sentBody || (selectedMessage===0?state.executions.reply?.payload.body:null);if(body){const line=document.createElement('p');line.className='message-full-body';line.textContent='Sent reply (demo):\n'+body;target.append(line);}}
@@ -1049,18 +1063,21 @@ function resolveMessage(status){
   openMessage(selectedMessage,messageOrigin);$('#message-feedback').textContent='Recorded locally. No email was sent.';
 }
 $('#reply-save').addEventListener('click',()=>{
-  if(['Replied','Handled','Snoozed'].includes(messageStatus(selectedMessage)))return;
-  const body=replyBody();if(body===null)return;const record=state.messages[selectedMessage] ||= {};if(record.draft===body && record.status==='Draft Saved'){$('#message-feedback').textContent='This draft is already saved. Nothing sent.';return;}record.draft=body;record.status='Draft Saved';
-  if(selectedMessage===0)state.drafts.reply={to:$('#reply-to').value,subject:$('#reply-subject').value,body};
-  logActivity('message',`Draft saved: ${messageData(selectedMessage).subject}`,'Editable draft only · Nothing sent','inbox');commit('Draft saved. Nothing sent.');$('#message-feedback').textContent='Draft saved. Send Reply still requires your explicit confirmation.';
+ if(['Replied','Handled','Snoozed'].includes(messageStatus(selectedMessage)))return;
+ const body=replyBody();if(body===null)return;const value=syncReplyVersion(selectedMessage,{body,brief:$('#draft-brief').value,settings:currentReplySettings(),to:$('#reply-to').value,subject:$('#reply-subject').value});if(!value)return;
+ logActivity('message',`Draft saved: ${messageData(selectedMessage).subject}`,'Versioned editable draft only · Nothing sent','inbox');commit('Draft saved. Nothing sent.');$('#message-feedback').textContent=guidedSession?'Draft saved in temporary guided session only. Nothing sent.':storageAvailable?'Draft saved. Send Reply still requires your explicit confirmation.':'Browser storage is unavailable or full. Draft retained for this session only; download a backup.';
 });
 $('#reply-composer').addEventListener('keydown',event=>{if(event.key==='Enter' && event.target.tagName==='INPUT')event.preventDefault();});
 $('#reply-composer').addEventListener('submit',event=>{
-  event.preventDefault();if(event.submitter!==$('#reply-send') || ['Replied','Handled','Snoozed'].includes(messageStatus(selectedMessage)))return;
-  const body=replyBody();if(body===null)return;const i=selectedMessage,record=state.messages[i] ||= {},payload={to:$('#reply-to').value,subject:$('#reply-subject').value,body};
-  record.status='Replied';record.sentBody=body;delete record.draft;
-  if(i===0){state.executions.reply={status:'Sent',at:new Date().toISOString(),payload};state.approvals=Object.keys(state.executions);delete state.drafts.reply;if(activeWorkspace==='personal' && !state.tasks.includes('family-reply'))state.tasks.push('family-reply');}
-  logActivity('message',`Reply sent: ${messageData(i).subject}`,`To ${payload.to} · Dave confirmed · Demo simulation — no real email sent`,'inbox');commit('Demo simulation — no real email sent');openMessage(i,messageOrigin);$('#message-feedback').textContent='Demo simulation — no real email sent';
+  event.preventDefault();if(event.submitter!==$('#reply-send') || !messageDialog.open || $('#reply-composer').hidden || messageWorkspace!==activeWorkspace || !Number.isInteger(selectedMessage) || selectedMessage<0 || selectedMessage>3 || ['Replied','Handled','Snoozed'].includes(messageStatus(selectedMessage)))return;
+  const body=replyBody();if(body===null)return;const i=selectedMessage,context=replyContext(i),service=replyService();
+  const saved=syncReplyVersion(i,{body,brief:$('#draft-brief').value,settings:currentReplySettings(),to:$('#reply-to').value,subject:$('#reply-subject').value});if(!saved)return;
+  const reviewed=service.requestReplyReview({...context,draftId:saved.draft.id,versionId:saved.version.id});if(replyServiceError(reviewed))return;
+  const approved=service.approveReplyVersion({...context,draftId:saved.draft.id,reviewId:reviewed.value.review.id});if(replyServiceError(approved))return;
+  const executed=service.executeApprovedReply({...context,draftId:saved.draft.id,approvalId:approved.value.approval.id});if(replyServiceError(executed))return;
+  const execution=executed.value.execution,record=state.messages[i] ||= {};record.status='Replied';record.sentBody=execution.payload.body;delete record.draft;
+  if(i===0){state.executions.reply={status:'Sent',at:execution.at,payload:execution.payload};state.approvals=Object.keys(state.executions);delete state.drafts.reply;if(activeWorkspace==='personal'&&!state.tasks.includes('family-reply'))state.tasks.push('family-reply');}
+  logActivity('message',`Reply sent: ${messageData(i).subject}`,`To ${execution.payload.to} · Dave confirmed exact revision ${saved.version.revision} · Demo simulation — no real email sent`,'inbox');commit('Demo simulation — no real email sent');openMessage(i,messageOrigin);$('#message-feedback').textContent='Demo simulation — no real email sent';
 });
 $('#reply-cancel').addEventListener('click',()=>{$('#reply-composer').hidden=true;$('#reply-validation').hidden=true;$('#message-feedback').textContent='Unsaved edits discarded. Any saved draft is retained.';$('#message-actions button')?.focus();});
 $('#message-close').addEventListener('click',()=>messageDialog.close());
@@ -1099,7 +1116,7 @@ sidebarToggle.addEventListener('click',()=>{
 $('#drawer-close').addEventListener('click',closeNavigationDrawer);
 navigationDrawer.addEventListener('close',()=>{closeWorkspaceMenu();renderNavigation();sidebarToggle.focus({preventScroll:true});});
 navigationDrawer.addEventListener('keydown',containDialogFocus);
-navigationDrawer.addEventListener('click',event=>{if(event.target!==navigationDrawer)return;const box=navigationDrawer.getBoundingClientRect();if(event.clientX<box.left || event.clientX>box.right || event.clientY<box.top || event.clientY>box.bottom)closeNavigationDrawer();});
+
 mobileNavigation.addEventListener('change',configureNavigation);
 $$('.nav-link').forEach(link=>{
   const label=[...link.childNodes].filter(node=>node.nodeType===Node.TEXT_NODE).map(node=>node.textContent).join('').trim();link.dataset.navLabel=label;link.setAttribute('aria-label',label);
@@ -1320,7 +1337,7 @@ $('#calendar').addEventListener('click',event=>{if(event.target.closest('#calend
 $('#meeting-detail-close').addEventListener('click',()=>meetingDialog.close());
 meetingDialog.addEventListener('keydown',containDialogFocus);
 meetingDialog.addEventListener('close',()=>{if(meetingReviewHandoff){meetingReviewHandoff=false;return;}if(restoreResponseFocus(meetingOrigin)){scheduleMonitoring(3500);return;}if(meetingOrigin?.isConnected && meetingOrigin.getClientRects().length)meetingOrigin.focus({preventScroll:true});else $('#calendar-action-summary').focus({preventScroll:true});scheduleMonitoring(3500);});
-meetingDialog.addEventListener('click',event=>{const b=meetingDialog.getBoundingClientRect();if(event.target===meetingDialog && (event.clientX<b.left || event.clientX>b.right || event.clientY<b.top || event.clientY>b.bottom))meetingDialog.close();});
+
 $('#meeting-review-change').addEventListener('click',()=>{
   meetingReviewReturn={key:selectedMeetingKey,workspace:activeWorkspace,origin:meetingOrigin};meetingReviewHandoff=true;meetingDialog.close();
   if(decisionPaused('meeting'))restoreDecision('meeting');
@@ -1360,3 +1377,55 @@ if ('IntersectionObserver' in window) {
   $('#tour-next').addEventListener('click',()=>{if(tourBusy)return;if(tourStep===3){end();return;}if(tourStep===1){if(activeWorkspace!=='work')$('[data-workspace="work"]').click();openMessage(0,$('#tour-next'),true);$('#reply-body').focus();annotate();return;}tourBusy=true;paint();if(tourStep===0){if(activeWorkspace!=='work')$('[data-workspace="work"]').click();submitCommand('Give me my daily briefing');}else{$('[data-workspace="personal"]').click();submitCommand('Review my inbox');}$('#operations').scrollIntoView({block:'center',behavior:reducedMotion.matches?'auto':'smooth'});annotate();});
   $('#tour-exit').addEventListener('click',end);modalExit.addEventListener('click',end);
 })();
+
+// Local reply alternatives and snapshots; no model or delivery service.
+function cleanReplySettings(v){const pick=(key,allowed,fallback)=>allowed.includes(v?.[key])?v[key]:fallback;return {goal:pick('goal',['clarify','confirm','decline'],'clarify'),tone:pick('tone',['professional','warm','concise'],'professional'),feedback:pick('feedback',['positive','mixed','negative'],'mixed')};}
+function cleanDraftHistory(value){return (Array.isArray(value)?value.slice(-100):[]).filter(v=>v && typeof v.body==='string' && validDate(v.at) && typeof v.brief==='string').slice(-20).map(v=>({body:v.body.slice(0,MAX_REPLY_LENGTH),brief:v.brief.slice(0,4000),to:safeAddress(v.to)?v.to:'',subject:safeHeader(v.subject,300)?v.subject:'',settings:cleanReplySettings(v.settings),label:typeof v.label==='string'?v.label.slice(0,100):'Draft',at:v.at}));}
+function currentReplySettings(){return cleanReplySettings({goal:$('#draft-goal').value,tone:$('#draft-tone').value,feedback:$('#draft-feedback').value});}
+function restoreReplySettings(record){const settings=cleanReplySettings(record.replySettings);$('#draft-goal').value=settings.goal;$('#draft-tone').value=settings.tone;$('#draft-feedback').value=settings.feedback;$('#draft-brief').value=record.replyBrief || messageData(selectedMessage).summary;}
+function draftSnapshot(label){return {label,body:$('#reply-body').value,brief:$('#draft-brief').value,to:$('#reply-to').value,subject:$('#reply-subject').value,settings:currentReplySettings(),at:new Date().toISOString()};}
+function recordDraftVersion(label){return syncReplyVersion(selectedMessage,{body:$('#reply-body').value,brief:$('#draft-brief').value,to:$('#reply-to').value,subject:$('#reply-subject').value,settings:currentReplySettings()},label);}
+(() => {
+ const tools=document.createElement('section');tools.className='reply-draft-tools';tools.setAttribute('aria-label','Scripted reply preparation');tools.innerHTML='<p class="muted">Scripted alternatives · Uses this message, Dave’s identity, and the selected workspace. No AI model connected.</p><label class="action-field">Reply brief<textarea id="draft-brief" rows="2" maxlength="4000"></textarea></label><div class="draft-settings"><label class="action-field">Goal<select id="draft-goal"><option value="clarify">Request clarification</option><option value="confirm">Confirm next step</option><option value="decline">Decline respectfully</option></select></label><label class="action-field">Tone<select id="draft-tone"><option value="professional">Professional</option><option value="warm">Warm</option><option value="concise">Concise</option></select></label><label class="action-field">Your assessment<select id="draft-feedback"><option value="positive">Positive</option><option value="mixed" selected>Mixed</option><option value="negative">Negative</option></select></label></div><div class="message-actions"><button type="button" id="draft-regenerate">New alternative</button><button type="button" id="draft-history-open" aria-haspopup="dialog">Draft history</button><button type="button" id="draft-download">Download draft</button><button type="button" id="draft-copy">Copy draft</button></div><p id="draft-notice" role="status" aria-live="polite"></p>';
+ $('#reply-body').closest('label').before(tools);
+ const history=document.createElement('dialog');history.id='draft-history-dialog';history.className='action-dialog draft-history-dialog';history.setAttribute('aria-labelledby','draft-history-title');history.innerHTML='<div class="dialog-top"><h2 id="draft-history-title">Reply draft history</h2><button type="button" id="draft-history-close" class="close-button" aria-label="Close draft history">×</button></div><p>Versions are specific to this message and workspace. Restore brings back the brief, body, and selected settings; nothing is sent.</p><div id="draft-history-items"></div>';document.body.append(history);history.addEventListener('keydown',containDialogFocus);$('#draft-history-close').addEventListener('click',()=>history.close());history.addEventListener('close',()=>{if(messageDialog.open)$('#draft-history-open').focus();});
+ const notice=text=>$('#draft-notice').textContent=text;
+ const persist=()=>{saveState();return guidedSession?'Temporary guided session only.':storageAvailable?'Saved in this browser.':'Browser storage is unavailable or full. Changes are retained only for this session; download a backup.';};
+ $('#draft-regenerate').addEventListener('click',()=>{const saved=recordDraftVersion('Before alternative');if(!saved)return;const result=replyService().prepareReplyAlternative({...replyContext(selectedMessage),draftId:saved.draft.id,expectedRevision:saved.draft.currentRevision,settings:currentReplySettings(),brief:$('#draft-brief').value,to:$('#reply-to').value,subject:$('#reply-subject').value});if(replyServiceError(result))return;projectReplyDraft(selectedMessage,result.value.version,'New alternative');$('#reply-body').value=result.value.version.body;notice('Distinct scripted alternative prepared. '+persist()+' Nothing sent.');});
+ function renderHistory(){const target=$('#draft-history-items');target.replaceChildren();const stored=replyService().getReplyHistory(replyContext(selectedMessage));if(!stored.ok){notice(stored.error.code+': '+stored.error.message);return false;}const versions=stored.value.draft?stored.value.versions.slice(-20).map(v=>({...v,at:v.createdAt,label:'Saved version '+v.revision})):messageRecord(selectedMessage).draftHistory || [];if(!versions.length){const p=document.createElement('p');p.textContent='No saved versions yet. Save Draft or prepare an alternative first.';target.append(p);}versions.slice().reverse().forEach((v,index)=>{const card=document.createElement('article');card.className='draft-history-card';const title=document.createElement('h3');title.textContent=v.label+' · '+new Date(v.at).toLocaleString();const summary=document.createElement('p');summary.textContent=`${v.settings.goal} · ${v.settings.tone} · ${v.settings.feedback}\nBrief: ${v.brief}`;const preview=document.createElement('pre');preview.textContent=v.body;const button=document.createElement('button');button.type='button';button.className='review-button';button.textContent='Restore this version';button.addEventListener('click',()=>{if(!recordDraftVersion('Before restoration'))return;const restored=syncReplyVersion(selectedMessage,{body:v.body,brief:v.brief,settings:v.settings,to:safeAddress(v.to)?v.to:messageData(selectedMessage).to,subject:safeHeader(v.subject,300)?v.subject:'Re: '+messageData(selectedMessage).subject},'Restored version');if(!restored)return;restoreReplySettings(messageRecord(selectedMessage));$('#reply-body').value=v.body;$('#reply-to').value=restored.version.to;$('#reply-subject').value=restored.version.subject;notice('Original brief, draft, and settings restored. '+persist()+' Nothing sent.');history.close();});card.append(title,summary,preview,button);target.append(card);});}
+ $('#draft-history-open').addEventListener('click',()=>{if(renderHistory()===false)return;history.showModal();$('#draft-history-close').focus();});
+ $('#draft-download').addEventListener('click',()=>{const body=replyBody();if(body===null)return;try{const text=`Orbit fictional draft — nothing sent\nWorkspace: ${currentContext.name}\nTo: ${$('#reply-to').value}\nSubject: ${$('#reply-subject').value}\n\n${body}\n`;const url=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='orbit-'+activeWorkspace+'-reply.txt';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);notice('Draft download requested. No email sent.');}catch{notice('Download could not start. Copy the draft or select its text manually.');}});
+ $('#draft-copy').addEventListener('click',async()=>{try{if(!navigator.clipboard?.writeText)throw Error('Unavailable');await navigator.clipboard.writeText($('#reply-body').value);notice('Draft copied. Nothing sent.');}catch{notice('Clipboard access was blocked or unavailable. Select the draft text and copy it manually, or download it.');}});
+ messageDialog.addEventListener('close',()=>{if(history.open)history.close();notice('');});
+})();
+
+
+// Dismiss only a press and release on the backdrop, never an inside-to-outside drag.
+function enableBackdropDismiss(overlay) {
+  let pressedOutside = false;
+  const outside = event => {
+    const bounds = overlay.getBoundingClientRect();
+    return event.target === overlay && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom);
+  };
+  overlay.addEventListener('pointerdown', event => { pressedOutside = event.button === 0 && outside(event); });
+  overlay.addEventListener('pointercancel', () => { pressedOutside = false; });
+  overlay.addEventListener('close', () => { pressedOutside = false; });
+  overlay.addEventListener('click', event => {
+    const dismiss = pressedOutside && outside(event);
+    pressedOutside = false;
+    if (dismiss && overlay.open) overlay.close();
+  });
+}
+$$('dialog').forEach(enableBackdropDismiss);
+
+// Keep the close control independent of the content/header that scrolls away.
+$$('dialog').forEach(overlay => {
+  const host = overlay.id === 'navigation-drawer' ? sidebar : overlay;
+  const button = host.querySelector('.close-button,.close-dialog,#drawer-close');
+  if (!button) return;
+  const floating = document.createElement('div');
+  floating.className = 'dialog-floating-close';
+  floating.append(button); // Moving the existing button preserves its listeners and accessible name.
+  host.prepend(floating);
+  host.classList.add('has-floating-close');
+});

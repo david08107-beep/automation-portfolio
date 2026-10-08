@@ -218,3 +218,22 @@ body[data-sidebar] .topbar .workspace{display:flex}
 /* Guided annotations identify the active area without blocking interaction. */
 .tour-highlight{outline:2px solid #b5f1d8!important;outline-offset:5px;box-shadow:0 0 0 7px #a6f3d814,0 0 35px #a6f3d82b!important;scroll-margin-top:120px;scroll-margin-bottom:220px}.tour-confirm-highlight{outline:2px solid #b5f1d8;outline-offset:4px;box-shadow:0 0 20px #a6f3d855}.tour-editor-note{position:sticky;top:0;z-index:3;padding:12px 14px;border:1px solid #a6f3d866;border-radius:10px;background:#142f36;color:#d4f5e6;font-size:12px;line-height:1.7;box-shadow:0 8px 24px #0004}.orbit-tour .eyebrow{color:#b5f1d8}.orbit-tour-copy{min-width:0}.orbit-tour p{overflow-wrap:anywhere}
 @media(max-width:650px){.tour-editor-note{font-size:11px;padding:10px}.tour-highlight{outline-offset:3px}}
+.reply-draft-tools{padding:14px;margin:14px 0;border:1px solid #a6c8be35;border-radius:12px;background:#a6f3d805}.draft-settings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.draft-settings select{width:100%;max-width:100%;padding:10px;background:#101e29;color:var(--text);border:1px solid #a6c8be35;border-radius:8px}.reply-draft-tools .muted,#draft-notice{font-size:11px;line-height:1.7}.draft-history-dialog{width:min(720px,calc(100% - 24px));max-height:88dvh;overflow:auto;overflow-wrap:anywhere}.draft-history-dialog .dialog-top{position:sticky;top:0;z-index:2;background:#14232f;padding:10px 0}.draft-history-dialog .close-button{min-width:44px;min-height:44px}.draft-history-card{padding:14px;margin:12px 0;border:1px solid #a6c8be35;border-radius:10px}.draft-history-card pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:1.7}.draft-history-card p{white-space:pre-wrap;line-height:1.7}button:focus-visible,select:focus-visible{outline:2px solid var(--mint);outline-offset:3px}@media(max-width:650px){.draft-settings{grid-template-columns:1fr}.draft-history-dialog{padding:14px}.reply-draft-tools{padding:12px}.reply-draft-tools .message-actions button{min-height:40px}}
+
+/* Consistent touch targets for every modal and the mobile navigation drawer. */
+dialog .close-button,dialog .close-dialog,dialog #drawer-close{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:8px;border:1px solid #a6c8be35;border-radius:10px;background:#a6f3d80a;color:var(--text);line-height:1;cursor:pointer;transition:background .15s,border-color .15s}
+dialog .close-button:hover,dialog .close-dialog:hover,dialog #drawer-close:hover{background:#a6f3d81f;border-color:#a6c8be80}
+dialog .close-button:focus-visible,dialog .close-dialog:focus-visible,dialog #drawer-close:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
+
+/* Close controls stay in view within each scrolling dialog. */
+.action-dialog .dialog-top,.task-list-dialog .dialog-top,.meeting-detail-dialog .dialog-top,#navigation-drawer .drawer-heading{position:sticky;top:0;z-index:10;gap:12px;padding:8px 0;background:#14232f;border-bottom:1px solid #a6c8be25}
+.message-dialog .message-dialog-top .close-dialog{float:none}
+#navigation-drawer .drawer-heading{background:#0d1823}
+/* Only the X floats; the dialog title and details scroll normally. */
+.action-dialog .dialog-top,.task-list-dialog .dialog-top,.meeting-detail-dialog .dialog-top,#navigation-drawer .drawer-heading{position:static;background:transparent;border-bottom:0;padding-right:64px;min-height:56px}
+.dialog-floating-close{position:sticky;top:12px;height:0;display:flex;justify-content:flex-end;z-index:30;pointer-events:none}
+dialog .dialog-floating-close button{pointer-events:auto;float:none;width:48px;height:48px;min-width:48px;min-height:48px;font-size:28px;background:#172a36;border-color:#a6c8be70;box-shadow:0 6px 22px #0008}
+dialog .dialog-floating-close button:hover{background:#254139;border-color:var(--mint)}
+
+.sidebar > .dialog-floating-close{display:none}
+#navigation-drawer .sidebar > .dialog-floating-close{display:flex}
