@@ -1,0 +1,12 @@
+import {mkdirSync} from 'node:fs';
+import {dirname,resolve} from 'node:path';
+import {SqliteRepository} from '../infrastructure/sqlite-repository.js';
+import {CampaignService} from '../application/campaign-service.js';
+import {TemplateContentGenerator} from '../content/template-generator.js';
+import {createHttpServer} from './http.js';
+const database=resolve(process.env.CAMPAIGN_DB || '.data/campaigns.sqlite');mkdirSync(dirname(database),{recursive:true});
+const repository=new SqliteRepository(database),service=new CampaignService(repository,new TemplateContentGenerator());
+const server=createHttpServer(repository,service,resolve('dist'));
+const port=Number(process.env.PORT || 3003);
+server.listen(port,'127.0.0.1',()=>console.log(`Local synthetic-identity Campaign Service: http://127.0.0.1:${port}`));
+for(const signal of ['SIGINT','SIGTERM'] as const)process.on(signal,()=>server.close(()=>{repository.close();process.exit(0);}));

@@ -1,0 +1,10 @@
+{
+  "socialToneIdenticalWithTagline": true,
+  "negativeReviewIgnoresGoalAndTone": true,
+  "captionBodiesIdenticalAfterHook": true,
+  "scriptWords": [
+    56,
+    47,
+    45
+  ]
+}

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Plan campaigns, care for customers, and track marketing outcomes."><title>Marketing Agent — AI Workspace</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+<a class="skip-link" href="#workspace-title">Skip to workspace</a>
+<aside class="sidebar" aria-label="Workspace navigation">
+ <a class="suite-brand" href="#top"><span class="suite-logo">✦</span><span>AI Workspace<small>YOUR BUSINESS, CONNECTED</small></span></a>
+ <p class="nav-label">MARKETING</p>
+ <nav aria-label="Marketing navigation">
+  <button class="nav-item selected" data-view="create"><span>◈</span>Campaigns</button>
+  <button class="nav-item" data-view="care"><span>♡</span>Customer care</button>
+  <button class="nav-item" data-view="results"><span>↗</span>Results</button>
+  <button class="nav-item" id="navHistory"><span>↺</span>Draft library<span class="nav-count" id="libraryCount">0</span></button>
+  <button class="nav-item" id="navProfile"><span>⚙</span>Brand settings</button>
+ </nav>
+ <div class="sidebar-bottom"><div class="workspace-avatar">F</div><div><strong id="sidebarBusiness">Paws & Polish</strong><small>Fetch & Flourish workspace</small></div></div>
+</aside>
+<div class="app-shell">
+<header class="topbar"><div class="breadcrumb"><span>Workspace</span><b>/</b><strong>Marketing Agent</strong></div><label class="identity-label">Local identity<select id="identitySelect"><option value="alice">Alice</option><option value="bob">Bob</option></select></label></header>
+<main id="top"><p id="serviceStatus" class="field-help" role="status">Connecting to local Campaign Service…</p><div id="migrationNotice" class="notice" hidden><p id="migrationMessage"></p><button id="exportLegacy" type="button" class="secondary-button">Export original history</button></div>
+ <section class="hero"><div class="eyebrow">YOUR MARKETING WORKSPACE</div><h1>Make your next move count.</h1><p id="workspaceIntro">Create a useful message, plan a campaign, and track what it brings back.</p></section>
+ <section class="workspace" id="creationView" aria-labelledby="workspace-title">
+  <div class="workspace-heading"><div><p class="section-kicker">CONTENT STUDIO</p><h2 id="workspace-title">What do you need today?</h2></div></div>
+  <div class="tool-grid" role="tablist" aria-label="Marketing tools">
+   <button class="tool-card active" data-tool="social" role="tab" aria-selected="true"><span class="tool-icon">✦</span><strong>Quick post</strong><small>One clear message</small></button>
+   <button class="tool-card" data-tool="campaign" role="tab" aria-selected="false"><span class="tool-icon green">▦</span><strong>Plan a campaign</strong><small>Strategy, assets, and a week’s plan</small></button>
+   <button class="tool-card" data-tool="review" role="tab" aria-selected="false" hidden><span class="tool-icon blue">♡</span><strong>Reply to a review</strong><small>Listen and respond</small></button>
+   <button class="tool-card" data-tool="followup" role="tab" aria-selected="false" hidden><span class="tool-icon purple">↗</span><strong>Customer message</strong><small>Check in or invite them back</small></button>
+  </div>
+  <div class="studio">
+   <form id="creatorForm" class="brief-panel" role="tabpanel" aria-label="Marketing brief">
+    <div class="panel-title"><span>01</span><div><small>YOUR BRIEF</small><h3 id="formTitle">Create a quick post</h3></div></div>
+    <label id="topicLabel">What can customers know?<textarea id="topic" rows="3" placeholder="e.g. Three Saturday appointments are open at 10am, noon, and 2pm. Book by Friday." required></textarea></label>
+    <p class="field-help" id="briefHelp">Add real facts, offers, or useful advice. These facts appear in the draft.</p>
+    <div id="marketingSettings">
+     <label>Outcome<select id="goal"><option>Get bookings</option><option>Build awareness</option><option>Start conversations</option><option>Thank customers</option></select></label>
+     <label>Channel<select id="platform"><option>Instagram</option><option>Facebook</option><option>TikTok</option></select></label>
+     <details class="advanced"><summary>Adjust voice and campaign details</summary>
+      <label>Voice<select id="tone"><option>Warm & playful</option><option>Polished & helpful</option><option>Bold & punchy</option><option>Neighborly & sincere</option></select></label>
+      <div id="campaignSettings" hidden><label>Offer or service (optional)<input id="offer" placeholder="Puppy’s first groom"></label><label>Deadline (optional)<input id="deadline" type="date"></label></div>
+     </details>
+    </div>
+    <div id="reviewSettings" hidden><label>Feedback<select id="reviewSentiment"><option>Mixed or unsure</option><option>Positive</option><option>Negative</option></select></label></div>
+    <div id="followupSettings" hidden><label>Purpose<select id="followupPurpose"><option>Check in after a visit</option><option>Invite a rebooking</option><option>Follow up on a concern</option></select></label><label>Customer name (optional)<input id="customerName" placeholder="Alex"></label></div>
+    <div class="quick-prompts" aria-label="Brief examples"></div>
+    <button class="generate-button" type="submit"><span>Generate draft</span><b>→</b></button>
+    <p class="form-note">Your brief is saved automatically. Drafts use local templates. Versions commit to the Campaign Service; check details before sending.</p>
+   </form>
+   <section class="output-panel" aria-label="Draft workspace">
+    <div class="output-top"><div><small>YOUR DRAFT</small><span class="platform-badge" id="outputType">INSTAGRAM</span></div><span class="template-label" id="alternativeLabel"></span></div>
+    <p id="conflictNotice" class="notice" role="alert" hidden></p><p id="reviewAlert" class="notice" role="status" hidden></p>
+    <div class="empty-state" id="emptyState"><div class="empty-orbit" aria-hidden="true">✦</div><h3>A clear message. A useful next step.</h3><p>Add the facts customers need, then generate a draft.</p></div>
+    <article id="draft" class="draft hidden">
+     <label id="assetSettings" hidden>Campaign asset<select id="assetSelect"></select></label>
+     <label class="editor-label">Edit this asset<textarea id="draftCopy" rows="10" aria-label="Draft text"></textarea></label>
+     <p class="field-help">Copy uses your current edits. Save a version to keep it in the library.</p>
+     <div class="draft-meta" id="draftMeta"></div>
+     <div class="draft-actions"><button id="copyButton" type="button">Copy message</button><button id="saveVersionButton" type="button">Save version</button><button id="downloadButton" type="button">Export</button><button id="regenerateButton" type="button">Switch template</button></div>
+     <label class="version-control">Saved versions<select id="versionSelect"></select></label>
+    </article>
+   </section>
+  </div>
+ </section>
+ <section id="resultsView" hidden aria-labelledby="resultsTitle">
+  <div class="workspace-heading"><div><p class="section-kicker">BUSINESS OUTCOMES</p><h2 id="resultsTitle">What did your marketing bring back?</h2></div><button id="addResult" class="secondary-button">Log results</button></div>
+  <p class="field-help">Manual records, not live analytics. Booked value is expected income; revenue is completed-sale income. Show currency: <select id="currency" aria-label="Reporting currency"><option>USD</option><option>GBP</option><option>EUR</option><option>CAD</option><option>AUD</option></select></p>
+  <div class="results-metrics" id="resultsMetrics"></div>
+  <p class="notice">Use consistent date ranges and sources. Only log each outcome once; these totals do not prove a campaign caused a sale.</p>
+  <div id="resultsList"></div><button id="undoResult" class="secondary-button" hidden>Undo last removal</button><button id="exportResults" class="secondary-button" hidden>Export records (CSV)</button>
+ </section>
+</main>
+<footer><span>Fetch & Flourish · Marketing Agent</span><span>Local Campaign Service · synthetic test identities</span></footer>
+</div>
+    <dialog id="profileDialog">
+      <form method="dialog" id="profileForm">
+        <div class="dialog-head"><div><small>BUSINESS PROFILE</small><h2>Teach your agent your style</h2></div><button value="cancel" aria-label="Close">×</button></div>
+        <label>Business name<input id="businessName" value="Paws & Polish" /></label>
+        <label>What you do<input id="businessType" value="Boutique dog grooming and spa care" /></label>
+        <label>What makes you different<textarea id="businessDifference" rows="3">Gentle one-on-one care, stress-free appointments, and a personal touch for every pup.</textarea></label>
+        <label>Location<input id="businessLocation" value="our neighborhood" /></label>
+        <label>Who you serve<input id="businessAudience" placeholder="Local dog parents who value gentle, personal care" maxlength="240" /></label>
+        <label>Brand voice<select id="businessVoice"><option>Warm & playful</option><option>Polished & helpful</option><option>Bold & punchy</option><option>Neighborly & sincere</option></select></label>
+        <label>Signature line (optional)<input id="businessTagline" placeholder="Gentle care. Happy tails." maxlength="160" /></label>
+        <label>Booking URL (optional)<input id="businessBooking" type="url" placeholder="https://your-business.com/book" /></label>
+        <button class="save-button" value="save">Save profile</button>
+      </form>
+    </dialog>
+
+<dialog id="resultDialog" aria-labelledby="resultTitle"><form id="resultForm">
+ <div class="dialog-head"><div><small>MANUAL RESULTS</small><h2 id="resultTitle">Log a campaign’s results</h2></div><button type="button" id="closeResult" aria-label="Cancel results">×</button></div>
+ <label>Campaign / activity<input id="resultCampaign" required maxlength="160" placeholder="Saturday grooming openings"></label>
+ <label>Source / channel<input id="resultSource" required maxlength="100" placeholder="Instagram"></label>
+ <label>Period ending<input id="resultDate" type="date" required></label>
+ <div class="field-row"><label>Inquiries<input id="resultInquiries" type="number" min="0" step="1" required value="0"></label><label>Bookings<input id="resultBookings" type="number" min="0" step="1" required value="0"></label></div>
+ <label>Booked value (expected)<input id="resultBooked" type="number" min="0" step="0.01" required value="0"></label>
+ <label>Revenue (completed sales)<input id="resultRevenue" type="number" min="0" step="0.01" required value="0"></label>
+ <label>Marketing spend<input id="resultSpend" type="number" min="0" step="0.01" required value="0"></label>
+ <p class="form-note">Revenue minus marketing spend does not include service costs and is not profit. Values use the dashboard’s selected currency; records in different currencies are kept separate, without conversion.</p>
+ <button type="submit" class="save-button">Save results</button>
+</form></dialog>
+<dialog class="history-drawer" id="historyDrawer" aria-labelledby="historyTitle"><div class="drawer-head"><div><small>YOUR LIBRARY</small><h2 id="historyTitle">Saved creations</h2></div><button id="closeHistory" aria-label="Close history">×</button></div><p class="field-help">Templates and edited versions stay together. Earlier drafts are preserved. Reload the library to see other tabs’ commits.</p><button id="undoHistory" class="secondary-button" hidden>Restore last archived creation</button><div id="historyList" class="history-list"></div></dialog>
+<div class="toast" id="toast" role="status"></div><script type="module" src="app.js"></script></body></html>
