@@ -1,4 +1,14 @@
-# Shared Agent Operations — baseline adapters 0.2
+# Shared Agent Operations — local dashboard 0.3
+
+## Try the shared dashboard
+
+Run `npm start` from this directory and open http://127.0.0.1:4317. Node 20 or newer is sufficient; no dependency installation is needed.
+
+The dashboard provides a shared brief form, workflow list, review queue, editable campaign drafts, exact-version approval, simulated execution, cancellation, and activity. The server runs the existing shared workflow core with fixture adapters. It does not load the three baseline applications, connect their storage, generate AI content, or merge their full feature sets. Campaign output is fixed fictional sample content regardless of the brief. The 0.2 baseline adapters remain available and independently tested.
+
+One fictional Dave/Work context is assigned by the local server. This is not sign-in or production tenant authorization. Records stay in process memory, survive browser reloads, and reset when the server stops. The server binds only to `127.0.0.1`, checks the local Host and mutation Origin, accepts JSON writes, limits body size, and serves only three allowlisted web assets. Do not expose it as a production service.
+
+To try it: prepare a campaign, edit the launch post, save a new version, approve that version, and choose **Simulate approved send**. Edits invalidate previous approval. Unsaved browser edits block approval and execution until saved. Completed work records one simulated receipt, with no provider action.
 
 This package implements one dependency-free, fictional workflow across the verified Orbit, AI OS, and Marketing Agent baselines. Version 0.2 adds production-shaped adapters for the actual baseline service contracts while keeping every execution simulated. It does not merge or modify the preserved release branches and performs no network or provider action.
 

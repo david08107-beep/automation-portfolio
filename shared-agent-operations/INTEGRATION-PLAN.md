@@ -63,3 +63,11 @@ The 0.2 adapter layer now targets the verified service shapes instead of fixture
 These are injected application ports, not copied release code. Connecting them to hosted services remains blocked on the identity, database, OAuth, retention, and security decisions listed above.
 
 GitHub Pages and the browser-local demos cannot supply those controls. No fixture login, browser workspace, local approval, or simulated receipt may be promoted as production authority.
+
+## Phase 3 local interface milestone
+
+Version 0.3 adds one local dashboard over the shared simulation core: brief entry, workflow selection, review queue, editable immutable versions, exact approval, simulated execution, cancellation, and ordered activity. Three role labels express the existing ownership mapping. This shell uses fixture adapters; the original applications and their stores are not loaded or migrated. It is a visible integrated workflow demonstration, not a finished consolidation of all three products.
+
+Browser requests use a loopback-only Node server with a server-assigned fictional context. Workflow state lives in memory and resets on server restart. The server serves allowlisted assets, rejects foreign Host/Origin values for local actions, and does not implement production identity, provider OAuth, durable jobs, or hosting.
+
+Next work: connect the shell to the preserved application ports with an explicit module composition design, choose the production services listed in the hold section, then implement durable storage and authenticated boundaries. Real account connections and deployment remain separate approved milestones.
