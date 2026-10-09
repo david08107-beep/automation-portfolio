@@ -31,8 +31,13 @@ test('showcase serves only its allowlisted assets and viewing it leaves workflow
 
 test('dashboard runs prepare, edit, exact approval and simulated execution through the shared core', async t => {
   const {url, command, send} = await dashboard(t);
-  const page = await fetch(url);
-  assert.match(await page.text(), /Your Executive Assistant/);
+  const page = await fetch(url+'/campaigns');
+  const html = await page.text();
+  assert.match(html, /Your Executive Assistant/);
+  assert.match(html, /data-view="studio"/);
+  assert.match(html, /id="workflow-board"/);
+  assert.match(html, /id="studio-intro"/);
+  assert.ok(!html.includes('<iframe'));
   assert.match(page.headers.get('content-security-policy'), /frame-ancestors 'none'/);
   const prepared = await command({action:'start', request:'Fictional campaign', actorId:'attacker', workspaceId:'other'});
   assert.equal(prepared.actorId, 'demo-dave'); assert.equal(prepared.workspaceId, 'work');

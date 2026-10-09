@@ -1,12 +1,12 @@
 {
   "name": "shared-agent-operations-simulation",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
     "demo": "node demo.mjs",
-    "test": "node --test"
+    "test": "node --test test/*.test.js executive/tests/reply-service.cjs"
   },
   "engines": {
     "node": ">=20"

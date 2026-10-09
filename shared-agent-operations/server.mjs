@@ -21,8 +21,16 @@ export function createDashboardServer(system = createDemoSystem()) {
     try {
       const path = new URL(req.url, `http://${expectedHost}`).pathname;
       const showcaseFiles = {'/showcase': ['showcase.html', 'text/html'], '/showcase.js': ['showcase.js', 'text/javascript'], '/showcase.css': ['showcase.css', 'text/css']};
-      if (req.method === 'GET' && (Object.hasOwn(files, path) || Object.hasOwn(showcaseFiles, path))) {
-        const [file, type] = files[path] || showcaseFiles[path];
+      const executiveFiles = {'/': 'index.html', '/executive/index.html': 'index.html', '/executive/app.js': 'app.js', '/executive/workspace-policy.js': 'workspace-policy.js', '/executive/styles.css': 'styles.css', '/executive/integration.js': 'integration.js', '/executive/integration.css': 'integration.css', '/executive/workspace.css': 'workspace.css', '/executive/reply/core.js': 'reply/core.js', '/executive/reply/fixtures.js': 'reply/fixtures.js', '/executive/reply/browser-adapter.js': 'reply/browser-adapter.js'};
+      if (req.method === 'GET' && Object.hasOwn(executiveFiles, path)) {
+        const file = executiveFiles[path];
+        const type = file.endsWith('.html') ? 'text/html' : file.endsWith('.css') ? 'text/css' : 'text/javascript';
+        res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
+        const content = await readFile(new URL(`./executive/${file}`, import.meta.url));
+        res.writeHead(200, {'Content-Type': `${type}; charset=utf-8`}); return res.end(content);
+      }
+      if (req.method === 'GET' && (Object.hasOwn(files, path) || Object.hasOwn(showcaseFiles, path) || path === '/campaigns')) {
+        const [file, type] = path === '/campaigns' ? files['/'] : files[path] || showcaseFiles[path];
         const content = await readFile(new URL(`./web/${file}`, import.meta.url));
         res.writeHead(200, {'Content-Type': `${type}; charset=utf-8`}); return res.end(content);
       }
