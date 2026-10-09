@@ -1,0 +1,12 @@
+import {readFile,writeFile} from 'node:fs/promises';
+import {resolve} from 'node:path';
+const root=resolve(import.meta.dirname,'..');
+const html=await readFile(resolve(root,'dist/index.html'),'utf8');
+const script=html.match(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/);
+const stylesheet=html.match(/<link\b[^>]*href="([^"]+\.css)"[^>]*>/);
+if(!script||!stylesheet)throw new Error('Expected one bundled script and stylesheet. Run npm run build first.');
+const js=await readFile(resolve(root,'dist',script[1]),'utf8');
+const css=await readFile(resolve(root,'dist',stylesheet[1]),'utf8');
+const output=html.replace(script[0],()=>`<script type="module">${js.replace(/<\/script/gi,'<\\/script')}</script>`).replace(stylesheet[0],()=>`<style>${css}</style>`);
+await writeFile(resolve(root,'dist/ai-os-demo.html'),output);
+console.log('Portable demo written to dist/ai-os-demo.html. Open the file in a modern browser; no hosting or installation required.');
