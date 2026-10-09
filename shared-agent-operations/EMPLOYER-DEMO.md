@@ -2,6 +2,10 @@
 
 A review-first Executive Assistant prototype with separate Personal and Work contexts, plus Work-only campaign tools. Built with AI coding assistance. This demo showcases workflow engineering, not a connected production AI service.
 
+**Quick access:** [Download the source ZIP](https://github.com/david08107-beep/automation-portfolio/archive/refs/heads/main.zip) · [View the repository](https://github.com/david08107-beep/automation-portfolio)
+
+**Portfolio status:** finalized as a local demonstration prototype. Production hosting and live integrations are optional future projects, not required to evaluate this demo.
+
 ## Preview without installing anything
 
 ![Orbit Executive Assistant overview](screenshots/orbit-overview.png)
@@ -16,7 +20,7 @@ The two context screenshots were captured before the final removal of the redund
 
 Requires Node.js 20 or newer. No account, API key, or dependency installation is required.
 
-1. Download the repository using GitHub's **Code → Download ZIP**, and extract it, or clone the repository.
+1. Use **Download the source ZIP** above and extract it, or clone the repository.
 2. Open a terminal in the extracted `shared-agent-operations` folder.
 3. Run `npm start`.
 4. Open **http://127.0.0.1:4317/** on that same computer.
