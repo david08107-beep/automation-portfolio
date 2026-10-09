@@ -1,6 +1,6 @@
-# Shared Agent Operations — simulated integration 0.1
+# Shared Agent Operations — baseline adapters 0.2
 
-This package implements one dependency-free, fictional workflow across the verified Orbit, AI OS, and Marketing Agent baselines. It does not merge or modify the preserved release branches and performs no network or provider action.
+This package implements one dependency-free, fictional workflow across the verified Orbit, AI OS, and Marketing Agent baselines. Version 0.2 adds production-shaped adapters for the actual baseline service contracts while keeping every execution simulated. It does not merge or modify the preserved release branches and performs no network or provider action.
 
 See the [reconciled integration plan](INTEGRATION-PLAN.md) for ownership, versioning, approval, and production hold decisions.
 
@@ -14,6 +14,17 @@ See the [reconciled integration plan](INTEGRATION-PLAN.md) for ownership, versio
 6. AI OS marks the workflow complete only after that execution succeeds.
 
 The workflow has one ID, one review boundary, and one activity trail. Editing creates a new frozen result and invalidates prior approval. A mutable Marketing source revision is rejected before approval or execution. Workspace mismatch, cancellation, generation failure, persistence failure, execution failure, and retry without duplicate execution are covered by tests.
+
+## Baseline adapter layer
+
+`src/baseline-adapters.js` maps the shared workflow to the verified application boundaries without copying their implementations:
+
+- `AiOsEngineAdapter` calls the AI OS `enqueue(state, request, type)` contract and persists the resulting scheduled state.
+- `MarketingCampaignServiceAdapter` calls `CampaignService.createCampaign/getCampaign/listCampaigns`, reuses an actor/workspace-scoped idempotency key, and returns exact campaign and version revisions.
+- `OrbitReplyServiceExecutorAdapter` projects the already-approved shared payload through Orbit's draft, review, approval, and execution services, then accepts only a `simulated: true` receipt.
+- `createBaselineAdapterSystem` wires those ports into `SharedAgentOperations`; the baseline modules remain injected so their release branches stay untouched.
+
+The adapters reject actor/workspace mismatches and unsafe non-simulated receipts. They do not authenticate a user, connect an account, publish content, or turn browser state into authorization.
 
 ## Verified source baselines
 
@@ -30,7 +41,7 @@ npm test
 npm run demo
 ```
 
-Node 20 or newer is sufficient. There are no package dependencies or secrets.
+Node 20 or newer is sufficient. There are no package dependencies or secrets. The test suite includes the original workflow scenarios plus contract tests for the three baseline adapters.
 
 ## Boundary
 

@@ -50,4 +50,16 @@ The following require explicit owner decisions and separate implementation autho
 5. Real connector semantics and reconciliation for unknown provider outcomes.
 6. Authorized security assessment, remediation, and retest before real-user launch.
 
+## Phase 2 adapter milestone
+
+The 0.2 adapter layer now targets the verified service shapes instead of fixtures alone:
+
+1. AI OS scheduling uses its exported `enqueue` boundary and an injected state repository.
+2. Marketing preparation uses `CampaignService` with actor/workspace context and a stable shared-workflow idempotency key.
+3. Marketing source checks reload the authoritative campaign and compare both campaign and version revisions.
+4. Orbit execution uses its existing immutable draft, review, approval, and simulated execution sequence.
+5. The shared operation passes workflow, correlation, actor, and workspace metadata into adapters and rejects mismatched contexts.
+
+These are injected application ports, not copied release code. Connecting them to hosted services remains blocked on the identity, database, OAuth, retention, and security decisions listed above.
+
 GitHub Pages and the browser-local demos cannot supply those controls. No fixture login, browser workspace, local approval, or simulated receipt may be promoted as production authority.

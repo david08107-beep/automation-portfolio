@@ -21,7 +21,7 @@ const fail = (code, message, retryable = false, details = undefined) => ({
   error: {...(details === undefined ? {} : {details}), code, message, retryable},
 });
 
-class OperationError extends Error {
+export class OperationError extends Error {
   constructor(code, message, retryable = false, details = undefined) {
     super(message);
     this.code = code;
@@ -248,10 +248,20 @@ export class SharedAgentOperations {
         workflow.brief = this.orbitBrief.establish(request);
         event(workflow, 'brief.established', 'Orbit established the fictional campaign brief.');
         workflow.tasks[1].status = 'completed'; workflow.tasks[1].attempts += 1;
-        workflow.plan = this.aiOs.schedule(workflow.brief);
+        workflow.plan = this.aiOs.schedule(workflow.brief, {
+          actorId: workflow.actorId,
+          workspaceId: workflow.workspaceId,
+          workflowId: workflow.id,
+          correlationId: workflow.correlationId,
+        });
         event(workflow, 'workflow.scheduled', 'AI OS scheduled one simulated integration workflow.');
         workflow.tasks[2].status = 'running'; workflow.tasks[2].attempts += 1;
-        const source = this.marketing.prepare(workflow.brief);
+        const source = this.marketing.prepare(workflow.brief, {
+          actorId: workflow.actorId,
+          workspaceId: workflow.workspaceId,
+          workflowId: workflow.id,
+          correlationId: workflow.correlationId,
+        });
         const version = {
           id: randomUUID(),
           number: 1,
@@ -285,7 +295,12 @@ export class SharedAgentOperations {
       if (workflow.status !== 'failed' || workflow.failure?.stage !== 'preparation') throw new OperationError('INVALID_STATE', 'This workflow is not awaiting a preparation retry.');
       const expectedRevision = workflow.revision;
       workflow.tasks[2].status = 'running'; workflow.tasks[2].attempts += 1;
-      const source = this.marketing.prepare(workflow.brief);
+      const source = this.marketing.prepare(workflow.brief, {
+        actorId: workflow.actorId,
+        workspaceId: workflow.workspaceId,
+        workflowId: workflow.id,
+        correlationId: workflow.correlationId,
+      });
       const version = {id: randomUUID(), number: workflow.results.length + 1, source: {campaignId: source.campaignId, campaignRevision: source.campaignRevision, versionId: source.versionId, versionRevision: source.versionRevision}, payload: clone(source.assets), sourceDigest: digest(source.assets), payloadDigest: digest(source.assets), createdAt: now()};
       workflow.results.push(version);
       workflow.tasks[2].status = 'completed';
@@ -344,7 +359,15 @@ export class SharedAgentOperations {
       }
       const idempotencyKey = `${workflow.workspaceId}:${workflow.id}:${approval.id}:${version.id}`;
       try {
-        const receipt = this.orbitExecutor.execute({idempotencyKey, payload: version.payload});
+        const receipt = this.orbitExecutor.execute({
+          idempotencyKey,
+          payload: version.payload,
+          context: {actorId: workflow.actorId, workspaceId: workflow.workspaceId},
+          workflowId: workflow.id,
+          correlationId: workflow.correlationId,
+          approval: clone(approval),
+          version: clone(version),
+        });
         if (!workflow.executions.some(item => item.idempotencyKey === idempotencyKey)) workflow.executions.push(receipt);
         workflow.tasks[3].status = 'completed';
         workflow.tasks[4].status = 'completed'; workflow.tasks[4].attempts += 1;
