@@ -2,12 +2,14 @@
 
 Orbit is a local, review-first workflow prototype. It brings a campaign request, editable drafts, approval, simulated execution, and history into one workspace.
 
+The original Orbit Executive Assistant is the main interface again. Its briefing, inbox, calendar, tasks, document review, and Personal/Work spaces remain. Workflows and Content Studio are additional navigation destinations. Campaign views share campaign records; executive decisions retain their independent browser-local history. See the package README for the exact integration boundaries.
+
 The strongest part to demonstrate is the workflow engineering, not AI generation. Marketing output is fixed fictional sample content. No inbox, calendar, social account, or AI provider is connected.
 
 ## Three-minute walkthrough
 
 1. Start with `npm start` in `shared-agent-operations` using Node.js 20 or newer. Open `http://127.0.0.1:4317/`. This address works on your computer; it is not a public recruiter link.
-2. On Today, enter a fictional campaign brief: dog-training classes, local dog owners, Instagram, friendly tone, encourage enquiries. Select Ask Orbit. Explain that the brief is retained, but the generated assets remain fixed demo fixtures.
+2. Show the original executive briefing and inbox reply review first. Then open Content Studio and enter a fictional campaign brief: dog-training classes, local dog owners, Instagram, friendly tone, encourage enquiries. Select Ask Orbit. Explain that the brief is retained, but the generated assets remain fixed demo fixtures.
 3. Open the draft. Edit the launch text to match that brief and save it. Show the new saved version.
 4. Approve that exact saved version. Copy or download the reviewed draft. The export includes the request, content, version, and sample-content disclaimer.
 5. Optionally run the simulated execution. Show its receipt and Activity. Nothing is posted or sent externally.

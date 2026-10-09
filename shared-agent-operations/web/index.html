@@ -4,9 +4,9 @@
 <body>
 <a class="skip-link" href="#main-content">Skip to main content</a>
 <aside class="sidebar">
-<a class="brand" href="/">◈ <span>Orbit<span class="brand-sub">YOUR EXECUTIVE ASSISTANT</span></span></a>
+<a class="brand" href="/">◈ <span>Orbit<span class="brand-sub">YOUR CONNECTED WORKSPACE</span></span></a>
 <p class="nav-label">YOUR WORKSPACE</p>
-<nav aria-label="Workspace"><button class="nav active" data-view="overview">Today</button><button class="nav" data-view="work">My requests</button><button class="nav" data-view="review">Needs my review <span id="review-count">0</span></button><button class="nav" data-view="activity">Activity</button></nav>
+<nav aria-label="Workspace"><button class="nav active" data-view="overview">Today</button><button class="nav" data-view="work">Workflows</button><button class="nav" data-view="studio">Content Studio</button><button class="nav" data-view="review">Needs my review <span id="review-count">0</span></button><button class="nav" data-view="activity">Activity</button></nav>
 <div class="team"><p class="nav-label">WHAT ORBIT CAN HELP WITH</p><p><i class="dot purple"></i> Keep priorities in view</p><p><i class="dot green"></i> Prepare marketing drafts <small>Sample content in this preview</small></p><p><i class="dot blue"></i> Bring decisions back to you</p></div>
 <div class="profile"><span class="avatar">D</span><div>Dave<small>Local demo workspace</small></div></div></aside>
 <main id="main-content" tabindex="-1">
@@ -14,6 +14,16 @@
 <section class="heading"><p class="eyebrow">A LITTLE LESS TO KEEP TRACK OF.</p><h1 id="page-heading" tabindex="-1">What needs your attention, Dave?</h1><p id="page-subtitle">Keep your priorities close. Tell Orbit what you need, and review the next step here.</p></section>
 <div class="notice">Marketing uses fixed sample content. Inbox, calendar, and publishing accounts are not connected. Saved requests stay on this computer.</div>
 <div id="message" role="status" aria-live="polite"></div>
+<section id="workspace-intro" class="workspace-intro" aria-label="One workspace, three capabilities">
+<div><p class="eyebrow">ONE REQUEST. ONE CONTINUOUS WORKFLOW.</p><h2>Your ideas, organized into action.</h2><p>Orbit keeps the brief, preparation, content, and your decision connected.</p></div><a class="text-button" href="/showcase">Interview walkthrough ↗</a>
+</section>
+<section id="workspace-areas" class="workspace-areas" aria-label="Workspace capabilities">
+<button class="area-card" data-area="overview"><span class="area-icon">◈</span><small>EXECUTIVE ASSISTANT</small><strong>Today</strong><span>Priorities, next steps, and decisions that need you.</span></button>
+<button class="area-card" data-area="work"><span class="area-icon">⇄</span><small>AI OS · WORKFLOW ROLE</small><strong>Workflows</strong><span>Track preparation, review, and completion in one place.</span></button>
+<button class="area-card" data-area="studio"><span class="area-icon">✦</span><small>MARKETING AGENT · SAMPLE CONTENT</small><strong>Content Studio</strong><span>Turn a campaign brief into an editable, reviewed draft.</span></button>
+</section>
+<section id="workflow-board" class="card workflow-board" hidden aria-label="Workflow progress"><div class="section-title"><div><p class="eyebrow">AI OS · SHARED WORKFLOW STATE</p><h2>From preparation to completion</h2></div><span class="subtle">Same requests. No duplicate records.</span></div><div id="workflow-stages"></div></section>
+<section id="studio-intro" class="card studio-intro" hidden><div><p class="eyebrow">MARKETING AGENT · CONTENT STUDIO</p><h2>A brief, a draft, a decision.</h2><p>Prepare a launch post, video script, and content calendar. Saved drafts follow the same workflow and approval history.</p></div><span class="studio-tag">Fixed samples · owner-edited content</span></section>
 <section id="home-panel" class="home-grid">
 <div class="card assistant-brief"><p class="eyebrow">YOUR NEXT STEP</p><h2 id="next-heading">You have room to get started.</h2><p class="brief" id="next-summary"></p><button id="next-action" class="primary">Plan a campaign</button></div>
 <div class="card priorities"><div class="section-title"><h2>My priorities</h2><span id="priority-status" class="subtle" role="status"></span></div><label for="priorities">What matters right now? One priority per line.</label><textarea id="priorities" maxlength="2000" placeholder="Launch the new service&#10;Prepare next week's content"></textarea><p class="subtle">Notes stay in this browser; sample drafts do not use them automatically.</p></div>

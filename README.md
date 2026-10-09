@@ -10,14 +10,24 @@ A collection of AI automation, n8n, and Microsoft Power Automate Desktop project
 
 | Project | Platform | What it does | Status |
 |---------|----------|--------------|--------|
-| [File Renaming Automation](power-automate-desktop/file-renaming-automation/) | Power Automate Desktop | Documents structured renaming, validation, error handling, and logging. | Documented as built/tested; export not included |
-| [Orbit / Shared Agent Operations](shared-agent-operations/SHOWCASE.md) | Node.js local prototype | Keeps campaign briefs, draft versions, exact-version approval, local export, and simulated receipts together. Includes an interview walkthrough. | Local demo; fixed sample content |
+| [Orbit — Personal & Work Executive Assistant](shared-agent-operations/README.md) | Node.js + vanilla JavaScript | Executive briefings, separate personal/work inboxes and calendars, review-first actions, and Work-only campaign workflows and Content Studio. | Runnable local demo; fictional data and simulated actions |
 
 ### Try the Orbit interview demo
 
-With Node.js 20 or newer, run `npm start` from `shared-agent-operations`, then open `http://127.0.0.1:4317/showcase`. Use `npm test` for the regression suite. The walkthrough is illustrative and does not modify saved requests. Localhost is not a public recruiter link. No live AI provider or external publishing account is connected. See the [showcase guide](shared-agent-operations/SHOWCASE.md) for the live-app demonstration and limitations.
+With Node.js 20 or newer, run `npm start` from `shared-agent-operations`, then open `http://127.0.0.1:4317/`. Start with the Executive Assistant and use the Personal/Work buttons to change context. Workflows and Content Studio appear only in Work.
+
+Use `npm test` for the regression suite. The optional `/showcase` walkthrough is illustrative and does not modify saved requests. Localhost is not a public recruiter link. No live AI provider, personal/employer account, or external publishing service is connected. See the [showcase guide](shared-agent-operations/SHOWCASE.md) and [verification record](shared-agent-operations/VERIFICATION.md) for demonstration steps, evidence, and limitations.
 
 <!-- Add a row to the table above when a project is ready to show. -->
+
+## Earlier work / In progress
+
+These projects document separate automation skills, but are not runnable demos from this repository. They are not connected to Orbit.
+
+| Project | Purpose | Evidence and next milestone |
+|---------|---------|-----------------------------|
+| [Software Request Workflow](n8n/software-request-workflow/) | Explore IT request routing with n8n conditions and Google Sheets. | In progress; README only. Add an importable workflow, fictional inputs, setup instructions, and test results before featuring. |
+| [File Renaming Automation](power-automate-desktop/file-renaming-automation/) | Document desktop file processing, validation, error handling, and logging. | Earlier notes report built/tested work, but no flow export or reproducible evidence is included. Add an export, fictional before/after examples, and recorded tests before featuring. |
 
 ---
 
@@ -43,9 +53,9 @@ With Node.js 20 or newer, run `npm start` from `shared-agent-operations`, then o
 ```
 automation-portfolio/
 ├── README.md
-├── n8n/                      # n8n workflows (exported JSON + notes)
+├── n8n/                      # In-progress workflow documentation; export pending
 │   └── <project-name>/
-├── power-automate-desktop/   # Power Automate Desktop flows and docs
+├── power-automate-desktop/   # Earlier desktop automation notes; export pending
 │   └── <project-name>/
 ├── marketing-agent/          # Static, template-based marketing prototype
 └── shared-agent-operations/  # Orbit local workflow prototype and tests

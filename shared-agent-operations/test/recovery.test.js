@@ -57,3 +57,13 @@ test('independent browser tabs do not erase each other’s recovery records', ()
   b.discard('request-b');
   assert.ok(new DraftRecovery(disk).get('request-a'));
 });
+
+test('content studio view restores the same selected request and local draft', () => {
+  const disk = storage(), first = new DraftRecovery(disk);
+  first.remember('campaign-a', 'version-a', payload);
+  first.setView('studio', 'campaign-a');
+  const reload = new DraftRecovery(disk);
+  assert.equal(reload.state.view, 'studio');
+  assert.equal(reload.state.selected, 'campaign-a');
+  assert.deepEqual(reload.get('campaign-a').payload, payload);
+});

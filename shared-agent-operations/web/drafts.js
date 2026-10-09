@@ -15,7 +15,7 @@ export class DraftRecovery {
         const data = JSON.parse(raw);
         this.state.request = typeof data.request === 'string' ? data.request.slice(0, 20_000) : '';
         this.state.priorities = typeof data.priorities === 'string' ? data.priorities.slice(0, 2000) : '';
-        this.state.view = ['overview','work','review','activity'].includes(data.view) ? data.view : 'overview';
+        this.state.view = ['overview','work','studio','review','activity'].includes(data.view) ? data.view : 'overview';
         this.state.selected = typeof data.selected === 'string' ? data.selected : null;
         this.state.briefMode = data.briefMode === 'free' ? 'free' : 'guided';
         for(const field of ['business','audience','goal']) if(typeof data.campaign?.[field]==='string') this.state.campaign[field]=data.campaign[field].slice(0,1000);

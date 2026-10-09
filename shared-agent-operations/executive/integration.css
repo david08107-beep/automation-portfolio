@@ -1,0 +1,14 @@
+#shared-workspace{margin:0 32px 40px;min-width:0}#shared-workspace[hidden],#executive-content[hidden]{display:none!important}.sidebar nav{max-height:calc(100dvh - 290px);overflow:auto}@media(max-width:700px){#shared-workspace{margin:0 16px 24px}.sidebar nav{max-height:none}}
+/* Personal and Work context controls remain visible, including on mobile. */
+.workspace-context{--context-accent:#a6f3d8;margin:24px 32px 8px;padding:20px;border:1px solid #a6f3d844;border-left:4px solid var(--context-accent);border-radius:14px;background:#14272266}
+body[data-context="personal"] .workspace-context{--context-accent:#c7b6ff;border-color:#c7b6ff44;border-left-color:var(--context-accent);background:#29203c66}
+.workspace-tabs{display:flex;gap:10px;margin-bottom:16px}
+.workspace-tabs button{flex:1;min-width:0;border:1px solid #a6c8be30;border-radius:10px;padding:12px 16px;color:#b5c9cd;background:#0c1524;font:inherit;cursor:pointer;text-align:left}
+.workspace-tabs button[aria-pressed="true"]{border-color:var(--context-accent);color:var(--context-accent);background:#a6c8be0c;box-shadow:inset 0 -3px var(--context-accent)}
+.workspace-tabs button:focus-visible{outline:2px solid var(--context-accent);outline-offset:3px}
+.workspace-tabs small{display:block;font-size:11px;margin-top:3px}
+.workspace-context-copy h2{font-size:18px;color:var(--context-accent);margin:0 0 8px}.workspace-context-copy p{font-size:12px;line-height:1.6;color:#c2ccd4;margin:5px 0}
+.workspace-demo-note{display:block;margin-top:12px;font-size:10px;color:#9eaebd}
+#workspace-boundary-message:empty{display:none}#workspace-boundary-message{font-size:12px;color:#f1d398}
+[data-work-only][hidden]{display:none!important}.business-nav-label{font-size:9px;letter-spacing:.8px;margin:16px 8px 8px}
+@media(max-width:700px){.workspace-context{margin:16px 16px 8px;padding:16px}.workspace-tabs button{padding:10px 12px;min-height:54px}}
