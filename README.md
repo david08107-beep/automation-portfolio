@@ -14,6 +14,10 @@ A collection of AI automation, n8n, and Microsoft Power Automate Desktop project
 
 ### Try the Orbit interview demo
 
+**For employers and visitors:** start with the [demo guide and screenshots](shared-agent-operations/EMPLOYER-DEMO.md). No account or API key is needed to run the local demo.
+
+![Orbit Executive Assistant preview](shared-agent-operations/screenshots/orbit-overview.png)
+
 With Node.js 20 or newer, run `npm start` from `shared-agent-operations`, then open `http://127.0.0.1:4317/`. Start with the Executive Assistant and use the Personal/Work buttons to change context. Workflows and Content Studio appear only in Work.
 
 Use `npm test` for the regression suite. The optional `/showcase` walkthrough is illustrative and does not modify saved requests. Localhost is not a public recruiter link. No live AI provider, personal/employer account, or external publishing service is connected. See the [showcase guide](shared-agent-operations/SHOWCASE.md) and [verification record](shared-agent-operations/VERIFICATION.md) for demonstration steps, evidence, and limitations.

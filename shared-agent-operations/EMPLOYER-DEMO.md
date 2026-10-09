@@ -1,0 +1,51 @@
+# Orbit — employer demo
+
+A review-first Executive Assistant prototype with separate Personal and Work contexts, plus Work-only campaign tools. Built with AI coding assistance. This demo showcases workflow engineering, not a connected production AI service.
+
+**Quick access:** [Download the source ZIP](https://github.com/david08107-beep/automation-portfolio/archive/refs/heads/main.zip) · [View the repository](https://github.com/david08107-beep/automation-portfolio)
+
+**Portfolio status:** finalized as a local demonstration prototype. Production hosting and live integrations are optional future projects, not required to evaluate this demo.
+
+## Preview without installing anything
+
+![Orbit Executive Assistant overview](screenshots/orbit-overview.png)
+
+The main interface brings briefings, messages, calendar items, tasks, and decisions together. Personal is for life and home; Work is for business and team activity.
+
+[Personal screenshot](screenshots/orbit-personal.png) · [Work screenshot](screenshots/orbit-work.png)
+
+The two context screenshots were captured before the final removal of the redundant header dropdown. The overview screenshot reflects that cleanup.
+
+## Run the interactive demo
+
+Requires Node.js 20 or newer. No account, API key, or dependency installation is required.
+
+1. Use **Download the source ZIP** above and extract it, or clone the repository.
+2. Open a terminal in the extracted `shared-agent-operations` folder.
+3. Run `npm start`.
+4. Open **http://127.0.0.1:4317/** on that same computer.
+5. Choose **Try Orbit** for the guided demo. It restores the original executive workspace progress when finished.
+
+Stop the server with Ctrl+C. If port 4317 is already in use, stop the other local preview first. This is a local app: the localhost address cannot be shared with another person.
+
+## Three-minute evaluation
+
+1. **Executive Assistant:** run Try Orbit to see a Work briefing, inspect a prepared reply, simulate sending it, and view the separate Personal inbox.
+2. **Personal versus Work:** switch using the visible context buttons. Business campaign tools appear only in Work. Personal and Work have separate fictional messages and tasks.
+3. **Campaign workflow:** in Work, open Content Studio, enter a fictional campaign brief, and prepare a request. Generated content is a fixed sample, not live AI output.
+4. **Review-first safety:** edit a draft, save the new version, and approve that exact version. Unsaved edits and stale approvals cannot authorize execution.
+5. **Simulation and recovery:** simulate execution, inspect the receipt, and reload to check saved campaign history. Nothing is sent or posted externally.
+
+Use only fictional inputs. Campaign demo history is saved locally in `local-data/history.json`; executive state and scratch edits use browser storage. These histories are separate, and the app is not a multi-user service.
+
+## Engineering evidence
+
+Run `npm test` for the regression suite (62 tests passed at the 0.4.0 handoff). Run `npm run demo` for the command-line workflow simulation, which reports `externalActions: 0`.
+
+The implementation demonstrates exact-version approval, optimistic concurrency, local edit recovery, restart-safe history, and duplicate-execution prevention. See [verification evidence](VERIFICATION.md) and the [technical README](README.md).
+
+## Honest boundaries
+
+No real email, calendar, social account, AI provider, or employer data is connected. No production authentication or public hosting is included. Original baseline applications are not fully merged; campaign and executive histories remain separate. Browser QA is targeted, not a complete accessibility or security certification.
+
+For a no-install interview, the project owner can screen-share the local app using this walkthrough. A recorded video and public interactive hosting are not included in this package.
