@@ -2,9 +2,10 @@ import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {createDemoSystem} from './src/operations.js';
 import {createStoredDemoSystem} from './src/local-state.js';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath, pathToFileURL} from 'node:url';
+import {resolve} from 'node:path';
 
-// Local demonstration only: one fictional owner, in-memory records, no providers.
+// Local demonstration only: one fictional owner, no connected providers.
 export function createDashboardServer(system = createDemoSystem()) {
   const caller = {actorId: 'demo-dave', workspaceId: 'work'};
   const files = {'/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/drafts.js': ['drafts.js', 'text/javascript'], '/campaign.js': ['campaign.js', 'text/javascript'], '/export.js': ['export.js', 'text/javascript'], '/styles.css': ['styles.css', 'text/css']};
@@ -19,16 +20,23 @@ export function createDashboardServer(system = createDemoSystem()) {
     if (req.headers.host !== expectedHost || !['127.0.0.1', '::ffff:127.0.0.1'].includes(address)) return respond(403, {error: {message: 'Use the local dashboard address.'}});
     try {
       const path = new URL(req.url, `http://${expectedHost}`).pathname;
-      if (req.method === 'GET' && files[path]) {
-        const [file, type] = files[path];
+      const showcaseFiles = {'/showcase': ['showcase.html', 'text/html'], '/showcase.js': ['showcase.js', 'text/javascript'], '/showcase.css': ['showcase.css', 'text/css']};
+      if (req.method === 'GET' && (Object.hasOwn(files, path) || Object.hasOwn(showcaseFiles, path))) {
+        const [file, type] = files[path] || showcaseFiles[path];
         const content = await readFile(new URL(`./web/${file}`, import.meta.url));
         res.writeHead(200, {'Content-Type': `${type}; charset=utf-8`}); return res.end(content);
       }
       if (req.method === 'GET' && path === '/api/workflows') return respond(200, {workflows: system.repository.list().filter(w => w.actorId === caller.actorId && w.workspaceId === caller.workspaceId)});
       if (req.method !== 'POST' || path !== '/api/commands') return respond(404, {error: {message: 'Not found.'}});
       if (req.headers.origin !== `http://${expectedHost}` || req.headers['content-type'] !== 'application/json') return respond(403, {error: {message: 'Open this action from the local dashboard.'}});
-      let body = '';
-      for await (const chunk of req) {body += chunk; if (Buffer.byteLength(body) > 64_000) return respond(413, {error: {message: 'The draft is too large.'}});}
+      const chunks = [];
+      let bytes = 0;
+      for await (const chunk of req) {
+        bytes += chunk.length;
+        if (bytes > 64_000) return respond(413, {error: {message: 'The draft is too large.'}});
+        chunks.push(chunk);
+      }
+      const body = Buffer.concat(chunks).toString('utf8');
       let input;
       try {input = JSON.parse(body);} catch {return respond(400, {error: {message: 'Invalid request.'}});}
       if (!input || typeof input !== 'object' || Array.isArray(input)) return respond(400, {error: {message: 'Invalid request.'}});
@@ -44,7 +52,7 @@ export function createDashboardServer(system = createDemoSystem()) {
   });
 }
 
-if (process.argv[1] && new URL(`file:///${process.argv[1].replaceAll('\\', '/')}`).href === import.meta.url) {
+if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
   const system = createStoredDemoSystem(fileURLToPath(new URL('./local-data/history.json', import.meta.url)));
   const server = createDashboardServer(system);
   server.listen(4317, '127.0.0.1', () => console.log('Orbit: http://127.0.0.1:4317 — local preview; history saved on this computer.'));

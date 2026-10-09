@@ -2,6 +2,26 @@
 
 ## Try Orbit
 
+### Start here
+
+1. Open a terminal in `shared-agent-operations` (not the repository root).
+2. Check that `node --version` reports Node.js 20 or newer. No `npm install`, API key, or account is required.
+3. Run `npm start` and leave that terminal running.
+4. Open [the working app](http://127.0.0.1:4317/) or [the six-step interview walkthrough](http://127.0.0.1:4317/showcase) in your browser.
+5. Stop the server with Ctrl+C when finished. Saved history remains on this computer.
+
+The walkthrough explains the workflow with illustrative examples; its Next step button does not create or edit a real request. Use the working app for hands-on testing. Localhost links work only on the computer running the server.
+
+For the interview script and engineering summary, read [SHOWCASE.md](SHOWCASE.md). For current test evidence and historical baseline results, read [VERIFICATION.md](VERIFICATION.md).
+
+### If setup fails
+
+- `EADDRINUSE`: port 4317 is already occupied. Check whether Orbit is already running; do not start two processes against the same history file.
+- Browser cannot connect: keep the server terminal open and use the exact `127.0.0.1` address above, not `localhost`.
+- History cannot be read: stop and preserve `local-data/history.json`. Do not delete it to make startup work; inspect or restore a copy first.
+
+### Use the working app
+
 After approving the current saved draft, use **Copy reviewed draft** or **Download reviewed draft (.txt)**. Both include the request, saved campaign brief when available, version reference, and all three content assets. They verify the latest saved workflow first, reject local unsaved edits and changed versions, and label exports as sample content. Clipboard denial has a download fallback. Completed simulated requests remain exportable; cancelled or unreviewed requests are not. Copy/download do not publish or record a send.
 
 Today offers a guided campaign brief (business/service, audience, platform, tone, desired result, and optional details), or a free-form request. Unfinished fields stay in browser recovery; submitting saves a structured brief with the workflow and clears the composer. The saved brief is available in request details. Fields do not turn sample output into AI-generated content: generation remains a fixed fixture. No provider or paid service is connected.
@@ -16,7 +36,7 @@ One fictional Dave/Work context is assigned by the local server. This is not sig
 
 Browser recovery copies preserve unfinished draft edits per request and original version, unsubmitted request text, priorities, and the current view. Navigation, Refresh, and reload keep those copies. A recovery copy never authorizes execution: submit changes as a new version and approve that exact version. If a different tab saved a newer server version, Orbit keeps the local edits separately and offers explicit restore or discard. If browser storage is unavailable, edits remain in the tab and closing it triggers a warning. Clearing browser site data removes recovery copies and priorities; clearing it does not remove server-saved history.
 
-The server binds only to `127.0.0.1`, checks local Host and mutation Origin, accepts bounded JSON writes, and serves four allowlisted web assets. Local history is not exposed as a static asset. Do not expose the server as a production service.
+The server binds only to `127.0.0.1`, checks local Host and mutation Origin, accepts bounded JSON writes, and serves only explicitly allowlisted app and showcase assets. Local history is not exposed as a static asset. Do not expose the server as a production service.
 
 To try it: enter a marketing request on Today, choose **Ask Orbit**, edit the launch post, navigate to Activity and return, choose **Save changes for review**, approve that version, and choose **Preview approved send**. Edits invalidate earlier approval. Browser recovery edits block approval and execution until submitted. Completed work records one simulated receipt, with no provider action.
 
@@ -67,6 +87,6 @@ Node 20 or newer is sufficient. There are no package dependencies or secrets. Th
 
 ## Boundary
 
-The adapters are explicit fixtures corresponding to the three existing application-service boundaries. Browser-local Orbit and AI OS state is not treated as authorization or durable audit. Marketing's local synthetic login is not reused as production identity. This package does not add authentication, OAuth, real accounts, a backend deployment, or a connector.
+The running dashboard uses explicit fixtures corresponding to the three application-service boundaries. The separate baseline adapter layer maps injected service contracts and is not loaded by `npm start`. Browser-local Orbit and AI OS state is not treated as authorization or durable audit. Marketing's local synthetic login is not reused as production identity. This package does not add authentication, OAuth, real accounts, a backend deployment, or a connector.
 
 Before real accounts, select an identity provider, backend/database/job service, secrets strategy, provider OAuth applications/scopes, hosting/callback identities, retention policy, and authorized security assessment scope. Those remain owner decisions and are intentionally outside this change.

@@ -13,6 +13,22 @@ async function dashboard(t) {
   return {url, send, command};
 }
 
+test('showcase serves only its allowlisted assets and viewing it leaves workflows untouched', async t => {
+  const {url} = await dashboard(t);
+  for (const [path, type] of [['/showcase','text/html'], ['/showcase.js','text/javascript'], ['/showcase.css','text/css']]) {
+    const res = await fetch(`${url}${path}`);
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get('content-type'), new RegExp(type));
+    assert.match(res.headers.get('content-security-policy'), /script-src 'self'/);
+    const content = await res.text();
+    assert.ok(content.length > 100);
+    if (path === '/showcase') assert.match(content, /illustrative, not the live workflow/);
+  }
+  assert.equal((await fetch(`${url}/SHOWCASE.md`)).status, 404);
+  assert.equal((await fetch(`${url}/local-data/history.json`)).status, 404);
+  assert.deepEqual((await (await fetch(`${url}/api/workflows`)).json()).workflows, []);
+});
+
 test('dashboard runs prepare, edit, exact approval and simulated execution through the shared core', async t => {
   const {url, command, send} = await dashboard(t);
   const page = await fetch(url);
@@ -64,6 +80,9 @@ test('dashboard rejects foreign origins, oversized input, unknown actions, trave
   assert.equal((await send({action:'get'})).status,400);
   assert.equal((await send({action:'revise',payload:{launchPost:'Bad'}})).status,400);
   assert.equal((await fetch(`${url}/src/operations.js`)).status,404);
+  for (const path of ['/constructor', '/toString', '/__proto__']) {
+    assert.equal((await fetch(`${url}${path}`)).status, 404);
+  }
   const status = await new Promise((resolve,reject) => {
     const req = httpRequest(`${url}/api/workflows`, {headers:{Host:'untrusted.example'}}, res => {res.resume(); resolve(res.statusCode);});
     req.on('error',reject); req.end();
@@ -78,6 +97,27 @@ test('cancelled dashboard work cannot be approved or executed', async t => {
   assert.equal(cancelled.status,'cancelled');
   const v = w.results.at(-1);
   assert.equal((await send({action:'approve',workflowId:w.id,versionId:v.id,payloadDigest:v.payloadDigest})).status,409);
+});
+
+test('dashboard preserves Unicode text when request bytes arrive in split chunks', async t => {
+  const {url} = await dashboard(t);
+  const request = 'Prepare a fictional café campaign 🐾';
+  const body = Buffer.from(JSON.stringify({action: 'start', request}));
+  const split = body.indexOf(Buffer.from('é')) + 1;
+  const result = await new Promise((resolve, reject) => {
+    const req = httpRequest(`${url}/api/commands`, {
+      method: 'POST', headers: {Origin: url, 'Content-Type': 'application/json'},
+    }, res => {
+      const chunks = [];
+      res.on('data', chunk => chunks.push(chunk));
+      res.on('end', () => resolve({status: res.statusCode, body: JSON.parse(Buffer.concat(chunks).toString('utf8'))}));
+    });
+    req.on('error', reject);
+    req.write(body.subarray(0, split));
+    setTimeout(() => req.end(body.subarray(split)), 20);
+  });
+  assert.equal(result.status, 200);
+  assert.equal(result.body.value.command.request, request);
 });
 
 test('dashboard saves structured campaign fields and rejects malformed briefs',async t=>{

@@ -51,7 +51,10 @@ function render() {
   $('activity-panel').hidden = view !== 'activity';
   document.querySelector('.work-grid').hidden = view === 'activity';
   $('list-title').textContent = view === 'review' ? 'Ready for your decision' : view === 'overview' ? 'Recent requests' : 'My requests';
-  document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  document.querySelectorAll('[data-view]').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === view);
+    if(b.dataset.view===view) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
+  });
   $('next-heading').textContent = failed.length ? failed.length+' request'+(failed.length===1?' needs':'s need')+' attention.' : review.length ? review.length+' draft'+(review.length===1?' needs':'s need')+' your review.' : 'You have room to get started.';
   $('next-summary').textContent = failed.length ? 'A step failed. Open the request to see what happened and retry safely.' : review.length ? 'Your next useful step is to review a draft. Orbit keeps the preparation and history together for you.' : 'Start with a marketing request. I’ll bring a sample draft back here for you to review.';
   $('next-action').textContent = failed.length ? 'Open request needing attention' : review.length ? 'Review next draft' : 'Plan a campaign';
@@ -151,6 +154,7 @@ function changeView(nextView,nextId=selected) {
   view=nextView; selected=nextId; render();
   message('');
   $('view-title').scrollIntoView({block:'start'});
+  $('page-heading').focus({preventScroll:true});
 }
 async function exportReviewed(w,action) {
   captureDraft();

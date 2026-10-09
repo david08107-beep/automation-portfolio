@@ -2,15 +2,16 @@
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Orbit — Your Executive Assistant</title><link rel="stylesheet" href="/styles.css"><script type="module" src="/app.js"></script></head>
 <body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
 <aside class="sidebar">
 <a class="brand" href="/">◈ <span>Orbit<span class="brand-sub">YOUR EXECUTIVE ASSISTANT</span></span></a>
 <p class="nav-label">YOUR WORKSPACE</p>
 <nav aria-label="Workspace"><button class="nav active" data-view="overview">Today</button><button class="nav" data-view="work">My requests</button><button class="nav" data-view="review">Needs my review <span id="review-count">0</span></button><button class="nav" data-view="activity">Activity</button></nav>
 <div class="team"><p class="nav-label">WHAT ORBIT CAN HELP WITH</p><p><i class="dot purple"></i> Keep priorities in view</p><p><i class="dot green"></i> Prepare marketing drafts <small>Sample content in this preview</small></p><p><i class="dot blue"></i> Bring decisions back to you</p></div>
 <div class="profile"><span class="avatar">D</span><div>Dave<small>Local demo workspace</small></div></div></aside>
-<main>
+<main id="main-content" tabindex="-1">
 <header><span>Work workspace / <strong id="view-title">Today</strong></span><span class="mode">● Local preview</span></header>
-<section class="heading"><p class="eyebrow">A LITTLE LESS TO KEEP TRACK OF.</p><h1 id="page-heading">What needs your attention, Dave?</h1><p id="page-subtitle">Keep your priorities close. Tell Orbit what you need, and review the next step here.</p></section>
+<section class="heading"><p class="eyebrow">A LITTLE LESS TO KEEP TRACK OF.</p><h1 id="page-heading" tabindex="-1">What needs your attention, Dave?</h1><p id="page-subtitle">Keep your priorities close. Tell Orbit what you need, and review the next step here.</p></section>
 <div class="notice">Marketing uses fixed sample content. Inbox, calendar, and publishing accounts are not connected. Saved requests stay on this computer.</div>
 <div id="message" role="status" aria-live="polite"></div>
 <section id="home-panel" class="home-grid">

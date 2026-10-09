@@ -1,8 +1,22 @@
-# Verification record — 2026-10-08
+# Verification record — 2026-10-09
 
-Latest local iteration: 32/32 automated tests pass. Added regression coverage for stale/missing draft-save preconditions, empty/whitespace content at save/approval/execution, explicit unsupported connected-task requests, guided campaign validation/recovery, HTTP brief persistence, and exact-reviewed-version export. Browser checks verified concurrent stale-save rejection with newer content preserved, local edit recovery, empty save rejection, failure priority, capability explanations, structured brief reload/submission, and reviewed export. Copy showed its success message (clipboard readback was unavailable in this browser session); a downloaded text file was inspected and contained the saved version, request, all content assets, and sample-content disclaimer. Export is local-only and does not create a send. Mobile viewport and complete keyboard/screen-reader testing remain pending. No AI provider, account connection, merge, deployment, or preserved release change occurred.
+## Current review
 
-All checks used detached worktrees at the exact source commits listed in the package README. Generated files and test dependencies stayed in those detached verification copies.
+36/36 automated tests passed in the working folder and in a source-only copy excluding ignored local history. The command-line demo completed with `externalActions: 0` in both copies. All repository JavaScript passed `node --check`; `git diff --check` passed. New regressions cover split-chunk Unicode requests, inherited-property route rejection, escaped legacy Marketing history, and malformed/unavailable browser storage. Setup instructions, troubleshooting, project status labels, and the interview-first plan were clarified. No existing saved request or hosted release was changed.
+
+Older sections below are historical snapshots, not additional current passes or current setup instructions. The original baseline applications were not re-tested in this review. This is not a production security audit or full accessibility certification; the recording is still outstanding.
+
+## Prior local checks
+
+Recording preparation follow-up: 33/33 tests pass, including a fresh ephemeral-server check of the three showcase assets, their MIME/CSP headers, restricted document/history paths, and an unchanged empty workflow repository after viewing. README now links the showcase and states its local-only limitations. A timed 90-second recording script was prepared; no video was captured because this session exposes no supported recorder and no installed video encoder was found. This check is not a full clean-checkout installation test. No merge, push, deployment, or real external execution occurred.
+
+Interview-readiness follow-up: 32/32 automated tests pass. Browser verification confirmed the skip link focuses main content, keyboard activation of Today focuses the page heading, and the active navigation control exposes aria-current. At a 390 × 844 viewport, Today and My requests had no horizontal document overflow; Today was visually inspected. The viewport was restored afterward. Added responsive wrapping and touch-target adjustments plus an honest interview walkthrough. This is targeted verification, not a complete keyboard, screen-reader, or device audit. No existing request was approved, cancelled, or executed in this follow-up. Changes remain local; no merge, push, or deployment was performed.
+
+Earlier local iteration: 32/32 automated tests passed. Added regression coverage for stale/missing draft-save preconditions, empty/whitespace content at save/approval/execution, explicit unsupported connected-task requests, guided campaign validation/recovery, HTTP brief persistence, and exact-reviewed-version export. Browser checks verified concurrent stale-save rejection with newer content preserved, local edit recovery, empty save rejection, failure priority, capability explanations, structured brief reload/submission, and reviewed export. Copy showed its success message (clipboard readback was unavailable in this browser session); a downloaded text file was inspected and contained the saved version, request, all content assets, and sample-content disclaimer. Export is local-only and does not create a send. Mobile viewport testing was pending at that time; the later targeted checks above supersede that limitation. Complete keyboard/screen-reader testing remains pending. No AI provider, account connection, merge, deployment, or preserved release change occurred.
+
+## Historical baseline checks
+
+The baseline checks in the table below used detached worktrees at the exact source commits listed in the package README. Generated files and test dependencies stayed in those detached verification copies. These results are preserved as historical evidence, not freshly verified in the current file review.
 
 | Scope | Result |
 | --- | --- |

@@ -2,7 +2,7 @@
 
 A collection of AI automation, n8n, and Microsoft Power Automate Desktop projects. This repository is where I document and publish my automation work: what each project does, how it is built, and how to run or reproduce it.
 
-> **Status:** Work in progress. Projects are added only once they are built and tested.
+> **Status:** Portfolio in progress. Runnable prototypes and documentation-only projects are labeled separately.
 
 ---
 
@@ -10,8 +10,12 @@ A collection of AI automation, n8n, and Microsoft Power Automate Desktop project
 
 | Project | Platform | What it does | Status |
 |---------|----------|--------------|--------|
-| [File Renaming Automation](power-automate-desktop/file-renaming-automation/) | Power Automate Desktop | Renames structured files automatically using loops, conditions, text extraction, error handling, and logging. | Complete |
-| [Shared Agent Operations](shared-agent-operations/) | Node.js simulation | Reconciles Orbit, AI OS, and Marketing Agent through exact-version review and idempotent simulated execution. | Integration simulation |
+| [File Renaming Automation](power-automate-desktop/file-renaming-automation/) | Power Automate Desktop | Documents structured renaming, validation, error handling, and logging. | Documented as built/tested; export not included |
+| [Orbit / Shared Agent Operations](shared-agent-operations/SHOWCASE.md) | Node.js local prototype | Keeps campaign briefs, draft versions, exact-version approval, local export, and simulated receipts together. Includes an interview walkthrough. | Local demo; fixed sample content |
+
+### Try the Orbit interview demo
+
+With Node.js 20 or newer, run `npm start` from `shared-agent-operations`, then open `http://127.0.0.1:4317/showcase`. Use `npm test` for the regression suite. The walkthrough is illustrative and does not modify saved requests. Localhost is not a public recruiter link. No live AI provider or external publishing account is connected. See the [showcase guide](shared-agent-operations/SHOWCASE.md) for the live-app demonstration and limitations.
 
 <!-- Add a row to the table above when a project is ready to show. -->
 
@@ -43,8 +47,8 @@ automation-portfolio/
 │   └── <project-name>/
 ├── power-automate-desktop/   # Power Automate Desktop flows and docs
 │   └── <project-name>/
-└── ai-automation/            # AI-based automation projects and prompts
-    └── <project-name>/
+├── marketing-agent/          # Static, template-based marketing prototype
+└── shared-agent-operations/  # Orbit local workflow prototype and tests
 ```
 
 Each project folder should contain:
@@ -52,7 +56,7 @@ Each project folder should contain:
 - The workflow export or source files
 - Screenshots or sample inputs/outputs where useful
 
-> Folders are created as projects are added. This layout is the plan, not a record of what exists today.
+The PAD folder currently contains documentation, not an importable flow. The n8n folder is a work-in-progress description without a workflow export. The two web prototypes are separate projects; neither provides live AI generation in this checkout.
 
 ---
 
