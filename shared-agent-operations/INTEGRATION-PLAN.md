@@ -63,3 +63,17 @@ The 0.2 adapter layer now targets the verified service shapes instead of fixture
 These are injected application ports, not copied release code. Connecting them to hosted services remains blocked on the identity, database, OAuth, retention, and security decisions listed above.
 
 GitHub Pages and the browser-local demos cannot supply those controls. No fixture login, browser workspace, local approval, or simulated receipt may be promoted as production authority.
+
+## Phase 3 local interface milestone
+
+Version 0.3 adds one local dashboard over the shared simulation core: brief entry, workflow selection, review queue, editable immutable versions, exact approval, simulated execution, cancellation, and ordered activity. Three role labels express the existing ownership mapping. This shell uses fixture adapters; the original applications and their stores are not loaded or migrated. It is a visible integrated workflow demonstration, not a finished consolidation of all three products.
+
+Browser requests use a loopback-only Node server with a server-assigned fictional context. The server serves allowlisted assets, rejects foreign Host/Origin values for local actions, and does not implement production identity, provider OAuth, durable jobs, or hosting.
+
+Version 0.3.1 reframes this local interface as Orbit, the Executive Assistant front door. Today shows actual pending review counts and browser-saved priorities. Requests have one assistant-led detail/review surface; the roles stay behind a progress disclosure. The existing published Orbit release is preserved; this is a local iteration of the shared preview, not a replacement Pages release or a full port of its inbox/calendar features.
+
+Unfinished edits are recovery copies bound to their saved source version. They survive view changes, Refresh, and reload; they do not grant approval. If a server version changed elsewhere, restoration is explicit and a new shared version plus exact approval is required. Local workflow/source/receipt snapshots are persisted by the startup server to an ignored plaintext file. Source and receipt mutations are saved before workflow completion so retry after persistence failure can reuse a receipt across restarts. Corrupt history stops startup without replacement. This is a single-process demo facility, not the production database/job service described in the hold section.
+
+Current priority: package this local prototype for interviews with understandable setup instructions, a guided walkthrough, and accurate test evidence. A recording is still outstanding; a script alone is not a video. Public sharing or deployment requires explicit approval.
+
+Possible later product work, only if requested: connect the shell to preserved application ports with an explicit module composition design, choose the production services listed in the hold section, then implement durable storage and authenticated boundaries. These are not requirements for the current interview showcase.

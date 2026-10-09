@@ -50,6 +50,8 @@ Testing has not been documented yet.
 
 ## Setup and Usage
 
+This checkout does not contain an importable workflow. Do not use this folder as a runnable demo yet. Reproduction needs a workflow export, fictional input examples, expected sheet columns, credential setup instructions, and documented test results.
+
 <!-- Add these details before sharing the project publicly:
 - How to import the workflow into n8n
 - How to connect Google Sheets credentials
@@ -62,6 +64,9 @@ Do not include real credentials, sheet IDs, or company data. -->
 The workflow export and screenshots will be added to this folder when available. They are not included yet.
 
 ## Limitations
+
+- Only a project description is included; the stated integrations cannot be independently verified from this checkout.
+- No runnable export, screenshots, finalized schema, or test evidence is included.
 
 <!-- Add known limitations once testing has been done. -->
 

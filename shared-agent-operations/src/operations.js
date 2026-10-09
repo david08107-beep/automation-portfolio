@@ -1,4 +1,5 @@
 import {createHash, randomUUID} from 'node:crypto';
+import {normalizeCampaign} from '../web/campaign.js';
 
 export const BASELINES = Object.freeze({
   orbit: Object.freeze({branch: 'gh-pages', commit: 'd15e6bf7cb0cf94c3fce79e8b43e24d524efdb77', version: '1.5.0'}),
@@ -43,6 +44,18 @@ function context(input) {
   return {actorId, workspaceId};
 }
 
+function validateDraft(payload) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new OperationError('INVALID_INPUT', 'Draft must contain a launch post, video script, and calendar.');
+  }
+  normalizeText(payload.launchPost, 'Launch post');
+  normalizeText(payload.shortVideoScript, 'Video script');
+  if (!Array.isArray(payload.calendar) || !payload.calendar.length || payload.calendar.length > 366) {
+    throw new OperationError('INVALID_INPUT', 'Calendar must contain between 1 and 366 non-empty items.');
+  }
+  payload.calendar.forEach(item => normalizeText(item, 'Calendar item', 2000));
+}
+
 function task(id, owner, title) {
   return {id, owner, title, status: 'pending', attempts: 0};
 }
@@ -67,6 +80,10 @@ function assertWorkspace(workflow, input) {
 export class MemoryWorkflowRepository {
   #workflows = new Map();
   #failNext = false;
+
+  constructor(records = []) { this.restore(records); }
+
+  restore(records) { this.#workflows = new Map(records.map(value => [value.id, clone(value)])); }
 
   failNextWrite() {
     this.#failNext = true;
@@ -128,6 +145,10 @@ export class FixtureMarketingAdapter {
   #versions = new Map();
   #failGeneration = false;
 
+  constructor(records = []) { this.restore(records); }
+  snapshot() { return [...this.#versions.values()].map(clone); }
+  restore(records) { this.#versions = new Map(records.map(value => [value.versionId, clone(value)])); }
+
   failNextGeneration() {
     this.#failGeneration = true;
   }
@@ -167,6 +188,13 @@ export class FixtureOrbitExecutor {
   #receipts = new Map();
   #failNext = false;
   executionCount = 0;
+
+  constructor(records = []) { this.restore(records); }
+  snapshot() { return [...this.#receipts.values()].map(clone); }
+  restore(records) {
+    this.#receipts = new Map(records.map(value => [value.idempotencyKey, clone(value)]));
+    this.executionCount = this.#receipts.size;
+  }
 
   failNextExecution() {
     this.#failNext = true;
@@ -219,6 +247,8 @@ export class SharedAgentOperations {
   start(input) {
     return this.#result(() => {
       const caller = context(input);
+      let campaignBrief;
+      try {if(input.campaignBrief !== undefined) campaignBrief=normalizeCampaign(input.campaignBrief);} catch(error) {throw new OperationError('INVALID_INPUT',error.message);}
       const request = normalizeText(input.request, 'Request');
       const createdAt = now();
       let workflow = {
@@ -229,7 +259,7 @@ export class SharedAgentOperations {
         actorId: caller.actorId,
         status: 'running',
         revision: 0,
-        command: {id: randomUUID(), request, createdAt},
+        command: {id: randomUUID(), request, createdAt, ...(campaignBrief?{campaignBrief}: {})},
         sourceBaselines: BASELINES,
         tasks: [
           task('orbit-brief', 'executive-assistant', 'Establish the campaign brief'),
@@ -317,8 +347,11 @@ export class SharedAgentOperations {
       assertWorkspace(workflow, input);
       if (workflow.status !== 'awaiting-review') throw new OperationError('INVALID_STATE', 'The workflow is not awaiting review.');
       const previous = currentVersion(workflow);
+      if (input.baseVersionId !== previous.id) {
+        throw new OperationError('DRAFT_STALE', 'A newer saved version may exist. Refresh to compare it with your kept local edits before saving.', true);
+      }
       const payload = clone(input.payload);
-      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new OperationError('INVALID_INPUT', 'Revised payload must be an object.');
+      validateDraft(payload);
       workflow.approvals.filter(item => item.status === 'approved').forEach(item => { item.status = 'invalidated'; item.invalidatedAt = now(); });
       const version = {id: randomUUID(), number: previous.number + 1, source: clone(previous.source), sourceDigest: previous.sourceDigest, payload, payloadDigest: digest(payload), createdAt: now(), editedBy: workflow.actorId};
       workflow.results.push(version);
@@ -334,6 +367,7 @@ export class SharedAgentOperations {
       if (workflow.status !== 'awaiting-review') throw new OperationError('INVALID_STATE', 'The workflow is not awaiting review.');
       const version = currentVersion(workflow);
       if (input.versionId !== version.id || input.payloadDigest !== version.payloadDigest) throw new OperationError('APPROVAL_STALE', 'Approval must name the current exact frozen version.');
+      validateDraft(version.payload);
       if (!this.#sourceMatches(version)) throw new OperationError('SOURCE_CHANGED', 'The Marketing source changed after preparation. Prepare a new frozen version.');
       const review = {id: randomUUID(), versionId: version.id, payloadDigest: version.payloadDigest, actorId: workflow.actorId, reviewedAt: now(), status: 'approved'};
       const approval = {id: randomUUID(), reviewId: review.id, versionId: version.id, payloadDigest: version.payloadDigest, actorId: workflow.actorId, status: 'approved', approvedAt: now()};
@@ -349,6 +383,7 @@ export class SharedAgentOperations {
       assertWorkspace(workflow, input);
       if (!['awaiting-review', 'failed'].includes(workflow.status)) throw new OperationError('INVALID_STATE', 'The workflow is not ready for simulated execution.');
       const version = currentVersion(workflow);
+      if (version) validateDraft(version.payload);
       const approval = workflow.approvals.find(item => item.id === input.approvalId);
       if (!approval || approval.status !== 'approved' || approval.versionId !== version.id || approval.payloadDigest !== version.payloadDigest) throw new OperationError('APPROVAL_REQUIRED', 'A current exact-version approval is required.');
       if (!this.#sourceMatches(version)) {
@@ -410,10 +445,10 @@ export class SharedAgentOperations {
   }
 }
 
-export function createDemoSystem() {
-  const repository = new MemoryWorkflowRepository();
-  const marketing = new FixtureMarketingAdapter();
-  const orbitExecutor = new FixtureOrbitExecutor();
+export function createDemoSystem(snapshot = {}) {
+  const repository = new MemoryWorkflowRepository(snapshot.workflows);
+  const marketing = new FixtureMarketingAdapter(snapshot.sources);
+  const orbitExecutor = new FixtureOrbitExecutor(snapshot.receipts);
   const operations = new SharedAgentOperations({repository, orbitBrief: new FixtureOrbitBriefAdapter(), aiOs: new FixtureAiOsAdapter(), marketing, orbitExecutor});
   return {operations, repository, marketing, orbitExecutor};
 }

@@ -56,6 +56,8 @@ The flow was tested with both success and failure cases.
 
 ## Setup and Usage
 
+The existing notes describe a built/tested flow, but this checkout does not contain its export or precise filename rules. It cannot currently be imported or reproduced from this folder alone. Before a hands-on interview demo, add the flow export, fictional before/after filenames, folder settings, log location, and recorded test cases. Test only copied fictional files, not original documents.
+
 <!-- Add these details before sharing the project publicly:
 - Expected filename format (with a fictional example)
 - Source and destination folder settings
