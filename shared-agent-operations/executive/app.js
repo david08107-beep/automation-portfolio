@@ -1392,12 +1392,12 @@ function recordDraftVersion(label){return syncReplyVersion(selectedMessage,{body
  const aiButton=document.createElement('button');aiButton.id='draft-ai-generate';aiButton.type='button';aiButton.textContent='Generate with local AI';aiButton.title='Optional Ollama · disabled by default · draft only';$('#draft-copy').after(aiButton);
  aiButton.disabled=true;
  const aiStatus=document.createElement('p');aiStatus.className='muted';aiStatus.textContent='Checking optional local AI configuration…';aiButton.parentElement.after(aiStatus);
- let aiEnabled=false,aiRequest=null,unlockAi=null;
+ let aiEnabled=false,aiRequest=null,unlockAi=null,aiProgressTimer=null;
  fetch('/api/reply-generation/status').then(response=>{if(!response.ok)throw Error('Unavailable');return response.json();}).then(status=>{
    aiEnabled=status.enabled===true;aiButton.disabled=!aiEnabled;
    aiStatus.textContent=aiEnabled?'Local AI enabled · Ollama must run alongside the Orbit server · Drafts require review.':'Scripted mode · Local AI is disabled on this server.';
  }).catch(()=>{aiStatus.textContent='Scripted mode · Optional local AI requires the local Orbit server.';});
- const cancelAi=()=>{aiRequest?.abort();aiRequest=null;unlockAi?.();unlockAi=null;aiButton.disabled=!aiEnabled;};
+ const cancelAi=()=>{clearInterval(aiProgressTimer);aiProgressTimer=null;$('#reply-composer').removeAttribute('aria-busy');aiButton.textContent='Generate with local AI';aiRequest?.abort();aiRequest=null;unlockAi?.();unlockAi=null;aiButton.disabled=!aiEnabled;};
  messageDialog.addEventListener('close',cancelAi);
  $('#reply-cancel').addEventListener('click',cancelAi);
  aiButton.addEventListener('click',async()=>{
@@ -1408,7 +1408,10 @@ function recordDraftVersion(label){return syncReplyVersion(selectedMessage,{body
    const saved=recordDraftVersion('Before local AI');if(!saved){aiRequest=null;return;}
    const service=replyService(),context=replyContext(index);
    unlockAi=OrbitReplyEditorState.lock($$('#reply-composer input, #reply-composer textarea, #reply-composer select, #draft-regenerate, #draft-history-open, #reply-save, #reply-send'));
-   aiButton.disabled=true;notice('Preparing your reply… Settings are held steady until generation finishes. Nothing will be sent.');
+   aiButton.disabled=true;aiButton.textContent='Generating…';$('#reply-composer').setAttribute('aria-busy','true');
+   const startedAt=Date.now();
+   notice('Preparing your reply… First use may need to load the local model. Nothing will be sent.');
+   aiProgressTimer=setInterval(()=>{const seconds=Math.floor((Date.now()-startedAt)/1000);notice(`Preparing your reply · ${seconds}s. ${seconds>=5?'The local model may be loading or retrying; Cancel keeps your draft.':'Settings are held steady while generating.'}`);},1000);
    try{
      const response=await fetch('/api/reply-generation',{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({workspace,message:JSON.stringify((({sender,subject,body,summary})=>({sender,subject,body,summary}))(messageData(index))),brief:snapshot.brief,settings:snapshot.settings,previousBody:snapshot.body})});
      const result=await response.json();
@@ -1421,7 +1424,7 @@ function recordDraftVersion(label){return syncReplyVersion(selectedMessage,{body
      projectReplyDraft(index,revised.value.version,'Local AI draft');$('#reply-body').value=revised.value.version.body;
      notice('Local AI draft ready to edit and review. '+persist()+' Nothing approved or sent.');
    }catch{if(!controller.signal.aborted && activeWorkspace===workspace && selectedMessage===index)notice('Local AI is unavailable. Your draft is preserved; scripted alternatives still work.');}
-   finally{if(aiRequest===controller){unlockAi?.();unlockAi=null;aiRequest=null;aiButton.disabled=!aiEnabled;}}
+   finally{if(aiRequest===controller){clearInterval(aiProgressTimer);aiProgressTimer=null;$('#reply-composer').removeAttribute('aria-busy');aiButton.textContent='Generate with local AI';unlockAi?.();unlockAi=null;aiRequest=null;aiButton.disabled=!aiEnabled;}}
  });
  const persist=()=>{saveState();return guidedSession?'Temporary guided session only.':storageAvailable?'Saved in this browser.':'Browser storage is unavailable or full. Changes are retained only for this session; download a backup.';};
  $('#draft-regenerate').addEventListener('click',()=>{const saved=recordDraftVersion('Before alternative');if(!saved)return;const result=replyService().prepareReplyAlternative({...replyContext(selectedMessage),draftId:saved.draft.id,expectedRevision:saved.draft.currentRevision,settings:currentReplySettings(),brief:$('#draft-brief').value,to:$('#reply-to').value,subject:$('#reply-subject').value});if(replyServiceError(result))return;projectReplyDraft(selectedMessage,result.value.version,'New alternative');$('#reply-body').value=result.value.version.body;notice('Distinct scripted alternative prepared. '+persist()+' Nothing sent.');});

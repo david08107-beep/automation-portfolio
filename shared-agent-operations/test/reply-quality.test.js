@@ -55,3 +55,18 @@ test('HTTP generation returns formatted draft without approvals or execution',as
  assert.equal(result.value.body,valid);assert.equal(result.value.requiresReview,true);
  assert.deepEqual((await (await fetch(url+'/api/workflows')).json()).workflows,[]);
 });
+test('reported bare backslash separators become paragraphs without changing Windows paths',()=>{
+ const reported="Hi Sarah,\\ thanks for sending the proposal.\\ Best, Dave";
+ assert.equal(normalizeReplyBody(reported),'Hi Sarah,\n\nthanks for sending the proposal.\n\nBest, Dave');
+ assert.equal(normalizeReplyBody('See C:\\newfolder\\report.txt and C:\\temp\\notes.txt'),'See C:\\newfolder\\report.txt and C:\\temp\\notes.txt');
+ assert.equal(normalizeReplyBody('Hi Sarah,\\\\n\\\\nThank you.\\\\r\\\\nBest, Dave'),'Hi Sarah,\n\nThank you.\nBest, Dave');
+});
+test('local requests cap generation and keep the model warm without changing deadlines',async()=>{
+ const result=await createReplyGenerator({enabled:true,fetchImpl:async(_,options)=>{
+ const request=JSON.parse(options.body);
+ assert.equal(request.options.num_predict,384);assert.equal(request.keep_alive,'10m');
+ assert.match(request.messages[0].content,/under 80 words/);
+ return response(valid);
+ }})(input);
+ assert.equal(result.ok,true);
+});

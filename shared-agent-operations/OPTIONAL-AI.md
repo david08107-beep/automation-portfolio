@@ -143,3 +143,18 @@ repair attempt stays within the existing request deadline. No scripted fallback
 is silently substituted for AI output. All 83 mocked/regression tests passed,
 including the screenshot-style postponement and escaped-newline cases. Live model
 verification remains blocked until the environment can access Ollama downloads.
+
+## Formatting and responsiveness follow-up
+
+Model output normalization handles repeated escaped newline/tab markers and bare
+backslash-space paragraph separators from the reported email. It preserves
+Windows-path tokens rather than removing all backslashes. The original saved
+draft is not silently rewritten; regenerate to receive corrected text.
+
+Requests ask for replies under 80 words, cap output at 384 tokens, and retain the
+model in Ollama memory for 10 minutes. A token cap can produce incomplete JSON,
+which is rejected rather than shown as a successful draft. First-use load time
+still depends on hardware. The editor now shows elapsed seconds and generation
+state, with cancellation still available. The existing 15-second total deadline
+and one-repair limit are unchanged. All 85 automated tests passed; real speed
+improvement and visual progress behavior remain unverified on the user PC.
