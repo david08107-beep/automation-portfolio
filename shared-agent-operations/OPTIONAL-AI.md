@@ -115,3 +115,12 @@ Release verification: 70/70 automated tests passed. The local-only adapter also
 rejects `:cloud` models and replies exceeding the editor limit. Syntax checks and
 Git whitespace checks passed; a focused secret-pattern scan found no matches.
 The Windows launcher and live model generation remain unverified on this Linux host.
+
+## Settings reliability fix
+
+Incoming message context excludes the prewritten fixture reply. Explicit goal
+instructions take priority over the brief and assessment: positive feedback with
+a decline goal acknowledges the proposal without accepting it. One retry is
+allowed for invalid or unchanged output, within the same 15-second deadline.
+Unchanged and malformed replies now report distinct errors. All 73 automated
+tests passed; actual local-model quality for these settings remains to be checked.

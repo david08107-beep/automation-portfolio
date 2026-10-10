@@ -63,3 +63,23 @@ test('local-only configuration rejects cloud models and editor output overflow',
  const oversized=await createReplyGenerator({enabled:true,fetchImpl:async()=>response({body:'x'.repeat(10001)})})(input);
  assert.equal(oversized.error.code,'AI_OUTPUT');
 });
+test('decline stays explicit with warm tone and positive assessment',async()=>{
+ const result=await createReplyGenerator({enabled:true,fetchImpl:async(_,options)=>{
+ const prompt=JSON.parse(options.body).messages[0].content;
+ assert.match(prompt,/Clearly and respectfully decline/);assert.match(prompt,/Do not accept the terms/);assert.match(prompt,/friendly, empathetic/);assert.match(prompt,/positive feedback does not mean accepting/);
+ return response({body:'Thank you Sarah. I appreciate the effort, but must decline.'});
+ }} )({...input,settings:{goal:'decline',tone:'warm',feedback:'positive'}});
+ assert.equal(result.ok,true);
+});
+test('unchanged output retries once and accepts a distinct reply',async()=>{
+ let calls=0;const result=await createReplyGenerator({enabled:true,fetchImpl:async(_,options)=>{
+ calls++;if(calls===1)return response({body:input.previousBody});
+ assert.match(JSON.parse(options.body).messages[0].content,/last result was invalid or unchanged/);
+ return response({body:'A distinct reply for Dave'});
+ }})(input);
+ assert.equal(result.ok,true);assert.equal(calls,2);
+});
+test('repeated unchanged output returns specific error with bounded attempts',async()=>{
+ let calls=0;const result=await createReplyGenerator({enabled:true,fetchImpl:async()=>{calls++;return response({body:input.previousBody});}})(input);
+ assert.equal(result.error.code,'AI_UNCHANGED');assert.equal(calls,2);
+});

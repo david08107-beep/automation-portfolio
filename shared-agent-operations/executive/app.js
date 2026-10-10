@@ -1409,7 +1409,7 @@ function recordDraftVersion(label){return syncReplyVersion(selectedMessage,{body
    const service=replyService(),context=replyContext(index);
    aiButton.disabled=true;notice('Preparing an optional local AI draft… Nothing will be sent.');
    try{
-     const response=await fetch('/api/reply-generation',{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({workspace,message:JSON.stringify(messageData(index)),brief:snapshot.brief,settings:snapshot.settings,previousBody:snapshot.body})});
+     const response=await fetch('/api/reply-generation',{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({workspace,message:JSON.stringify((({sender,subject,body,summary})=>({sender,subject,body,summary}))(messageData(index))),brief:snapshot.brief,settings:snapshot.settings,previousBody:snapshot.body})});
      const result=await response.json();
      if(controller.signal.aborted || activeWorkspace!==workspace || selectedMessage!==index || !messageDialog.open)return;
      if(!response.ok || !result.ok){notice(typeof result.error?.message==='string'?result.error.message:'Local AI is unavailable. Your draft is preserved.');return;}
