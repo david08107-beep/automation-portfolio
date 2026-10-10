@@ -133,3 +133,13 @@ and restore the previous control states. The edit check compares only editable
 values, not history metadata or platform line endings. All 76 tests passed,
 including regression checks for actual edits and control restoration; live browser
 confirmation remains pending.
+
+## Reply quality checks
+
+Model-generated literal newline escapes are normalized to plain-text line breaks.
+Decline requests require explicit refusal and reject common postponement wording;
+this conservative English heuristic is not a semantic-quality guarantee. One
+repair attempt stays within the existing request deadline. No scripted fallback
+is silently substituted for AI output. All 83 mocked/regression tests passed,
+including the screenshot-style postponement and escaped-newline cases. Live model
+verification remains blocked until the environment can access Ollama downloads.
