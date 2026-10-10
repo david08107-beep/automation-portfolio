@@ -52,6 +52,8 @@ let reviewWorkspace = null;
 let toastTimer;
 let commandTimer;
 let commandGeneration = 0;
+let commandAiRequest = null;
+let responseGeneratedText = '';
 let processing = false;
 let workflowMode = null;
 let monitorTimer;
@@ -202,7 +204,7 @@ function render(animate = false) {
   renderOperations();
   renderTaskList();
   renderMeetingDetails();
-  if (responseRoute && !processing) { $('#command-response-text').textContent = workspaceResponse(responseRoute); renderResponseActions(responseRoute); }
+  if (responseRoute && !processing) { $('#command-response-text').textContent = responseGeneratedText || workspaceResponse(responseRoute); renderResponseActions(responseRoute); }
   if (animate) $$('#task-count, #nav-task-count, #approval-count, #nav-approval-count, #panel-approval-count, #operations-approval-status, #task-panel-summary').forEach(animateStatus);
 }
 function normalizePayload(id,payload) {
@@ -668,11 +670,72 @@ function setBusy(busy) {
   $('#execution-toggle').hidden = busy || executionEvents.length <= 2;
   if (busy) { $('#command-response-actions').replaceChildren(); $('#operations').classList.remove('execution-expanded'); $('#execution-toggle').setAttribute('aria-expanded','false'); $('#execution-toggle').textContent='Show full timeline'; }
   $('#command-send').disabled = commandBusy; $('#command-send').textContent = commandBusy ? 'Processing…' : 'Send';
+  $('#command-cancel').hidden = !(commandBusy && commandAiRequest);
+  $('#command-mode').disabled = commandBusy;
   $('#command-input').readOnly = commandBusy;
   $$('[data-command]').forEach(button => { button.disabled = commandBusy; });
   $('#command-response').setAttribute('aria-busy',String(commandBusy)); $('#command-form').setAttribute('aria-busy',String(commandBusy));
   $('#monitoring-next').disabled = busy;
 }
+function assistantFacts(){
+  const facts=[];
+  const add=(id,category,text)=>facts.push({id,category,text:String(text).replace(/\s+/g,' ').trim().slice(0,500)});
+  add('workspace-scope','workspace',`${currentContext.name} contains fictional local demo data only. No personal or work accounts, web tools, payment services, email delivery, calendar provider, or external action tools are connected.`);
+  add('workspace-summary','workspace',`${demo.unread} unread messages, ${demo.priority} high priority, ${demo.meetings} ${currentContext.calendarNoun} today, ${openTasks().length} open tasks, and ${pendingCards().length} prepared actions awaiting a decision.`);
+  for(let i=0;i<4;i++){const message=messageData(i);add(`inbox-${i}`,'inbox',`${message.sender}: ${message.subject}. ${message.summary} Status: ${messageStatus(i)}. Priority: ${message.priority}.`);}
+  allTaskItems().slice(0,8).forEach((task,i)=>add(`task-${i}`,'tasks',`${task.title}. Owner: ${task.owner || 'Dave'}. ${task.detail || `Due: ${task.due}`}. Status: ${task.completed?'completed':'open'}.`));
+  meetingFixtures[activeWorkspace].slice(0,4).forEach((_,i)=>{const meeting=meetingDetails(String(i));if(meeting)add(`calendar-${i}`,'calendar',`${meeting.title}. ${meeting.when}. ${meeting.location}. Focus: ${meeting.focus}`);});
+  approvalCards.forEach((card,i)=>{const id=card.dataset.approval,execution=state.executions[id],decision=state.decisions[id];add(`approval-${i}`,'approvals',`${card.querySelector('h3').textContent}. ${card.querySelector('p').textContent} Status: ${execution?`confirmed ${actionProfiles[id].status} in demo mode`:decision?.status || 'prepared for Dave’s review'}. External action requires explicit confirmation.`);});
+  state.activity.slice(-5).reverse().forEach((event,i)=>add(`activity-${i}`,'activity',`${event.title}. ${event.detail}`));
+  return facts.slice(0,40);
+}
+async function submitAiCommand(request,mode){
+  if(responseEditorDraft){notify('Save or cancel the local action before starting another request.');focusResponseEditor();return;}
+  if(workflowMode==='proactive')cancelProactive();
+  if(processing)return;
+  const generation=++commandGeneration,workspace=activeWorkspace,controller=new AbortController();
+  commandAiRequest=controller;responseGeneratedText='';responseCommandNotice='';responseEditorDraft=null;responseUndo=null;responseDisclosureOpen.clear();responseRoute='research';workflowMode='command';currentWorkflow=null;executionEvents=[];
+  clearTimeout(monitorTimer);$('#response-feedback').hidden=true;$('#command-input').value=request;$('#command-response').hidden=false;
+  $('#command-response-actions').replaceChildren();$('#command-route').textContent=`Orbit → ${mode==='cloud'?'Ollama Cloud':'Local Ollama'} → Orbit`;
+  $('#command-response-badge').textContent='PROCESSING';$('#command-response-text').textContent='Preparing a grounded answer from the current fictional workspace snapshot…';
+  $('#command-request-label').textContent=`Your request: ${request}`;$('#command-status').textContent=`${mode==='cloud'?'Cloud':'Local'} AI is generating · no tools or actions`;
+  $('#workflow-title').textContent='Preparing a grounded workspace answer';$('#workflow-phase').textContent='Bounded fictional facts only · No tools or automatic actions';$('#workflow-badge').textContent='GENERATING';$('#execution-note').textContent='Current optional AI request · Eastern time';
+  setBusy(true);executionStep('Bounded workspace snapshot prepared');executionStep(`${mode==='cloud'?'Cloud':'Local'} AI generation requested`);animateStatus($('#command-response'));
+  try{
+    const response=await fetch('/api/assistant-query',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode,workspace,request,facts:assistantFacts()}),signal:controller.signal});
+    const result=await response.json();
+    if(generation!==commandGeneration || workspace!==activeWorkspace)return;
+    if(!response.ok || !result.ok)throw Object.assign(new Error(result.error?.message || 'Optional AI could not prepare an answer.'),{code:result.error?.code || 'AI_UNAVAILABLE'});
+    responseGeneratedText=result.value.answer;responseRoute=result.value.suggestedView==='none'?'research':result.value.suggestedView;
+    executionStep(`Grounded answer returned with ${result.value.evidence.length} cited workspace ${result.value.evidence.length===1?'fact':'facts'}`);
+    $('#command-route').textContent=`${mode==='cloud'?'Cloud AI':'Local AI'} · ${result.value.evidence.length} cited workspace ${result.value.evidence.length===1?'item':'items'} · No tools`;
+    $('#command-response-badge').textContent=mode==='cloud'?'CLOUD AI':'LOCAL AI';$('#command-status').textContent=`Answer ready · ${result.value.timing.serverMs} ms · No action taken`;
+    logActivity('command',`Executive Assistant answered with optional ${mode==='cloud'?'Cloud':'Local'} AI`,`${result.value.evidence.length} grounded workspace citations · No tools or actions`,responseRoute);
+    saveState();
+  }catch(error){
+    if(generation!==commandGeneration || workspace!==activeWorkspace)return;
+    responseGeneratedText='';responseRoute=null;$('#command-response-actions').replaceChildren();
+    const cancelled=error.name==='AbortError';
+    $('#command-response-text').textContent=cancelled?'Generation cancelled. No action was taken.':error.message || 'Optional AI could not prepare an answer. No action was taken.';
+    $('#command-response-badge').textContent=cancelled?'CANCELLED':'AI UNAVAILABLE';$('#command-route').textContent=`${mode==='cloud'?'Cloud AI':'Local AI'} · No fallback used`;
+    $('#command-status').textContent=cancelled?'Generation cancelled · Scripted mode remains available':'Generation failed · Your workspace state is unchanged';
+  }finally{
+    if(generation===commandGeneration && workspace===activeWorkspace){commandAiRequest=null;clearHighlights();setBusy(false);workflowMode=null;$('#workflow-title').textContent='Orbit is monitoring your workspace';$('#workflow-phase').textContent='Request complete · No automatic action';$('#workflow-badge').textContent='IDLE';$('#execution-note').textContent='Last optional AI request · Eastern time';if(responseRoute)render(true);$('#command-input').focus({preventScroll:true});scheduleMonitoring(5000);}
+  }
+}
+async function configureCommandAi(){
+  const select=$('#command-mode'),status=$('#command-mode-status');
+  try{
+    const response=await fetch('/api/reply-generation/status',{headers:{Accept:'application/json'}});if(!response.ok)throw Error('status');
+    const capability=await response.json();
+    for(const mode of ['local','cloud'])select.querySelector(`option[value="${mode}"]`).disabled=capability.modes?.[mode]?.enabled!==true;
+    const available=['local','cloud'].filter(mode=>capability.modes?.[mode]?.enabled);
+    const cloudReason={credentials:'Cloud AI needs a backend credential',model:'Cloud AI needs a valid hosted model',disabled:'Cloud AI is disabled'}[capability.modes?.cloud?.reason];
+    status.textContent=(available.length?`Optional ${available.map(mode=>mode==='local'?'Local AI':'Cloud AI').join(' and ')} available · Scripted remains default`:'Optional AI is not configured · Scripted remains available')+(capability.modes?.cloud?.configured && !capability.modes.cloud.enabled && cloudReason?` · ${cloudReason}`:'');
+  }catch{status.textContent='Optional AI status unavailable · Scripted remains available';}
+}
+$('#command-mode').addEventListener('change',event=>{const mode=event.target.value,label=mode==='scripted'?'Scripted demo':mode==='local'?'Local AI':'Cloud AI';$('.command-demo').textContent=mode==='scripted'?'SCRIPTED DEMO · NO LIVE AI':`${label.toUpperCase()} · OPTIONAL · NO TOOLS`;$('#command-mode-status').textContent=mode==='scripted'?'Scripted is the default · no model call':`${label} answers from bounded fictional workspace facts · no automatic actions`;});
+configureCommandAi();
 function activateAgent(agent) {
   specialistCards.forEach((card,index) => {
     const active = card.dataset.agent === agent;
@@ -691,10 +754,11 @@ function submitCommand(request) {
   if (workflowMode === 'proactive') cancelProactive();
   if (processing) return;
   if (!request) { $('#command-status').textContent = 'Enter a request or choose a suggestion.'; $('#command-input').focus(); return; }
+  if($('#command-mode').value!=='scripted'){submitAiCommand(request,$('#command-mode').value);return;}
   ['workflow-title','workflow-phase'].forEach(id=>document.getElementById(id).setAttribute('aria-live','polite'));
   clearTimeout(monitorTimer); workflowMode = 'command';
   const route = routeCommand(request);
-  responseEditorDraft=null;responseUndo=null;responseDisclosureOpen.clear();$('#response-feedback').hidden=true;
+  responseGeneratedText='';responseEditorDraft=null;responseUndo=null;responseDisclosureOpen.clear();$('#response-feedback').hidden=true;
   responseCommandNotice=/\b(send|reschedule|move|share|delete|pay|book|cancel|assign|create|update|complete)\b/i.test(request)?'Typed commands do not execute actions. Review the prepared work below and use its explicit confirmation control.':'';
   responseRoute = route;
   const agents = ['briefing','changes','attention'].includes(route) ? ['inbox','calendar','tasks','approvals'] : ['unsupported','capabilities','handled'].includes(route) ? [] : [route];
@@ -747,9 +811,11 @@ function submitCommand(request) {
 }
 $('#command-form').addEventListener('submit',event => { event.preventDefault(); submitCommand($('#command-input').value); });
 $$('[data-command]').forEach(button => button.addEventListener('click',() => submitCommand(button.dataset.command)));
+$('#command-cancel').addEventListener('click',()=>commandAiRequest?.abort());
 $('#execution-toggle').addEventListener('click',()=>{const expanded=$('#operations').classList.toggle('execution-expanded');$('#execution-toggle').setAttribute('aria-expanded',String(expanded));$('#execution-toggle').textContent=expanded?'Show less':'Show full timeline';});
 function resetCommand() {
   clearTimeout(monitorTimer); workflowMode = null;
+  commandAiRequest?.abort();commandAiRequest=null;responseGeneratedText='';
   $('#completed-actions').open=false;
   $('#operations').classList.remove('execution-expanded'); $('#execution-toggle').setAttribute('aria-expanded','false'); $('#execution-toggle').textContent='Show full timeline';
   clearTimeout(commandTimer); commandGeneration++; responseRoute = null;responseCommandNotice='';responseEditorDraft=null;responseUndo=null;responseDisclosureOpen.clear();$('#response-feedback').hidden=true; currentWorkflow = null; executionEvents = []; agentLastChecked.clear(); clearHighlights(); setBusy(false); renderExecution();
@@ -1012,8 +1078,8 @@ function openMessage(i,origin,compose=false){
   if(['Handled','Snoozed'].includes(messageStatus(i)))add(messageStatus(i)==='Handled'?'Reopen message':'Return to inbox',()=>{reopenMessage(i);openMessage(i,messageOrigin);});
   if(!terminal){if(!(activeWorkspace==='personal' && [1,2].includes(i))){add(record.draft!==undefined || i===0 && state.drafts.reply?'Edit Draft':'Review Orbit Draft',()=>composeReply(true));add('Generate AI reply',()=>{
   const button=$('#draft-ai-generate');
-  if(!button || button.disabled){$('#message-feedback').textContent='Local AI is disabled or still checking its configuration. Review Orbit Draft is available now.';return;}
-  composeReply(true);$('#draft-mode').value='local';$('#draft-generate').scrollIntoView({block:'center',behavior:reducedMotion.matches?'auto':'smooth'});$('#draft-generate').click();
+  if(!button || $('#draft-mode option[value=local]').disabled){$('#message-feedback').textContent='Local AI is disabled or still checking its configuration. Review Orbit Draft is available now.';return;}
+  composeReply(true);$('#draft-mode').value='local';$('#draft-mode').dispatchEvent(new Event('change'));$('#draft-generate').scrollIntoView({block:'center',behavior:reducedMotion.matches?'auto':'smooth'});$('#draft-generate').click();
 });add('Write my own reply',()=>composeReply(false));}
     const kinds=activeWorkspace==='personal'?(i===2?[['Create Reminder','reminder']]:i===1?[['Add to Calendar','calendar'],['Create Reminder','reminder']]:[['Add to Calendar','calendar']]):[['Create Task','task'],['Add Follow-up','followup']];
     for(const [text,kind] of kinds){const existing=record.artifacts?.some(a=>a.kind===kind);add(existing && kind!=='calendar'?({task:'Edit Task',followup:'Edit Follow-up',reminder:'Edit Reminder'}[kind]):text,()=>kind==='calendar'?createMessageArtifact(kind):editLocalAction(kind));}
@@ -1385,7 +1451,7 @@ function restoreReplySettings(record){const settings=cleanReplySettings(record.r
 function draftSnapshot(label){return {label,body:$('#reply-body').value,brief:$('#draft-brief').value,to:$('#reply-to').value,subject:$('#reply-subject').value,settings:currentReplySettings(),at:new Date().toISOString()};}
 function recordDraftVersion(label){return syncReplyVersion(selectedMessage,{body:$('#reply-body').value,brief:$('#draft-brief').value,to:$('#reply-to').value,subject:$('#reply-subject').value,settings:currentReplySettings()},label);}
 (() => {
- const tools=document.createElement('section');tools.className='reply-draft-tools';tools.setAttribute('aria-label','Scripted reply preparation');tools.innerHTML='<p class="muted">Prepare a reply using this message and your selected settings. You review and decide what happens next.</p><label class="action-field">Reply brief<textarea id="draft-brief" rows="2" maxlength="4000"></textarea></label><div class="draft-settings"><label class="action-field">Goal<select id="draft-goal"><option value="clarify">Request clarification</option><option value="confirm">Confirm next step</option><option value="decline">Decline respectfully</option></select></label><label class="action-field">Tone<select id="draft-tone"><option value="professional">Professional</option><option value="warm">Warm</option><option value="concise">Concise</option></select></label><label class="action-field">Your assessment<select id="draft-feedback"><option value="positive">Positive</option><option value="mixed" selected>Mixed</option><option value="negative">Negative</option></select></label></div><div class="draft-toolbar"><label class="action-field">Generation mode<select id="draft-mode"><option value="scripted">Scripted demo</option><option value="local" disabled>Local AI</option></select></label><button type="button" id="draft-generate" class="approve-button">Generate reply</button><details id="draft-more" class="draft-more"><summary aria-label="More reply tools">More</summary><div class="draft-more-content"><div class="message-actions"><button type="button" id="draft-history-open" aria-haspopup="dialog">Draft history</button><button type="button" id="draft-download">Download draft</button><button type="button" id="draft-copy">Copy draft</button></div><p id="draft-timing" class="muted">Timing appears after local AI generation.</p></div></details><button type="button" id="draft-regenerate" hidden>Scripted alternative</button></div><p id="draft-notice" role="status" aria-live="polite"></p>';
+ const tools=document.createElement('section');tools.className='reply-draft-tools';tools.setAttribute('aria-label','Scripted reply preparation');tools.innerHTML='<p class="muted">Prepare a reply using this message and your selected settings. You review and decide what happens next.</p><label class="action-field">Reply brief<textarea id="draft-brief" rows="2" maxlength="4000"></textarea></label><div class="draft-settings"><label class="action-field">Goal<select id="draft-goal"><option value="clarify">Request clarification</option><option value="confirm">Confirm next step</option><option value="decline">Decline respectfully</option></select></label><label class="action-field">Tone<select id="draft-tone"><option value="professional">Professional</option><option value="warm">Warm</option><option value="concise">Concise</option></select></label><label class="action-field">Your assessment<select id="draft-feedback"><option value="positive">Positive</option><option value="mixed" selected>Mixed</option><option value="negative">Negative</option></select></label></div><div class="draft-toolbar"><label class="action-field">Generation mode<select id="draft-mode"><option value="scripted">Scripted demo</option><option value="local" disabled>Local AI</option><option value="cloud" disabled>Cloud AI</option></select></label><button type="button" id="draft-generate" class="approve-button">Generate reply</button><details id="draft-more" class="draft-more"><summary aria-label="More reply tools">More</summary><div class="draft-more-content"><div class="message-actions"><button type="button" id="draft-history-open" aria-haspopup="dialog">Draft history</button><button type="button" id="draft-download">Download draft</button><button type="button" id="draft-copy">Copy draft</button></div><p id="draft-timing" class="muted">Timing appears after AI generation.</p></div></details><button type="button" id="draft-regenerate" hidden>Scripted alternative</button></div><p id="draft-notice" role="status" aria-live="polite"></p>';
  $('#reply-body').closest('label').before(tools);
  const more=$('#draft-more');
  document.addEventListener('pointerdown',event=>{if(more.open && !more.contains(event.target))more.open=false;});
@@ -1394,23 +1460,30 @@ function recordDraftVersion(label){return syncReplyVersion(selectedMessage,{body
 
  const history=document.createElement('dialog');history.id='draft-history-dialog';history.className='action-dialog draft-history-dialog';history.setAttribute('aria-labelledby','draft-history-title');history.innerHTML='<div class="dialog-top"><h2 id="draft-history-title">Reply draft history</h2><button type="button" id="draft-history-close" class="close-button" aria-label="Close draft history">×</button></div><p>Versions are specific to this message and workspace. Restore brings back the brief, body, and selected settings; nothing is sent.</p><div id="draft-history-items"></div>';document.body.append(history);history.addEventListener('keydown',containDialogFocus);$('#draft-history-close').addEventListener('click',()=>history.close());history.addEventListener('close',()=>{if(messageDialog.open)(more.open?$('#draft-history-open'):more.querySelector('summary')).focus();});
  const notice=text=>$('#draft-notice').textContent=text;
- const aiButton=document.createElement('button');aiButton.id='draft-ai-generate';aiButton.type='button';aiButton.textContent='Generate with local AI';aiButton.hidden=true;aiButton.title='Optional Ollama · disabled by default · draft only';$('#draft-copy').after(aiButton);
+ const aiButton=document.createElement('button');aiButton.id='draft-ai-generate';aiButton.type='button';aiButton.textContent='Generate with AI';aiButton.hidden=true;aiButton.title='Optional Ollama · disabled by default · draft only';$('#draft-copy').after(aiButton);
  aiButton.disabled=true;
- const aiStatus=document.createElement('p');aiStatus.className='muted';aiStatus.textContent='Checking optional local AI configuration…';$('.draft-toolbar').after(aiStatus);
- let aiEnabled=false,aiRequest=null,unlockAi=null,aiProgressTimer=null;
+ const aiStatus=document.createElement('p');aiStatus.className='muted';aiStatus.textContent='Checking optional AI configuration…';$('.draft-toolbar').after(aiStatus);
+ const aiModes={local:false,cloud:false};let aiRequest=null,unlockAi=null,aiProgressTimer=null;
+ const aiReady=mode=>aiModes[mode]===true;
+ const aiLabel=mode=>mode==='cloud'?'Cloud AI':'Local AI';
  fetch('/api/reply-generation/status').then(response=>{if(!response.ok)throw Error('Unavailable');return response.json();}).then(status=>{
-   aiEnabled=status.enabled===true;aiButton.disabled=!aiEnabled;$('#draft-mode option[value=local]').disabled=!aiEnabled;
-   aiStatus.textContent=aiEnabled?'Local AI available · Choose it in Generation mode. Drafts require review.':'Scripted mode · Local AI is disabled on this server.';
- }).catch(()=>{aiStatus.textContent='Scripted mode · Optional local AI requires the local Orbit server.';});
- const cancelAi=()=>{clearInterval(aiProgressTimer);aiProgressTimer=null;$('#reply-composer').removeAttribute('aria-busy');aiButton.textContent='Generate with local AI';$('#draft-generate').textContent='Generate reply';$('#draft-generate').disabled=false;aiRequest?.abort();aiRequest=null;unlockAi?.();unlockAi=null;aiButton.disabled=!aiEnabled;};
+   aiModes.local=status.modes?.local?.enabled===true || status.enabled===true;aiModes.cloud=status.modes?.cloud?.enabled===true;
+   $('#draft-mode option[value=local]').disabled=!aiModes.local;$('#draft-mode option[value=cloud]').disabled=!aiModes.cloud;
+   aiButton.disabled=!aiReady($('#draft-mode').value);
+   const available=[aiModes.local?'Local AI':'',aiModes.cloud?'Cloud AI':''].filter(Boolean);
+   const cloudNote=status.modes?.cloud?.configured===true && !aiModes.cloud?' Cloud AI needs its backend credential and hosted model setting.':'';
+   aiStatus.textContent=available.length?`${available.join(' and ')} available · AI drafts require review.${cloudNote}`:`Scripted mode · Optional AI is disabled on this server.${cloudNote}`;
+ }).catch(()=>{aiStatus.textContent='Scripted mode · Optional AI requires the local Orbit server.';});
+ $('#draft-mode').addEventListener('change',()=>{aiButton.disabled=!aiReady($('#draft-mode').value);});
+ const cancelAi=()=>{clearInterval(aiProgressTimer);aiProgressTimer=null;$('#reply-composer').removeAttribute('aria-busy');aiButton.textContent='Generate with AI';$('#draft-generate').textContent='Generate reply';$('#draft-generate').disabled=false;aiRequest?.abort();aiRequest=null;unlockAi?.();unlockAi=null;aiButton.disabled=!aiReady($('#draft-mode').value);};
  messageDialog.addEventListener('close',cancelAi);
  $('#reply-cancel').addEventListener('click',cancelAi);
  $('#draft-generate').addEventListener('click',()=>{
    $('#draft-more').open=false;
-   if($('#draft-mode').value==='local')aiButton.click();else $('#draft-regenerate').click();
+   if(['local','cloud'].includes($('#draft-mode').value))aiButton.click();else $('#draft-regenerate').click();
  });
  aiButton.addEventListener('click',async()=>{
-   if(!aiEnabled || aiRequest)return;
+   const mode=$('#draft-mode').value;if(!aiReady(mode) || aiRequest)return;const provider=aiLabel(mode);
    const controller=new AbortController();aiRequest=controller;
    const workspace=activeWorkspace,index=selectedMessage;
    const startedAt=Date.now();
@@ -1420,29 +1493,29 @@ function recordDraftVersion(label){return syncReplyVersion(selectedMessage,{body
    // Yield a paint before synchronous version/history persistence.
    await new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,0)));
    if(controller.signal.aborted || activeWorkspace!==workspace || selectedMessage!==index || !messageDialog.open){if(aiRequest===controller)cancelAi();return;}
-   const snapshot=draftSnapshot('Before local AI');
-   const saved=recordDraftVersion('Before local AI');if(!saved){cancelAi();return;}
+   const snapshot=draftSnapshot(`Before ${provider}`);
+   const saved=recordDraftVersion(`Before ${provider}`);if(!saved){cancelAi();return;}
    const service=replyService(),context=replyContext(index);
    aiButton.disabled=true;aiButton.textContent='Generating…';$('#reply-composer').setAttribute('aria-busy','true');
-   notice('Preparing your reply… First use may need to load the local model. Nothing will be sent.');
-   aiProgressTimer=setInterval(()=>{const seconds=Math.floor((Date.now()-startedAt)/1000);notice(`Preparing your reply · ${seconds}s. ${seconds>=5?'The local model may be loading or retrying; Cancel keeps your draft.':'Settings are held steady while generating.'}`);},1000);
+   notice(`Preparing with ${provider}… Nothing will be sent.`);
+   aiProgressTimer=setInterval(()=>{const seconds=Math.floor((Date.now()-startedAt)/1000);notice(`Preparing with ${provider} · ${seconds}s. ${seconds>=5?'The model may be loading, queued, or retrying; Cancel keeps your draft.':'Settings are held steady while generating.'}`);},1000);
    const preparationMs=Date.now()-startedAt;
    try{
-     const response=await fetch('/api/reply-generation',{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({workspace,message:JSON.stringify((({sender,subject,body,summary})=>({sender,subject,body,summary}))(messageData(index))),brief:snapshot.brief,settings:snapshot.settings,previousBody:snapshot.body})});
+     const response=await fetch('/api/reply-generation',{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({mode,workspace,message:JSON.stringify((({sender,subject,body,summary})=>({sender,subject,body,summary}))(messageData(index))),brief:snapshot.brief,settings:snapshot.settings,previousBody:snapshot.body})});
      const result=await response.json();
      if(controller.signal.aborted || activeWorkspace!==workspace || selectedMessage!==index || !messageDialog.open)return;
-     if(!response.ok || !result.ok){notice(typeof result.error?.message==='string'?result.error.message:'Local AI is unavailable. Your draft is preserved.');return;}
-     if(!OrbitReplyEditorState.matches(snapshot,draftSnapshot('Before local AI'))){notice('The reply editor changed during generation. Your edits are preserved; generate again with the current settings.');return;}
-     if(typeof result.value?.body!=='string' || !result.value.body.trim() || result.value.body.length>MAX_REPLY_LENGTH){notice('Local AI returned an invalid draft. Nothing was replaced.');return;}
+     if(!response.ok || !result.ok){notice(typeof result.error?.message==='string'?result.error.message:`${provider} is unavailable. Your draft is preserved.`);return;}
+     if(!OrbitReplyEditorState.matches(snapshot,draftSnapshot(`Before ${provider}`))){notice('The reply editor changed during generation. Your edits are preserved; generate again with the current settings.');return;}
+     if(typeof result.value?.body!=='string' || !result.value.body.trim() || result.value.body.length>MAX_REPLY_LENGTH){notice(`${provider} returned an invalid draft. Nothing was replaced.`);return;}
      const revised=service.saveReplyDraftVersion({...context,draftId:saved.draft.id,expectedRevision:saved.draft.currentRevision,...snapshot,body:result.value.body});
      if(replyServiceError(revised))return;
-     projectReplyDraft(index,revised.value.version,'Local AI draft');$('#reply-body').value=revised.value.version.body;
+     projectReplyDraft(index,revised.value.version,`${provider} draft`);$('#reply-body').value=revised.value.version.body;
      const elapsed=((Date.now()-startedAt)/1000).toFixed(1);
      const timing=result.value.timing;
      $('#draft-timing').textContent=`Total: ${elapsed}s · Editor preparation: ${(preparationMs/1000).toFixed(1)}s`+(timing?` · Attempts: ${timing.attempts}`:'')+(Number.isFinite(timing?.loadMs)?` · Model load: ${(timing.loadMs/1000).toFixed(1)}s`:'')+(Number.isFinite(timing?.generateMs)?` · Model generation: ${(timing.generateMs/1000).toFixed(1)}s`:'');
-     notice(`Local AI draft ready in ${elapsed}s. `+persist()+' Review before sending.');
-   }catch{if(!controller.signal.aborted && activeWorkspace===workspace && selectedMessage===index)notice('Local AI is unavailable. Your draft is preserved; scripted alternatives still work.');}
-   finally{if(aiRequest===controller){clearInterval(aiProgressTimer);aiProgressTimer=null;$('#reply-composer').removeAttribute('aria-busy');aiButton.textContent='Generate with local AI';$('#draft-generate').textContent='Generate reply';unlockAi?.();unlockAi=null;aiRequest=null;aiButton.disabled=!aiEnabled;}}
+     notice(`${provider} draft ready in ${elapsed}s. `+persist()+' Review before sending.');
+   }catch{if(!controller.signal.aborted && activeWorkspace===workspace && selectedMessage===index)notice(`${provider} is unavailable. Your draft is preserved; scripted alternatives still work.`);}
+   finally{if(aiRequest===controller){clearInterval(aiProgressTimer);aiProgressTimer=null;$('#reply-composer').removeAttribute('aria-busy');aiButton.textContent='Generate with AI';$('#draft-generate').textContent='Generate reply';unlockAi?.();unlockAi=null;aiRequest=null;aiButton.disabled=!aiReady($('#draft-mode').value);}}
  });
  const persist=()=>{saveState();return guidedSession?'Temporary guided session only.':storageAvailable?'Saved in this browser.':'Browser storage is unavailable or full. Changes are retained only for this session; download a backup.';};
  $('#draft-regenerate').addEventListener('click',()=>{const saved=recordDraftVersion('Before alternative');if(!saved)return;const result=replyService().prepareReplyAlternative({...replyContext(selectedMessage),draftId:saved.draft.id,expectedRevision:saved.draft.currentRevision,settings:currentReplySettings(),brief:$('#draft-brief').value,to:$('#reply-to').value,subject:$('#reply-subject').value});if(replyServiceError(result))return;projectReplyDraft(selectedMessage,result.value.version,'New alternative');$('#reply-body').value=result.value.version.body;notice('Distinct scripted alternative prepared. '+persist()+' Nothing sent.');});

@@ -10,7 +10,7 @@ A collection of AI automation, n8n, and Microsoft Power Automate Desktop project
 
 | Project | Platform | What it does | Status |
 |---------|----------|--------------|--------|
-| [Orbit — Personal & Work Executive Assistant](shared-agent-operations/README.md) | Node.js + vanilla JavaScript | Executive briefings, separate personal/work inboxes and calendars, review-first actions, and Work-only campaign workflows and Content Studio. | Runnable local demo; fictional data and simulated actions |
+| [Orbit — Personal & Work Executive Assistant](shared-agent-operations/README.md) | Node.js + vanilla JavaScript + optional Ollama | Executive briefings, separate personal/work inboxes and calendars, review-first actions, and Work-only campaign workflows and Content Studio. | Active development; runnable local demo with fictional data and simulated actions |
 
 ### Try the Orbit interview demo
 
@@ -20,7 +20,7 @@ A collection of AI automation, n8n, and Microsoft Power Automate Desktop project
 
 With Node.js 20 or newer, run `npm start` from `shared-agent-operations`, then open `http://127.0.0.1:4317/`. Start with the Executive Assistant and use the Personal/Work buttons to change context. Workflows and Content Studio appear only in Work.
 
-Use `npm test` for the regression suite. The optional `/showcase` walkthrough is illustrative and does not modify saved requests. Localhost is not a public recruiter link. No live AI provider, personal/employer account, or external publishing service is connected. See the [showcase guide](shared-agent-operations/SHOWCASE.md) and [verification record](shared-agent-operations/VERIFICATION.md) for demonstration steps, evidence, and limitations.
+Use `npm test` for the regression suite. The optional `/showcase` walkthrough is illustrative and does not modify saved requests. Localhost is not a public recruiter link. Scripted generation remains the default; optional Ollama reply drafting requires explicit server configuration and never approves or sends. No personal/employer account or external publishing service is connected. See the [showcase guide](shared-agent-operations/SHOWCASE.md), [portfolio-readiness record](shared-agent-operations/docs/PORTFOLIO-READINESS.md), and [verification record](shared-agent-operations/VERIFICATION.md) for evidence and limitations.
 
 <!-- Add a row to the table above when a project is ready to show. -->
 
@@ -70,7 +70,7 @@ Each project folder should contain:
 - The workflow export or source files
 - Screenshots or sample inputs/outputs where useful
 
-The PAD folder currently contains documentation, not an importable flow. The n8n folder is a work-in-progress description without a workflow export. The two web prototypes are separate projects; neither provides live AI generation in this checkout.
+The PAD folder currently contains documentation, not an importable flow. The n8n folder is a work-in-progress description without a workflow export. The web prototypes are separate projects. Orbit includes optional reply-drafting providers behind explicit server opt-in; the other projects do not inherit that capability.
 
 ---
 

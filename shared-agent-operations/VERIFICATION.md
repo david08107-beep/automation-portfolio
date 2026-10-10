@@ -1,6 +1,77 @@
-# Verification record — 2026-10-09
+# Verification record — 2026-10-10
 
 ## Current review
+
+V1.7 grounded Ask Orbit implementation: 104/104 automated tests pass. New mocked
+coverage verifies local structured output, hosted backend authentication, bounded
+workspace context, known citations, invalid/extra output rejection with one retry,
+prompt-injection separation, missing credentials, authentication/model/rate-limit
+errors, timeout/cancellation, credential redaction, Personal/Work separation,
+origin enforcement, unchanged workflow persistence, and `canExecute: false`.
+`npm run demo` completed with `simulated: true` and `externalActions: 0`; JavaScript
+syntax checks and `git diff --check` passed. A local status request confirmed
+Scripted as the default with optional providers disabled in this process. Fresh
+Chromium QA through the DevTools protocol passed at 1440 × 1000 and 390 × 844:
+the response-mode selector and Send control were visible, Work switching and Dark
+theme applied, the scripted What changed? request completed, approval boundaries
+remained visible, neither viewport had horizontal overflow, and Chromium reported
+no page or console errors. One owner-authorized V1.7 acceptance test then used
+the backend credential after a read-only balance/model preflight. The stale
+configured model was not available, so inference was stopped before use; the
+authenticated model list confirmed `gemma4:31b`, included allowance was positive,
+and purchased balance was zero. Exactly one bounded Gemma request succeeded on
+its first attempt with a validated `task-0` citation, `suggestedView: "tasks"`,
+and `canExecute: false`. The included balance changed by approximately `$0.00006`;
+purchased balance and purchased spend remained `$0`. Usage aggregation had not
+yet posted the request, consistent with Ollama's documented reporting delay. No
+deployment, push, approval, or execution occurred. An isolated server status
+check with Cloud enabled and `gemma4:31b` then reported Cloud `enabled: true`,
+`configured: true`, while preserving `defaultMode: "scripted"`; this status check
+made no inference request.
+
+Final no-cost environment check: the running managed environment reported
+configuration revision 11, all three Cloud AI backend settings were present, and
+the local capability endpoint reported Cloud `enabled: true` and
+`configured: true` with Scripted still the default. This check did not list models,
+read balances, or make an inference request.
+
+Professional UI and portfolio-readiness pass: the current interface was exercised in Chromium at 1440 × 1000 and 390 × 844. Light, Dark, and system-following Auto modes applied and persisted; Personal/Work switching was repeated twice; the Work-only shadow workspace inherited the theme; scripted reply preparation stayed editable and unsent; draft saving reported browser persistence; and the approval review boundary remained visible. Both viewport widths had no horizontal document overflow, the browser reported no console or page errors, and an automated visible-text contrast scan reported no remaining results below its WCAG AA 4.5:1 threshold. Current screenshots were recaptured from the working application. The full 95-test suite, `npm run demo`, JavaScript syntax checks, and `git diff --check` passed. This is targeted browser evidence, not a full accessibility certification.
+
+Hosted Ollama Cloud implementation: 95/95 automated tests pass, the command-line
+demo completes with `simulated: true` and `externalActions: 0`, all edited
+JavaScript passes `node --check`, and `git diff --check` passes. New mocked tests
+cover explicit cloud opt-in, backend bearer authentication, exact hosted model
+configuration, success, invalid/unchanged output, missing credentials,
+authentication failure, unavailable models, rate limits, provider outages,
+timeout, cancellation, credential/error redaction, Personal workspace context,
+HTTP routing, and the existing approval-required boundary. Default startup served
+the app with Scripted selected and both AI modes disabled; a credential-free
+cloud-opt-in startup reported `AI_CREDENTIALS` without contacting inference.
+Read-only access to the current hosted model list at `https://ollama.com/api/tags`
+succeeded. A backend API-key binding was later confirmed with the read-only
+balance endpoint, without exposing the key: included credits were available and
+the purchased-credit balance was zero. The owner then authorized one live test,
+but its first adapter attempt failed with `EAI_AGAIN` before reaching Ollama
+because Node's built-in `fetch` was not using the managed session proxy. A
+read-only model-list check confirmed that `NODE_USE_ENV_PROXY=1` corrects that
+environment path. The owner authorized two corrected, single-call acceptance
+requests. Ollama recorded exactly two requests totaling 593 input tokens, 131
+cached input tokens, 768 output tokens, and `$0.00028` of usage. Both drew from
+included free usage while purchased balance remained zero. Each response exhausted
+the 384-token cap without passing the strict draft JSON validator, so no draft,
+approval, or execution was created. The second request explicitly set the
+documented `think: false` option, but `gpt-oss:20b` ignored it and returned 1,930
+characters of thinking with no reply content. Read-only hosted metadata explains
+why: this model supports only `low`, `medium`, and `high` thinking and defaults to
+`medium`. The free-account model `gemma4:31b` supports `false` and defaults to it,
+so it is now the recommended compatibility target. One owner-authorized Gemma
+request then succeeded on its first provider call: `done_reason` was `stop`, no
+thinking text was returned, 46 output tokens produced a valid editable reply,
+and the adapter reported `requiresReview: true` in 619 ms. Projecting that exact
+body into an isolated reply service created no approval or execution, and direct
+execution failed with `APPROVAL_REQUIRED`. Across all three provider requests,
+Ollama reported `$0.00034` of usage drawn from included free usage; purchased
+balance remained zero. Cloud generation remains disabled after testing.
 
 Environment note: the restricted Windows sandbox rerun could not write temporary history files. The same final suite was rerun outside that sandbox and passed 62/62, including all persistence tests. All package JavaScript also passed syntax checks.
 

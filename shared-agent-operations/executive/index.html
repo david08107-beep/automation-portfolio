@@ -5,9 +5,10 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; media-src 'self';">
   <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#101214">
+  <meta name="theme-color" content="#f4f6f9">
   <title>Orbit — Executive Assistant</title>
   <link rel="icon" href='data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"%3E%3Crect width="64" height="64" rx="16" fill="%23080d15"/%3E%3Ccircle cx="32" cy="32" r="17" fill="none" stroke="%23a6f3d8" stroke-width="3"/%3E%3Ccircle cx="32" cy="32" r="6" fill="%23a6f3d8"/%3E%3C/svg%3E'>
+  <script src="/executive/theme.js"></script>
   <link rel="stylesheet" href="/executive/styles.css?v=orbit-floating-close-20261008">
   <script src="/executive/reply/core.js" defer></script>
   <script src="/executive/reply/fixtures.js" defer></script>
@@ -16,6 +17,7 @@
   <script src="/executive/workspace-policy.js" defer></script>
   <script src="/executive/app.js?v=orbit-floating-close-20261008" defer></script>
   <link rel="stylesheet" href="/executive/integration.css">
+  <link rel="stylesheet" href="/executive/theme.css?v=orbit-workspace-20261010">
   <script src="/executive/integration.js" defer></script>
 </head>
 <body>
@@ -78,7 +80,7 @@
     <div class="sidebar-bottom"><div class="assistant-card"><span class="online-dot"></span> I’m here and keeping watch<p>I’ve reviewed the day.<br>You decide what happens next.</p><span class="assistant-mode">✧ &nbsp; Proactive mode</span></div><div class="profile"><span class="avatar profile-avatar">D</span><div>Dave<small>Workspace owner</small></div><span class="profile-menu">···</span></div></div>
   </aside>
   <main id="overview">
-    <header class="topbar"><div class="topbar-left"><button type="button" id="sidebar-toggle" class="sidebar-toggle" aria-label="Compact navigation" aria-controls="orbit-sidebar" aria-expanded="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16m4-10h4m-4 4h4"/></svg><span>Compact navigation</span></button><div class="breadcrumb">Workspace <span>/</span> <strong>Overview</strong></div></div><div class="topbar-right"><button class="review-button" id="try-orbit" type="button">Try Orbit</button><details class="demo-tools"><summary>Demo options</summary><div><button class="motion-toggle reset-demo" id="reset-demo" type="button">Reset demo</button><button class="motion-toggle" id="motion-toggle" type="button" aria-pressed="false" aria-label="Pause visual animations">Motion on</button></div></details><span class="demo-badge">DEMO WORKSPACE</span><span class="topbar-divider"></span><span class="avatar mini-avatar">D</span></div></header>
+    <header class="topbar"><div class="topbar-left"><button type="button" id="sidebar-toggle" class="sidebar-toggle" aria-label="Compact navigation" aria-controls="orbit-sidebar" aria-expanded="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16m4-10h4m-4 4h4"/></svg><span>Compact navigation</span></button><div class="breadcrumb">Workspace <span>/</span> <strong>Overview</strong></div></div><div class="topbar-right"><div class="theme-switcher" role="group" aria-label="Appearance"><button type="button" data-theme-value="light" aria-label="Use light appearance" title="Light appearance"><span aria-hidden="true">☀</span><span class="theme-label">Light</span></button><button type="button" data-theme-value="dark" aria-label="Use dark appearance" title="Dark appearance"><span aria-hidden="true">◐</span><span class="theme-label">Dark</span></button><button type="button" data-theme-value="system" aria-label="Use system appearance" title="Match system appearance"><span aria-hidden="true">◫</span><span class="theme-label">Auto</span></button></div><button class="review-button" id="try-orbit" type="button">Try Orbit</button><details class="demo-tools"><summary>Demo options</summary><div><button class="motion-toggle reset-demo" id="reset-demo" type="button">Reset demo</button><button class="motion-toggle" id="motion-toggle" type="button" aria-pressed="false" aria-label="Pause visual animations">Motion on</button></div></details><span class="demo-badge">DEMO WORKSPACE</span><span class="topbar-divider"></span><span class="avatar mini-avatar">D</span></div></header>
     <section class="workspace-context" aria-label="Workspace context">
       <div class="workspace-tabs" role="group" aria-label="Choose Personal or Work">
         <button id="personal-workspace-tab" type="button" data-context-select="personal" data-workspace="personal" aria-pressed="true">⌂ Personal<small>Life & home</small></button>
@@ -94,9 +96,10 @@
       <section class="panel command-center" aria-labelledby="command-title">
         <div class="command-heading"><div><span class="eyebrow">ASK ORBIT</span><h2 id="command-title">What would you like me to review?</h2></div><span class="command-demo">SCRIPTED DEMO · NO LIVE AI</span></div>
         <p class="conversation-context">I’m ready, Dave. Ask what changed, what needs attention, or what I can prepare for you.</p>
+        <div class="command-mode"><label for="command-mode">Response mode</label><select id="command-mode" aria-describedby="command-mode-status"><option value="scripted">Scripted</option><option value="local" disabled>Local AI</option><option value="cloud" disabled>Cloud AI</option></select><span id="command-mode-status">Scripted is the default · no model call</span></div>
         <form id="command-form" class="command-form">
           <label class="sr-only" for="command-input">Ask your Executive Assistant</label>
-          <span class="command-input-icon" aria-hidden="true">✧</span><input id="command-input" name="command" type="text" placeholder="Ask your Executive Assistant..." maxlength="300" autocomplete="off" required aria-describedby="command-help"><button id="command-send" class="approve-button" type="submit">Send</button>
+          <span class="command-input-icon" aria-hidden="true">✧</span><input id="command-input" name="command" type="text" placeholder="Ask your Executive Assistant..." maxlength="300" autocomplete="off" required aria-describedby="command-help"><button id="command-cancel" class="review-button" type="button" hidden>Cancel</button><button id="command-send" class="approve-button" type="submit">Send</button>
         </form>
         <div class="command-suggestions" aria-label="Suggested demo questions"><button type="button" data-command="What changed?">What changed?</button><button type="button" data-command="What needs my attention?">What needs my attention?</button><button type="button" data-command="Review my inbox">Review my inbox</button><button type="button" data-command="Check my schedule">Check my schedule</button><button type="button" data-command="Give me my daily briefing">Daily briefing</button><button type="button" data-command="What did you handle?">What did you handle?</button><button type="button" data-command="What can you handle for me?">What can you handle for me?</button></div>
         <div class="command-meta"><span id="command-help">Fictional workspace context. Real control, simulated intelligence.</span><span id="command-status" role="status" aria-live="polite">Ready for your request</span></div>

@@ -4,7 +4,7 @@ Orbit is a local, review-first workflow prototype. It brings a campaign request,
 
 The original Orbit Executive Assistant is the main interface again. Its briefing, inbox, calendar, tasks, document review, and Personal/Work spaces remain. Workflows and Content Studio are additional navigation destinations. Campaign views share campaign records; executive decisions retain their independent browser-local history. See the package README for the exact integration boundaries.
 
-The strongest part to demonstrate is the workflow engineering, not AI generation. Marketing output is fixed fictional sample content. No inbox, calendar, social account, or AI provider is connected.
+The strongest part to demonstrate is the workflow engineering, not model novelty. Marketing output is fixed fictional sample content. Inbox, calendar, social, and publishing accounts are not connected. Optional Ollama adapters can prepare editable inbox reply drafts when explicitly enabled; they do not approve or send.
 
 ## Three-minute walkthrough
 
@@ -33,10 +33,10 @@ The flow is: Orbit interface → shared workflow core → injected sample adapte
 
 “I built a review-first automation prototype with AI coding assistance. It keeps the request, draft versions, approval, and execution history together. My focus was preventing lost edits, stale approvals, and duplicate execution. I can walk through the implementation and tests. The current marketing generator is deliberately simulated; production AI and account integrations are future work.”
 
-Discuss the code and tradeoffs you understand. Do not claim real customers, measured time savings, independent authorship, or live AI capability without evidence.
+Discuss the code and tradeoffs you understand. Do not claim real customers, measured time savings, independent authorship, production AI, or connected-account capability without evidence.
 
 ## Limits and next steps
 
-This is a single-owner local demo, not a production multi-user service. Local history is plaintext; use fictional data. It has no production authentication, public hosting, live AI generation, or external publishing. Browser checks are targeted usability checks, not a full accessibility certification.
+This is a single-owner local demo, not a production multi-user service. Local history is plaintext; use fictional data. It has no production authentication, public hosting, connected-account automation, or external publishing. Optional AI produces drafts behind the same review boundary. Browser checks are targeted usability checks, not a full accessibility certification.
 
 Before public sharing: review the branch, verify the demo from a clean checkout, choose a safe hosting approach, remove private/demo history from any distributable artifact, and explicitly authorize publishing. A local walkthrough or screen recording can be used without introducing account integrations.

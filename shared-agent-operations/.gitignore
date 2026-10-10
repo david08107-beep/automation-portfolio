@@ -1,1 +1,8 @@
 local-data/
+.env
+.env.*
+!.env.example
+*.log
+coverage/
+.DS_Store
+Thumbs.db

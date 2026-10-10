@@ -9,6 +9,7 @@ test('Orbit remains the entry point with original assistant and additive campaig
   const url=`http://127.0.0.1:${server.address().port}`;
   const page=await fetch(url), html=await page.text();
   assert.equal(page.status,200);
+  assert.equal((await fetch(url,{headers:{host:`localhost:${server.address().port}`}})).status,200,'localhost remains a loopback-only alias');
   for(const id of ['executive-title','command-form','inbox','calendar','tasks','approvals','message-dialog','meeting-dialog','personal-workspace-tab','shared-workspace']) assert.ok(html.includes(`id="${id}"`),id);
   assert.ok(!html.includes('id="workspace-toggle"'));
   assert.ok(!html.includes('id="workspace-menu"'));
@@ -17,9 +18,19 @@ test('Orbit remains the entry point with original assistant and additive campaig
   assert.match(html,/id="work-workspace-tab"/);
   assert.match(html,/id="workspace-scope-note"/);
   assert.match(html,/href="#studio" data-work-only/);
+  assert.match(html,/src="\/executive\/theme\.js"/);
+  assert.match(html,/href="\/executive\/theme\.css/);
+  for(const theme of ['light','dark','system']) assert.match(html,new RegExp(`data-theme-value="${theme}"`));
   assert.equal((await fetch(url+'/executive/workspace-policy.js')).status,200);
   assert.ok(!html.includes('<iframe'));
-  for(const path of ['/executive/app.js','/executive/styles.css','/executive/reply/core.js','/executive/reply/editor-state.js','/executive/reply/fixtures.js','/executive/reply/browser-adapter.js','/executive/integration.js','/executive/workspace.css']) assert.equal((await fetch(url+path)).status,200,path);
+  for(const path of ['/executive/app.js','/executive/styles.css','/executive/theme.css','/executive/theme.js','/executive/reply/core.js','/executive/reply/editor-state.js','/executive/reply/fixtures.js','/executive/reply/browser-adapter.js','/executive/integration.js','/executive/workspace.css']) assert.equal((await fetch(url+path)).status,200,path);
+  const app=await (await fetch(url+'/executive/app.js')).text();
+  assert.match(app,/<option value="scripted">Scripted demo<\/option><option value="local" disabled>Local AI<\/option><option value="cloud" disabled>Cloud AI<\/option>/);
+  assert.match(app,/AI drafts require review/);
+  assert.doesNotMatch(app,/OLLAMA_API_KEY|Authorization:\s*Bearer|cloudApiKey/);
+  const themeScript=await (await fetch(url+'/executive/theme.js')).text();
+  assert.match(themeScript,/orbit-ui-theme/);
+  assert.doesNotMatch(themeScript,/OLLAMA_API_KEY|Authorization:\s*Bearer|cloudApiKey/);
   assert.equal((await fetch(url+'/executive/tests/reply-service.cjs')).status,404);
   assert.equal((await fetch(url+'/executive/README.md')).status,404);
   assert.deepEqual((await (await fetch(url+'/api/workflows')).json()).workflows,[]);

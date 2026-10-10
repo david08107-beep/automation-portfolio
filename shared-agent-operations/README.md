@@ -1,5 +1,19 @@
 # Orbit — Executive Assistant preview 0.4.0
 
+> **Status: active development.** Orbit is a runnable, fictional local prototype—not a finished product, public service, or production integration. Implemented, in-progress, and planned work are kept separate below.
+
+Orbit brings executive briefings, Personal and Work context, editable reply drafts, explicit approvals, campaign workflows, and local history into one review-first workspace.
+
+## Current status
+
+| Implemented now | In progress | Planned / requires a separate decision |
+| --- | --- | --- |
+| Scripted demo by default; Personal/Work separation; inbox, calendar, task, document and campaign review flows; exact-version approvals; restart-safe local campaign history; responsive Light, Dark and Auto themes; optional grounded Ask Orbit answers | Continued UI refinement, documentation alignment, cleanup of development changes, broader accessibility review, and hosted-model compatibility testing | Production authentication, connected email/calendar/social accounts, shared backend storage, public hosting, retention policy, and real external actions |
+
+Optional local Ollama and hosted Ollama Cloud reply drafting and grounded Ask Orbit answers are implemented behind the existing server-side generation boundary. Both providers require explicit server opt-in; Cloud credentials remain backend-only. Reply output is always an editable draft, assistant answers can use only validated fictional workspace facts, and neither path can approve, send, or execute. See [OPTIONAL-AI.md](OPTIONAL-AI.md).
+
+For the employer-facing snapshot, evidence checklist, potential resume material, and remaining risks, see [Portfolio readiness](docs/PORTFOLIO-READINESS.md).
+
 ## Try Orbit
 
 ### Unified workspace preview
@@ -16,43 +30,43 @@ Executive browser-local state and campaign server history remain separate; this 
 
 This is a same-owner, local demo separation—not authenticated account isolation. Both email sources are fictional. No real personal or employer inbox, calendar, or account has been connected.
 
-AI OS operations-brief/triage recipes and capacity scheduler, and Marketing's standalone review-response/follow-up tools are still not imported. No connected accounts, live AI, deployment, or real sending has been added. `/campaigns` retains the smaller integration-only interface for diagnostics; it is no longer the main product.
+AI OS operations-brief/triage recipes and capacity scheduler, and Marketing's standalone review-response/follow-up tools are still not imported. No connected accounts, deployment, or real sending has been added. Optional AI is limited to reply drafting and grounded answers over the current bounded fictional workspace snapshot; it remains disabled unless the server is explicitly configured. `/campaigns` retains the smaller integration-only interface for diagnostics; it is no longer the main product.
 
 ### Start here
 
 1. Open a terminal in `shared-agent-operations` (not the repository root).
 2. Check that `node --version` reports Node.js 20 or newer. No `npm install`, API key, or account is required.
 3. Run `npm start` and leave that terminal running.
-4. Open [the working app](http://127.0.0.1:4317/) or [the six-step interview walkthrough](http://127.0.0.1:4317/showcase) in your browser.
+4. On that same computer, open [the working app](http://127.0.0.1:4317/) or [the six-step interview walkthrough](http://127.0.0.1:4317/showcase) in your browser.
 5. Stop the server with Ctrl+C when finished. Saved history remains on this computer.
 
-The walkthrough explains the workflow with illustrative examples; its Next step button does not create or edit a real request. Use the working app for hands-on testing. Localhost links work only on the computer running the server.
+The walkthrough explains the workflow with illustrative examples; its Next step button does not create or edit a real request. Use the working app for hands-on testing. Loopback links work only on the computer running the server and are not a cloud-hosted preview.
 
 For the interview script and engineering summary, read [SHOWCASE.md](SHOWCASE.md). For current test evidence and historical baseline results, read [VERIFICATION.md](VERIFICATION.md).
 
 ### If setup fails
 
 - `EADDRINUSE`: port 4317 is already occupied. Check whether Orbit is already running; do not start two processes against the same history file.
-- Browser cannot connect: keep the server terminal open and use the exact `127.0.0.1` address above, not `localhost`.
+- Browser cannot connect: keep the server terminal open and open `http://127.0.0.1:4317/` on the same computer. A browser on another computer or an unsupported cloud preview cannot reach this loopback-only server.
 - History cannot be read: stop and preserve `local-data/history.json`. Do not delete it to make startup work; inspect or restore a copy first.
 
 ### Use the working app
 
 After approving the current saved draft, use **Copy reviewed draft** or **Download reviewed draft (.txt)**. Both include the request, saved campaign brief when available, version reference, and all three content assets. They verify the latest saved workflow first, reject local unsaved edits and changed versions, and label exports as sample content. Clipboard denial has a download fallback. Completed simulated requests remain exportable; cancelled or unreviewed requests are not. Copy/download do not publish or record a send.
 
-Content Studio offers a guided campaign brief (business/service, audience, platform, tone, desired result, and optional details), or a free-form request. Unfinished fields stay in browser recovery; submitting saves a structured brief with the workflow and clears the composer. The saved brief is available in request details. Fields do not turn sample output into AI-generated content: generation remains a fixed fixture. No provider or paid service is connected.
+Content Studio offers a guided campaign brief (business/service, audience, platform, tone, desired result, and optional details), or a free-form request. Unfinished fields stay in browser recovery; submitting saves a structured brief with the workflow and clears the composer. The saved brief is available in request details. Campaign generation remains a fixed fixture; the optional Ollama adapter applies only to inbox reply drafting and never to campaign execution.
 
 Run `npm start` from this directory and open http://127.0.0.1:4317. Node 20 or newer is sufficient; no dependency installation is needed.
 
 Orbit is the front door: Overview retains the original assistant. Content Studio keeps campaign briefs and drafts together; Workflows shows preparation, review, and completion. Campaign activity links back to its request. Executive inbox and scheduling actions use the original review dialogs, not the campaign form.
 
-The server serves the retained Orbit browser application alongside the shared campaign workflow core with fixture adapters. It does not unify their storage, generate AI content, or load the full standalone AI OS/Marketing applications. Campaign output is fixed fictional sample content regardless of the request; the UI says so at the request and draft boundaries. Inbox, calendar, and publishing are not connected. The 0.2 baseline adapters remain available and independently tested.
+The server serves the retained Orbit browser application alongside the shared campaign workflow core with fixture adapters. It does not unify their storage or load the full standalone AI OS/Marketing applications. Campaign output is fixed fictional sample content regardless of the request; optional AI applies only to inbox reply drafting and grounded Ask Orbit answers. Inbox, calendar, and publishing are not connected. The 0.2 baseline adapters remain available and independently tested.
 
 One fictional Dave/Work context is assigned by the local server. This is not sign-in or production tenant authorization. When started with `npm start`, the local server saves workflow records, Marketing source snapshots, and simulated receipts to ignored `local-data/history.json`. They survive server restarts. Writes use a temporary file plus replacement; an unreadable existing history file stops startup instead of overwriting it. Use one server process per history file. This is local plaintext demo storage, without cloud backup or multi-user access controls.
 
 Browser recovery copies preserve unfinished draft edits per request and original version, unsubmitted request text, priorities, and the current view. Navigation, Refresh, and reload keep those copies. A recovery copy never authorizes execution: submit changes as a new version and approve that exact version. If a different tab saved a newer server version, Orbit keeps the local edits separately and offers explicit restore or discard. If browser storage is unavailable, edits remain in the tab and closing it triggers a warning. Clearing browser site data removes recovery copies and priorities; clearing it does not remove server-saved history.
 
-The server binds only to `127.0.0.1`, checks local Host and mutation Origin, accepts bounded JSON writes, and serves only explicitly allowlisted app and showcase assets. Local history is not exposed as a static asset. Do not expose the server as a production service.
+The server binds only to `127.0.0.1`, accepts only loopback Host aliases, checks mutation Origin, accepts bounded JSON writes, and serves only explicitly allowlisted app and showcase assets. Local history is not exposed as a static asset. Do not expose the server as a production service.
 
 To try it: enter a marketing request in Content Studio, choose **Ask Orbit**, edit the launch post, navigate to Activity and return, choose **Save changes for review**, approve that version, and choose **Preview approved send**. Edits invalidate earlier approval. Browser recovery edits block approval and execution until submitted. Completed work records one simulated receipt, with no provider action.
 
@@ -99,7 +113,7 @@ npm test
 npm run demo
 ```
 
-Node 20 or newer is sufficient. There are no package dependencies or secrets. The test suite includes the original workflow scenarios plus contract tests for the three baseline adapters.
+Node 20 or newer is sufficient and there are no package dependencies. The default scripted demo needs no secrets. Optional hosted Ollama Cloud generation requires explicit server opt-in, a hosted model identifier, and a backend API-key secret; see [OPTIONAL-AI.md](OPTIONAL-AI.md). The test suite includes the original workflow scenarios, adapter contracts, grounded-answer and reply-generation failures, persistence, and approval safeguards.
 
 ## Boundary
 
@@ -109,7 +123,11 @@ Before real accounts, select an identity provider, backend/database/job service,
 
 ## Optional Orbit V1.6 reply drafting
 
-Scripted generation remains the default. Optional local Ollama drafting, Windows
-launcher, and one-checkout Git update instructions are documented in
+Scripted generation remains the default. Optional local and hosted Ollama
+drafting, the Windows local launcher, and one-checkout Git update instructions are documented in
 [OPTIONAL-AI.md](OPTIONAL-AI.md). Real email sending and account connections
 remain out of scope; generated text requires review.
+
+## Orbit V1.7 grounded Ask Orbit answers
+
+Ask Orbit now offers explicit Scripted, Local AI, and Cloud AI response modes. Scripted remains selected by default. Optional model modes receive only a bounded snapshot of the active fictional Personal or Work workspace, must return cited JSON using known fact IDs, and get one repair attempt for invalid or unsupported output. The server rejects unknown citations and never substitutes another provider or a scripted answer. Responses are rendered as text, cannot invoke tools, and do not create approvals or executions. Configuration and test boundaries are documented in [OPTIONAL-AI.md](OPTIONAL-AI.md).

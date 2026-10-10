@@ -2,7 +2,9 @@
 
 The integrated preview package remains 0.4.0; this additive Orbit milestone is V1.6.
 Scripted alternatives remain the default. No model or other software is installed
-by the app, and no paid provider, credentials, account connection or sending is added.
+by the app, no credential is bundled, and no account connection or sending is
+added. Both AI modes default off; hosted Cloud AI may consume included or paid
+usage only after explicit server configuration and owner authorization.
 
 ## One checkout on Windows
 
@@ -73,8 +75,9 @@ unavailable; scripted alternatives continue to work.
 
 ## Boundaries
 
-`src/reply-generation.js` calls only the fixed loopback Ollama endpoint. Browser
-input cannot choose a provider URL or model. Redirects are forbidden. Message,
+Local mode in `src/reply-generation.js` calls only the fixed loopback Ollama
+endpoint. Browser input cannot choose a provider URL or model. Redirects are
+forbidden. Message,
 brief, settings and previous draft are sent to the local model only after clicking
 the optional control. JSON output must contain only a bounded, non-empty `body`
 and differ from the previous draft. No tool execution is supported. Returned text
@@ -161,9 +164,10 @@ improvement and visual progress behavior remain unverified on the user PC.
 
 ## Simplified generation controls and timing
 
-Choose Scripted demo or Local AI, then use the single **Generate reply** button.
-Scripted demo remains the default, and Local AI is unavailable without server
-opt-in. **More** contains draft history, download, copy and timing details.
+Choose Scripted demo, Local AI, or Cloud AI, then use the single **Generate
+reply** button. Scripted demo remains the default, and either AI mode is
+unavailable without its explicit server opt-in. **More** contains draft history,
+download, copy and timing details.
 Cancel, Save Draft and Send Reply remain separate; generation never confirms
 execution. The direct message action still selects Local AI and starts generation.
 
@@ -173,8 +177,9 @@ number of attempts, and model load/generation durations when Ollama supplies the
 Model load/generation durations describe the final attempt; total time includes
 any retry. Only non-negative finite numeric provider timings are returned.
 These diagnostics do not establish a measured speed improvement on the user PC.
-All 87 automated tests passed; manual layout/keyboard and local hardware timing
-checks remain outstanding.
+At that V1.6 checkpoint, all 87 automated tests passed; manual layout/keyboard
+and local hardware timing checks remained outstanding. The current combined
+suite and newer browser checks are recorded in [VERIFICATION.md](VERIFICATION.md).
 
 ## Reply toolbar polish
 
@@ -182,5 +187,108 @@ More retains its compact width and opens an anchored tools popover rather than
 expanding the toolbar. Outside clicks and Escape dismiss it; keyboard focus
 returns to More after a closed history dialog when appropriate. Generation labels
 and feedback have reserved space to reduce layout shifts, and reduced-motion
-preferences disable the new transitions. All 87 regression tests and syntax
-checks passed. Visual/mobile verification remains pending on the user PC.
+preferences disable the new transitions. At that V1.6 checkpoint, all 87
+regression tests and syntax checks passed. Current visual/mobile verification
+and the expanded suite are recorded in [VERIFICATION.md](VERIFICATION.md).
+
+## Optional hosted Ollama Cloud
+
+Cloud AI uses the same server-side generation boundary and editor workflow as
+Local AI. It calls the fixed `https://ollama.com/api/chat` endpoint directly; it
+does not install Ollama or a model on the server and does not add an SDK. The
+browser receives only mode readiness and generated draft data. The API key is
+sent by the backend in an `Authorization: Bearer` header and is never returned to
+the browser, stored in localStorage, included in downloads, or copied into logs.
+
+Cloud mode is off unless all three backend settings are present:
+
+```sh
+ORBIT_OLLAMA_CLOUD_ENABLED=true
+ORBIT_OLLAMA_CLOUD_MODEL=<exact name from https://ollama.com/api/tags>
+OLLAMA_API_KEY=<secure backend secret>
+```
+
+In a managed cloud environment where outbound HTTPS must use `HTTP_PROXY` or
+`HTTPS_PROXY`, Node 24's built-in `fetch` must be started with environment-proxy
+support enabled:
+
+```sh
+NODE_USE_ENV_PROXY=1 npm start
+```
+
+This is an environment-specific startup setting, not an API credential. Keep the
+inherited proxy and CA trust intact. Without it, command-line `curl` checks can
+succeed while Node reports a DNS error before reaching Ollama.
+
+For direct hosted API requests, use the exact model name returned by
+`https://ollama.com/api/tags`, such as `name:size`; do not use the Ollama app/CLI
+`:cloud` alias. No model is selected by default, and this project does not assume
+that any particular model is included in a free plan. Ollama's current pricing
+page says Free includes starter usage for a smaller set of starter models and one
+concurrent request. Availability and balances are account-specific; review the
+current model list, pricing, usage, and balance before enabling a model.
+
+For the tested free account, `gemma4:31b` is the recommended reply-drafting
+model: the account lists it for free usage and its hosted metadata supports
+`think: false`. `gpt-oss:20b` is also listed for free usage, but its hosted
+metadata supports only `low`, `medium`, and `high` thinking and defaults to
+`medium`; in live testing it spent the full 384-token cap on thinking and returned
+no reply content. Model inclusion remains account-specific and can change.
+
+The hosted request is non-streaming, disables optional model thinking for this
+short drafting task, caps generation at 384 tokens, and shares the existing
+15-second deadline, 64 KB response cap, 10,000-character draft cap,
+normalization, decline check, and one-repair limit. Ollama's current documentation
+states that Cloud does not support structured outputs. Cloud mode therefore omits
+the local `format` schema, requests exactly one JSON object in the system prompt,
+then applies the same strict parser and validation before a draft can replace
+editor text. It never falls back to Scripted or Local AI silently.
+
+Missing credentials, invalid configuration, authentication failure, unavailable
+models, rate limits, provider outages, malformed output, timeout, and cancellation
+return bounded messages that preserve the current draft. Provider response bodies
+and credentials are not surfaced. Successful output is still only an editable
+version: it creates no approval and cannot execute a reply without the existing
+review and explicit-send boundary.
+
+Mocked cloud tests require no credential and make no hosted generation request.
+A live hosted check is a separate acceptance step because it can consume included
+or purchased usage. Do not run it until the owner has supplied the key through
+secure environment settings, selected an available model, and explicitly
+authorized the call and potential cost.
+
+## V1.7 grounded Ask Orbit answers
+
+The command center now uses the same server-side Local/Cloud adapter for optional
+answers. **Scripted** remains selected by default. **Local AI** and **Cloud AI**
+appear only when the server reports those modes enabled; choosing either is an
+explicit per-session opt-in and never changes the reply editor's provider choice.
+
+The browser sends the active workspace name, the user's bounded request, and at
+most 40 compact fictional facts from workspace scope, inbox, calendar, tasks,
+approvals, and recent activity. It never sends localStorage, credentials, hidden
+history, or provider configuration. The model must return exactly `answer`, one
+to five `evidence` fact IDs, and a `suggestedView`. Unknown or duplicate citations,
+extra fields, malformed JSON, oversized answers, and unsupported views are
+rejected with one repair attempt. Local mode also uses Ollama's JSON schema;
+hosted mode uses prompt-constrained JSON plus the same server validation because
+hosted structured-output support must not be assumed.
+
+Model input is treated as untrusted data. The system instruction forbids tool-use
+claims and unsupported external actions. Successful output includes
+`canExecute: false`; it does not write campaign history, create an approval, send
+email, change a calendar, share a document, or call a tool. Existing action cards
+remain separate review controls. Cancel, timeout, provider failure, authentication,
+rate-limit, and unavailable-model states are explicit, redact provider details,
+and never fall back to Scripted or another AI provider.
+
+The current 104-test suite uses mocked providers for grounded success, malformed
+and unknown evidence, prompt-injection separation, missing credentials,
+authentication and rate-limit errors, timeout/cancellation, credential redaction,
+Personal/Work separation, HTTP origin checks, unchanged workflow persistence, and
+approval safeguards. One separately owner-authorized V1.7 acceptance request used
+`gemma4:31b` after confirming positive included allowance and zero purchased
+balance. It returned a valid cited answer on the first call with `canExecute:
+false`; approximately `$0.00006` was deducted from included allowance and `$0`
+from purchased credits. Further live verification still requires explicit
+authorization for credential use and any potential cost.
