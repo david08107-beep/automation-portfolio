@@ -10,6 +10,7 @@
 - Refresh portfolio screenshots and current documentation without changing the preserved v1.5.0 demo baseline or enabling real external actions.
 - Expand the current regression suite to 104 passing tests.
 - Fix the message-level AI reply shortcut in Cloud-only configurations. It now opens the shared reply editor and requires an explicit Local or Cloud selection before any provider request.
+- Fix legacy dark-only form styles leaking into Light mode across reply, approval, task, meeting, history, and guided-demo surfaces; native fields and menus now inherit the selected theme consistently.
 
 ## 0.4.0 — 2026-10-09
 

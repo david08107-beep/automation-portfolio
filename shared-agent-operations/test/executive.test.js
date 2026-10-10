@@ -34,6 +34,12 @@ test('Orbit remains the entry point with original assistant and additive campaig
   const themeScript=await (await fetch(url+'/executive/theme.js')).text();
   assert.match(themeScript,/orbit-ui-theme/);
   assert.doesNotMatch(themeScript,/OLLAMA_API_KEY|Authorization:\s*Bearer|cloudApiKey/);
+  const themeCss=await (await fetch(url+'/executive/theme.css')).text();
+  assert.match(themeCss,/\.action-field input,[\s\S]*?background: var\(--surface-subtle\);[\s\S]*?color-scheme: inherit;/,'legacy reply and approval fields inherit the active theme');
+  assert.match(themeCss,/select option\s*{[\s\S]*?background: var\(--surface-raised\);/,'native select menus have a theme-matched option surface');
+  assert.match(themeCss,/\.message-dialog \.dialog-floating-close \.close-dialog/,'the floating reply close control keeps explicit theme contrast');
+  assert.match(themeCss,/\.orbit-tour\s*{[\s\S]*?background: color-mix/,'the guided workflow follows the active theme');
+  assert.match(themeCss,/\.demo-tools:not\(\[open\]\) > div\s*{\s*display: none;/,'closed demo options do not leave controls visible');
   assert.equal((await fetch(url+'/executive/tests/reply-service.cjs')).status,404);
   assert.equal((await fetch(url+'/executive/README.md')).status,404);
   assert.deepEqual((await (await fetch(url+'/api/workflows')).json()).workflows,[]);

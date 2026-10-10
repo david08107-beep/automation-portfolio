@@ -2,6 +2,26 @@
 
 ## Current review
 
+Light/Dark workflow-theme regression: the reply editor exposed a real CSS
+specificity conflict in Light mode—its dialog used the new light surface while
+legacy textareas and selects retained dark backgrounds. The shared theme boundary
+now covers reply and approval fields, native select options, history and More
+menus, task/meeting details, dynamic response editors, close controls, and the
+guided tour. Browser and automated verification results are recorded below after
+the final run: a fresh Chromium profile passed scripted generate/edit/save,
+cancel/reopen, reload persistence, simulated send, duplicate-send prevention,
+Personal/Work isolation, approval cancellation, Light/Dark/Auto persistence, and
+desktop/mobile layout checks with no console errors. Reply, approval, task,
+meeting, and tour surfaces were checked in both Light and Dark. At 390 × 844 the
+document and reply dialog had no horizontal overflow. Automated contrast scans
+checked 188 visible text/control targets with the reply open in each explicit
+theme, with no result below 4.5:1. The complete 104-test suite and command-line
+demo passed; the demo
+reported `simulated: true` and `externalActions: 0`. Browser resource tracking
+recorded zero reply-generation or assistant-query requests, so no model inference
+or Ollama allowance was used. JavaScript syntax checks and `git diff --check`
+also passed.
+
 V1.7 reply-shortcut maintenance: the message-level AI action no longer assumes
 Local AI when only Cloud AI is configured. It opens the shared reply editor,
 keeps Scripted selected, lists the enabled provider choices, and makes no provider

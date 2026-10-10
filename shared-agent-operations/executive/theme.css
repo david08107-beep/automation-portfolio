@@ -176,6 +176,7 @@ main#overview { margin-left: 244px; }
 }
 .sidebar-toggle:hover, .demo-tools summary:hover { color: var(--text); background: var(--surface-hover); }
 .demo-tools > div { background: var(--surface-raised); border-color: var(--border); box-shadow: var(--shadow-high); }
+.demo-tools:not([open]) > div { display: none; }
 .motion-toggle { color: var(--text-soft); border-color: var(--border); background: var(--surface-subtle); }
 
 .theme-switcher {
@@ -458,4 +459,185 @@ dialog::backdrop { background: rgb(15 23 42 / 58%); backdrop-filter: blur(3px); 
 
 @media (prefers-reduced-motion: reduce) {
   .nav-link, .theme-switcher button { transition: none; }
+}
+
+/* Theme boundary for legacy workflow editors and dynamically-created dialogs.
+   These selectors intentionally match the component specificity in styles.css. */
+.action-field input,
+.action-field textarea,
+.action-field select,
+.draft-settings select,
+.draft-toolbar select,
+.response-editor input {
+  color: var(--text);
+  background: var(--surface-subtle);
+  border-color: var(--border-strong);
+  color-scheme: inherit;
+}
+.action-field input[readonly],
+.action-field textarea[readonly],
+.action-review:disabled input,
+.action-review:disabled textarea {
+  color: var(--text-soft);
+  background: var(--surface-hover);
+  opacity: 1;
+}
+.action-field :is(input, textarea, select):focus-visible {
+  border-color: var(--accent);
+  outline-color: var(--accent);
+}
+select option {
+  color: var(--text);
+  background: var(--surface-raised);
+}
+
+.reply-draft-tools,
+.calendar-editor,
+.response-editor,
+.decision-controls > div {
+  color: var(--text-soft);
+  background: var(--surface-subtle);
+  border-color: var(--border);
+}
+.action-dialog .action-intro,
+dialog > p,
+.prepared-reason p,
+.document-preview p,
+.notification-option,
+.share-card-context,
+.share-history,
+.share-card-history,
+.decision-controls small,
+.local-action-editor small {
+  color: var(--muted);
+}
+.notification-option span,
+.share-card-context span,
+.share-recipient small,
+.action-facts dd small { color: var(--muted-soft); }
+.share-recipient,
+.draft-history-card,
+.full-task-row,
+.response-action-card,
+.response-more {
+  color: var(--text-soft);
+  background: var(--surface-subtle);
+  border-color: var(--border);
+}
+.message-row-actions button,
+.message-actions button,
+.meeting-open,
+.draft-more summary {
+  color: var(--text-soft);
+  background: var(--surface-subtle);
+  border-color: var(--border-strong);
+}
+.message-row-actions button:hover,
+.message-actions button:hover,
+.meeting-open:hover,
+.draft-more summary:hover,
+.draft-more[open] summary {
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+#review-dialog .dialog-actions,
+.draft-history-dialog .dialog-top {
+  background: color-mix(in srgb, var(--surface-raised) 96%, transparent);
+  border-color: var(--border);
+}
+.draft-more-content {
+  color: var(--text-soft);
+  background: var(--surface-raised);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-high);
+}
+dialog .close-button,
+dialog .close-dialog,
+dialog #drawer-close,
+dialog .dialog-floating-close button {
+  color: var(--muted);
+  background: var(--surface-subtle);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow);
+}
+dialog .close-button:hover,
+dialog .close-dialog:hover,
+dialog #drawer-close:hover,
+dialog .dialog-floating-close button:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+  border-color: var(--accent);
+}
+.message-dialog .dialog-floating-close .close-dialog {
+  color: var(--muted);
+  background: var(--surface-subtle);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow);
+}
+.message-dialog .dialog-floating-close .close-dialog:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+  border-color: var(--accent);
+}
+
+.full-task-row:hover,
+.full-task-row.selected-task {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+.full-task-row.selected-task { box-shadow: inset 3px 0 var(--accent); }
+.full-task-body small,
+.meeting-agenda-list,
+.meeting-orbit-brief ul,
+.meeting-orbit-brief p,
+.meeting-change-section > p,
+.response-action-card > p,
+.response-more > summary,
+.response-quiet { color: var(--muted); }
+.full-task-badge,
+.response-card-status { color: var(--accent-strong); }
+.meeting-attendee-list li {
+  color: var(--text-soft);
+  background: var(--surface-subtle);
+  border-color: var(--border);
+}
+.research-notes p,
+.attention-task p,
+.task small,
+.focus-block small,
+.supporting-metrics > summary span,
+.completed-actions > summary span { color: var(--muted); }
+.supporting-metrics > summary,
+.completed-actions > summary,
+.meeting-context summary { color: var(--text-soft); }
+.meeting-context p { color: var(--muted); }
+.supporting-metrics,
+.completed-actions,
+.attention-task { border-color: var(--border); }
+.response-feedback {
+  color: var(--text-soft);
+  background: var(--success-soft);
+  border-color: color-mix(in srgb, var(--success) 35%, var(--border));
+}
+.response-action-card .approve-button {
+  color: #fff;
+  background: var(--action);
+  border-color: var(--action);
+}
+.response-action-card .approve-button:hover { background: var(--action-hover); }
+
+.orbit-tour {
+  color: var(--text);
+  background: color-mix(in srgb, var(--surface-raised) 96%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  box-shadow: var(--shadow-high);
+}
+.orbit-tour p { color: var(--muted); }
+.tour-editor-note {
+  color: var(--text-soft);
+  background: var(--surface-raised);
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
 }
