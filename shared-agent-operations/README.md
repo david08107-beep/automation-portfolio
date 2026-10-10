@@ -37,7 +37,7 @@ AI OS operations-brief/triage recipes and capacity scheduler, and Marketing's st
 1. Open a terminal in `shared-agent-operations` (not the repository root).
 2. Check that `node --version` reports Node.js 20 or newer. No `npm install`, API key, or account is required.
 3. Run `npm start` and leave that terminal running.
-4. On that same computer, open [the working app](http://127.0.0.1:4317/) or [the six-step interview walkthrough](http://127.0.0.1:4317/showcase) in your browser.
+4. On that same computer, open [the working app](http://127.0.0.1:4317/) or [the eight-decision engineering case study](http://127.0.0.1:4317/showcase) in your browser.
 5. Stop the server with Ctrl+C when finished. Saved history remains on this computer.
 
 The walkthrough explains the workflow with illustrative examples; its Next step button does not create or edit a real request. Use the working app for hands-on testing. Loopback links work only on the computer running the server and are not a cloud-hosted preview.

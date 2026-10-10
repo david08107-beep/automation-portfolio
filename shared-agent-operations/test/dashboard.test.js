@@ -22,7 +22,28 @@ test('showcase serves only its allowlisted assets and viewing it leaves workflow
     assert.match(res.headers.get('content-security-policy'), /script-src 'self'/);
     const content = await res.text();
     assert.ok(content.length > 100);
-    if (path === '/showcase') assert.match(content, /illustrative, not the live workflow/);
+    if (path === '/showcase') {
+      assert.match(content, /illustrative, not the live workflow/);
+      assert.match(content, /Eight decisions behind Orbit/);
+      assert.match(content, /104/);
+      assert.match(content, /data-theme-value="light" aria-label="Use Light appearance"/);
+      assert.match(content, /data-theme-value="dark" aria-label="Use Dark appearance"/);
+      assert.match(content, /data-theme-value="system" aria-label="Use Auto appearance"/);
+      assert.match(content, /One boundary from request to decision/);
+    }
+    if (path === '/showcase.js') {
+      assert.equal((content.match(/category:'\d\d \/ /g) || []).length, 8);
+      assert.match(content, /textContent/);
+      assert.match(content, /replaceChildren/);
+      assert.match(content, /ArrowLeft/);
+      assert.ok(!content.includes('.innerHTML'));
+    }
+    if (path === '/showcase.css') {
+      assert.match(content, /:root\[data-theme="light"\]/);
+      assert.match(content, /:root\[data-theme="dark"\]/);
+      assert.match(content, /prefers-color-scheme:dark/);
+      assert.match(content, /prefers-reduced-motion:reduce/);
+    }
   }
   assert.equal((await fetch(`${url}/SHOWCASE.md`)).status, 404);
   assert.equal((await fetch(`${url}/local-data/history.json`)).status, 404);

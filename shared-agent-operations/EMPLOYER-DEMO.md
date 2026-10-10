@@ -30,6 +30,11 @@ Requires Node.js 20 or newer. No account, API key, or dependency installation is
 
 Stop the server with Ctrl+C. If port 4317 is already in use, stop the other local preview first. This is a local app: the localhost address cannot be shared with another person.
 
+For a guided engineering explanation, open **http://127.0.0.1:4317/showcase**.
+The eight-decision case study covers the problem, experience, provider boundary,
+grounding, review safety, reliability, evidence, and viability. It supports the
+same persistent Light, Dark, and Auto themes as the working app.
+
 ## Three-minute evaluation
 
 1. **Executive Assistant:** run Try Orbit to see a Work briefing, inspect a prepared reply, simulate sending it, and view the separate Personal inbox.

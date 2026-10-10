@@ -2,6 +2,20 @@
 
 ## Current review
 
+Employer case-study refresh: the local `/showcase` route now presents eight
+evidence-backed product and engineering decisions instead of the older dark-only
+campaign walkthrough. Fresh Chromium QA at 1440 × 1000 and 390 × 844 passed all
+eight Next/Previous states, Home/End keyboard navigation, hash deep links,
+Light/Dark/Auto selection and persistence, responsive layout, and accessible
+theme labels. Neither viewport had horizontal overflow and Chromium reported no
+page or console errors. Contrast checks covered 75 visible text targets per
+explicit theme; the lowest measured ratios were 4.77:1 in Light and 5.17:1 in
+Dark. Resource tracking recorded zero reply-generation or assistant-query
+requests. The complete 104-test suite passed and the command-line demo reported
+`simulated: true` with `externalActions: 0`. This is targeted browser evidence,
+not a full accessibility certification, public deployment, or business-outcome
+claim.
+
 Light/Dark workflow-theme regression: the reply editor exposed a real CSS
 specificity conflict in Light mode—its dialog used the new light surface while
 legacy textareas and selects retained dark backgrounds. The shared theme boundary

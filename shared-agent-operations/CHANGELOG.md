@@ -11,6 +11,7 @@
 - Expand the current regression suite to 104 passing tests.
 - Fix the message-level AI reply shortcut in Cloud-only configurations. It now opens the shared reply editor and requires an explicit Local or Cloud selection before any provider request.
 - Fix legacy dark-only form styles leaking into Light mode across reply, approval, task, meeting, history, and guided-demo surfaces; native fields and menus now inherit the selected theme consistently.
+- Replace the old dark-only interview walkthrough with an eight-decision, Light/Dark/Auto engineering case study covering product value, architecture, review safety, reliability evidence, and honest business boundaries.
 
 ## 0.4.0 — 2026-10-09
 

@@ -26,10 +26,15 @@ generation remains optional and explicitly configured; Scripted remains the
 default. This is a readiness statement for the fictional single-owner demo, not a
 production-readiness claim.
 
-**Remaining release hygiene:** review and commit the Cloud AI, grounded-answer,
-UI, documentation, and screenshot changes. Broader accessibility testing and
-additional owner-authorized hosted-model compatibility evidence remain optional
-follow-up work.
+**Current presentation layer:** the local `/showcase` route provides an
+eight-decision engineering case study with Light, Dark, and Auto themes. It
+connects the product problem to the generation boundary, grounding, review
+safety, failure handling, test evidence, and an honest viability assessment.
+
+**Remaining release hygiene:** capture a short screen recording and repeat the
+published instructions from a clean checkout on a separate machine. Broader
+accessibility testing and additional owner-authorized hosted-model compatibility
+evidence remain optional follow-up work.
 
 **Business value hypothesis:** the same review-first pattern could reduce ambiguity and duplicate execution in assistant workflows. No customer outcome, time-saving metric, or production usage has been measured.
 

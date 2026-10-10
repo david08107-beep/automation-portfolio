@@ -1,3 +1,88 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Orbit · Interview demo</title><link rel="stylesheet" href="/showcase.css"><script type="module" src="/showcase.js"></script></head>
-<body><main><header><a href="/">◈ Orbit</a><span>INTERVIEW WALKTHROUGH</span></header><section class="intro"><p class="eyebrow">REVIEW-FIRST AUTOMATION</p><h1>From a request to a decision you can trust.</h1><p>A guided look at Orbit’s workflow engineering. Fictional data, fixed sample content, and zero external actions.</p></section><nav aria-label="Demo controls"><button id="back">Previous</button><span id="progress" aria-live="polite"></span><button id="next">Next step →</button></nav><section class="stage" aria-labelledby="title"><div><p id="category" class="eyebrow"></p><h2 id="title" tabindex="-1"></h2><p id="explanation"></p><p id="talk" class="talk"></p></div><article><span id="badge"></span><h3 id="screen-title"></h3><div id="example"></div></article></section><footer><a href="/">Open the working local app →</a><p>This presentation is illustrative, not the live workflow. The app uses a shared core and injected adapters; the baseline applications are not fully merged. Built with AI coding assistance. No public hosting or production account integrations.</p></footer></main></body></html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f4f6f9">
+  <title>Orbit · Engineering case study</title>
+  <script src="/executive/theme.js"></script>
+  <link rel="stylesheet" href="/showcase.css?v=orbit-case-study-20261010">
+  <script type="module" src="/showcase.js?v=orbit-case-study-20261010"></script>
+</head>
+<body>
+  <a class="skip-link" href="#case-study">Skip to case study</a>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Open Orbit Executive Assistant"><span aria-hidden="true">◈</span> Orbit</a>
+    <div class="topbar-actions">
+      <span class="demo-label">ENGINEERING CASE STUDY</span>
+      <div class="theme-switcher" role="group" aria-label="Appearance">
+        <button type="button" data-theme-value="light" aria-label="Use Light appearance" aria-pressed="false"><span aria-hidden="true">☀</span><span class="theme-label">Light</span></button>
+        <button type="button" data-theme-value="dark" aria-label="Use Dark appearance" aria-pressed="false"><span aria-hidden="true">◐</span><span class="theme-label">Dark</span></button>
+        <button type="button" data-theme-value="system" aria-label="Use Auto appearance" aria-pressed="false"><span aria-hidden="true">◫</span><span class="theme-label">Auto</span></button>
+      </div>
+      <a class="open-app" href="/">Open app <span aria-hidden="true">→</span></a>
+    </div>
+  </header>
+
+  <main id="case-study" tabindex="-1">
+    <section class="hero" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">REVIEW-FIRST AI OPERATIONS</p>
+        <h1 id="page-title">An assistant that prepares work without taking control away.</h1>
+        <p class="hero-copy">Orbit is a fictional, local prototype for executive workflow orchestration. This walkthrough explains the product, architecture, safety boundaries, and business case with claims backed by the repository.</p>
+      </div>
+      <dl class="evidence-strip" aria-label="Current engineering evidence">
+        <div><dt>104</dt><dd>automated tests</dd></div>
+        <div><dt>3</dt><dd>generation modes</dd></div>
+        <div><dt>0</dt><dd>external demo actions</dd></div>
+      </dl>
+    </section>
+
+    <section class="walkthrough" aria-label="Orbit engineering walkthrough">
+      <div class="walkthrough-heading">
+        <div><p class="eyebrow">INTERVIEW WALKTHROUGH</p><h2>Eight decisions behind Orbit</h2></div>
+        <p id="progress" class="progress-copy" aria-live="polite"></p>
+      </div>
+      <div class="progress-track" aria-hidden="true"><span id="progress-bar"></span></div>
+      <article class="stage" aria-labelledby="title">
+        <div class="stage-copy">
+          <p id="category" class="eyebrow"></p>
+          <h3 id="title" tabindex="-1"></h3>
+          <p id="explanation" class="explanation"></p>
+          <aside class="talking-point" aria-label="Suggested interview explanation"><span>WHAT TO SAY</span><p id="talk"></p></aside>
+        </div>
+        <div class="evidence-card">
+          <div class="evidence-card-top"><span id="badge"></span><span id="step-number"></span></div>
+          <h4 id="screen-title"></h4><p id="example"></p><ul id="proof-list" aria-label="Supporting evidence"></ul>
+        </div>
+      </article>
+      <nav class="controls" aria-label="Walkthrough controls">
+        <button id="back" class="secondary" type="button" aria-keyshortcuts="ArrowLeft">Previous</button>
+        <span>Use the buttons or arrow keys</span>
+        <button id="next" class="primary" type="button" aria-keyshortcuts="ArrowRight">Next decision <span aria-hidden="true">→</span></button>
+      </nav>
+    </section>
+
+    <section class="architecture" aria-labelledby="architecture-title">
+      <div class="section-heading"><div><p class="eyebrow">SYSTEM SHAPE</p><h2 id="architecture-title">One boundary from request to decision</h2></div></div>
+      <ol class="architecture-flow">
+        <li><span>01</span><strong>Workspace</strong><small>Fictional Personal or Work context</small></li>
+        <li><span>02</span><strong>Generation boundary</strong><small>Scripted, Local AI, or Cloud AI</small></li>
+        <li><span>03</span><strong>Validation</strong><small>Bounded, structured, redacted</small></li>
+        <li><span>04</span><strong>Editable draft</strong><small>Nothing is silently approved</small></li>
+        <li><span>05</span><strong>Owner decision</strong><small>Explicit simulated execution</small></li>
+      </ol>
+    </section>
+
+    <section class="closing-grid">
+      <article><p class="eyebrow">VIABILITY</p><h2>Useful pattern, unproven business.</h2><p>The review-first approach could help teams use AI for preparation while retaining human accountability. A sellable version still needs customer discovery, production identity, connected systems, shared storage, retention controls, and measured outcomes.</p></article>
+      <article><p class="eyebrow">HONEST BOUNDARY</p><h2>Prototype evidence, not production claims.</h2><p>This presentation is illustrative, not the live workflow. It uses fictional data and fixed campaign samples. No real email, calendar, publishing account, customer outcome, or public production deployment is claimed.</p></article>
+    </section>
+
+    <footer>
+      <div><strong>Ready to inspect the implementation?</strong><p>Run locally with Node.js 20+. No package installation or API key is required for Scripted mode.</p></div>
+      <div class="footer-links"><a href="/">Open the working app</a><a href="https://github.com/david08107-beep/automation-portfolio">View source repository</a></div>
+    </footer>
+  </main>
+</body>
+</html>

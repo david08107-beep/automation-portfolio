@@ -1,42 +1,81 @@
-# Orbit: interview showcase
+# Orbit: engineering case study
 
-Orbit is a local, review-first workflow prototype. It brings a campaign request, editable drafts, approval, simulated execution, and history into one workspace.
+Orbit is a local, review-first Executive Assistant prototype. The working app is
+the product demonstration; `/showcase` is the employer-facing explanation of
+the engineering and product decisions behind it.
 
-The original Orbit Executive Assistant is the main interface again. Its briefing, inbox, calendar, tasks, document review, and Personal/Work spaces remain. Workflows and Content Studio are additional navigation destinations. Campaign views share campaign records; executive decisions retain their independent browser-local history. See the package README for the exact integration boundaries.
+The strongest story is not model novelty. It is the boundary between AI-assisted
+preparation and owner-controlled decisions: generated replies remain editable,
+saved versions are explicit, approvals bind to exact content, duplicate
+execution is prevented, and every external action remains simulated.
 
-The strongest part to demonstrate is the workflow engineering, not model novelty. Marketing output is fixed fictional sample content. Inbox, calendar, social, and publishing accounts are not connected. Optional Ollama adapters can prepare editable inbox reply drafts when explicitly enabled; they do not approve or send.
+## Open the case study
 
-## Three-minute walkthrough
+1. From `shared-agent-operations`, run `npm start` with Node.js 20 or newer.
+2. Open `http://127.0.0.1:4317/showcase` on that computer.
+3. Use Next, Previous, the Left/Right arrow keys, or Home/End to navigate.
+4. Check Light, Dark, and Auto. The same saved appearance is shared with Orbit.
+5. Select **Open app** to inspect the working fictional workflow.
 
-1. Start with `npm start` in `shared-agent-operations` using Node.js 20 or newer. Open `http://127.0.0.1:4317/`. This address works on your computer; it is not a public recruiter link.
-2. Show the original executive briefing and inbox reply review first. Then open Content Studio and enter a fictional campaign brief: dog-training classes, local dog owners, Instagram, friendly tone, encourage enquiries. Select Ask Orbit. Explain that the brief is retained, but the generated assets remain fixed demo fixtures.
-3. Open the draft. Edit the launch text to match that brief and save it. Show the new saved version.
-4. Approve that exact saved version. Copy or download the reviewed draft. The export includes the request, content, version, and sample-content disclaimer.
-5. Optionally run the simulated execution. Show its receipt and Activity. Nothing is posted or sent externally.
-6. Reload to show saved history. Explain that browser scratch edits and authoritative saved versions are separate.
+No account, package installation, model download, or API key is required. The
+address is local and cannot be sent to a recruiter as a public link.
 
-For a safety demonstration, make an unsaved edit and show that it cannot be treated as approved content. Do not approve unrelated existing requests or clear the user's history.
+## Eight-decision interview story
 
-## What this demonstrates
+1. **Problem:** AI automation becomes risky when decisions and evidence vanish
+   inside a response.
+2. **Experience:** one Personal/Work workspace turns scattered requests into a
+   visible decision queue.
+3. **Generation:** Scripted remains the default; Local AI and Cloud AI are
+   explicit, replaceable options behind one server boundary.
+4. **Grounding:** generated workspace answers cite only validated fictional fact
+   IDs and cannot invoke tools.
+5. **Review:** replies move through generate, edit, save, review, and explicit
+   confirmation; generation never authorizes sending.
+6. **Reliability:** versioning, stale-state checks, idempotency, and receipt
+   reconciliation protect failure paths.
+7. **Evidence:** the current test suite and demo verify these boundaries without
+   live inference or external actions.
+8. **Viability:** the pattern is useful, but a business still needs customer
+   discovery, pricing evidence, production identity, storage, and integrations.
 
-- A usable front door for requests and decisions, rather than separate disconnected tools.
-- Exact-version review: changes invalidate earlier approval.
-- Optimistic concurrency: an older browser tab cannot silently overwrite a newer saved draft.
-- Recoverable browser edits and persistent local workflow history.
-- Idempotent simulated receipts and restart reconciliation.
-- Server validation, loopback/same-origin checks, bounded payloads, and restricted static assets.
-- Automated workflow, persistence, HTTP, recovery, campaign-brief, and export tests.
+The page supplies a concise “What to say” prompt for each decision. Use those as
+talking points, not a script to memorize.
 
-The flow is: Orbit interface → shared workflow core → injected sample adapters → version-specific approval → simulated receipt or local export. This integrates workflow contracts; it does not merge every baseline application into one production product.
+## Working-app demonstration
 
-## Interview explanation
+After the case study, open Orbit and show one complete reply flow: switch to the
+Work inbox, open a message, generate or keep the Scripted draft, edit it, save the
+draft, choose Send Reply, inspect the exact confirmation, and confirm the
+simulated action. Then switch to Personal to demonstrate context separation.
 
-“I built a review-first automation prototype with AI coding assistance. It keeps the request, draft versions, approval, and execution history together. My focus was preventing lost edits, stale approvals, and duplicate execution. I can walk through the implementation and tests. The current marketing generator is deliberately simulated; production AI and account integrations are future work.”
+For the deeper workflow example, open Content Studio, prepare a fictional
+campaign, edit and save a new version, approve that exact version, and optionally
+run simulated execution. A later edit invalidates the earlier approval; an old
+tab cannot overwrite the latest saved version.
 
-Discuss the code and tradeoffs you understand. Do not claim real customers, measured time savings, independent authorship, production AI, or connected-account capability without evidence.
+## Claims supported by the repository
 
-## Limits and next steps
+- Review-first state transitions and exact-version approval.
+- Optimistic concurrency and duplicate-execution prevention.
+- Browser draft recovery and restart-safe local workflow history.
+- Server-side Local/Cloud provider abstraction with backend-only credentials.
+- Structured validation, bounded input/output, cancellation, timeout, and
+  redacted provider errors.
+- Responsive Light/Dark/Auto interface and targeted browser checks.
+- Automated workflow, persistence, HTTP, reply, grounding, provider, and
+  approval tests.
 
-This is a single-owner local demo, not a production multi-user service. Local history is plaintext; use fictional data. It has no production authentication, public hosting, connected-account automation, or external publishing. Optional AI produces drafts behind the same review boundary. Browser checks are targeted usability checks, not a full accessibility certification.
+## Honest boundaries
 
-Before public sharing: review the branch, verify the demo from a clean checkout, choose a safe hosting approach, remove private/demo history from any distributable artifact, and explicitly authorize publishing. A local walkthrough or screen recording can be used without introducing account integrations.
+This is a fictional, single-owner local prototype, not a production multi-user
+service. No real email, calendar, social account, or customer data is connected.
+Local history is plaintext. Campaign sample content is fixed. Optional AI only
+prepares editable drafts and grounded answers when explicitly configured and
+selected. There is no public hosting, production identity, tenant isolation,
+shared database, measured customer outcome, or profitability evidence.
+
+Before public sharing: verify a clean checkout, choose a secure hosting and data
+model, remove private local history from distributable artifacts, and explicitly
+authorize publication. A local screen-share or recording can demonstrate the
+current project without expanding those boundaries.
