@@ -1,3 +1,4 @@
+import {createReplyGenerator} from './src/reply-generation.js';
 import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {createDemoSystem} from './src/operations.js';
@@ -6,7 +7,7 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import {resolve} from 'node:path';
 
 // Local demonstration only: one fictional owner, no connected providers.
-export function createDashboardServer(system = createDemoSystem()) {
+export function createDashboardServer(system = createDemoSystem(), replyGenerator = createReplyGenerator()) {
   const caller = {actorId: 'demo-dave', workspaceId: 'work'};
   const files = {'/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/drafts.js': ['drafts.js', 'text/javascript'], '/campaign.js': ['campaign.js', 'text/javascript'], '/export.js': ['export.js', 'text/javascript'], '/styles.css': ['styles.css', 'text/css']};
   return createServer(async (req, res) => {
@@ -34,8 +35,9 @@ export function createDashboardServer(system = createDemoSystem()) {
         const content = await readFile(new URL(`./web/${file}`, import.meta.url));
         res.writeHead(200, {'Content-Type': `${type}; charset=utf-8`}); return res.end(content);
       }
+      if (req.method === 'GET' && path === '/api/reply-generation/status') return respond(200, {enabled: replyGenerator.enabled === true, mode: replyGenerator.enabled === true ? 'local-ollama' : 'scripted'});
       if (req.method === 'GET' && path === '/api/workflows') return respond(200, {workflows: system.repository.list().filter(w => w.actorId === caller.actorId && w.workspaceId === caller.workspaceId)});
-      if (req.method !== 'POST' || path !== '/api/commands') return respond(404, {error: {message: 'Not found.'}});
+      if (req.method !== 'POST' || !['/api/commands','/api/reply-generation'].includes(path)) return respond(404, {error: {message: 'Not found.'}});
       if (req.headers.origin !== `http://${expectedHost}` || req.headers['content-type'] !== 'application/json') return respond(403, {error: {message: 'Open this action from the local dashboard.'}});
       const chunks = [];
       let bytes = 0;
@@ -48,6 +50,10 @@ export function createDashboardServer(system = createDemoSystem()) {
       let input;
       try {input = JSON.parse(body);} catch {return respond(400, {error: {message: 'Invalid request.'}});}
       if (!input || typeof input !== 'object' || Array.isArray(input)) return respond(400, {error: {message: 'Invalid request.'}});
+      if(path === '/api/reply-generation') {
+        const result = await replyGenerator(input);
+        return respond(result.ok ? 200 : 409, result);
+      }
       const {action, workflowId, request, campaignBrief, payload, versionId, baseVersionId, payloadDigest, approvalId} = input;
       if (!['start', 'revise', 'approve', 'execute', 'cancel', 'retryPreparation'].includes(action)) return respond(400, {error: {message: 'Unknown action.'}});
       if (action === 'start' && typeof request === 'string' && /\binbox\b|\b(reschedule|schedule|cancel|move|book)\b[^.!?\n]{0,80}\b(meetings?|appointments?)\b|\b(summarize|read|check)\b[^.!?\n]{0,40}\b(my|our)\s+emails?\b/i.test(request)) {
@@ -62,6 +68,6 @@ export function createDashboardServer(system = createDemoSystem()) {
 
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
   const system = createStoredDemoSystem(fileURLToPath(new URL('./local-data/history.json', import.meta.url)));
-  const server = createDashboardServer(system);
+  const server = createDashboardServer(system, createReplyGenerator({enabled:process.env.ORBIT_OLLAMA_ENABLED==='true',model:process.env.ORBIT_OLLAMA_MODEL || 'llama3.2'}));
   server.listen(4317, '127.0.0.1', () => console.log('Orbit: http://127.0.0.1:4317 — local preview; history saved on this computer.'));
 }

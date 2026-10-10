@@ -106,3 +106,10 @@ Node 20 or newer is sufficient. There are no package dependencies or secrets. Th
 The running dashboard uses explicit fixtures corresponding to the three application-service boundaries. The separate baseline adapter layer maps injected service contracts and is not loaded by `npm start`. Browser-local Orbit and AI OS state is not treated as authorization or durable audit. Marketing's local synthetic login is not reused as production identity. This package does not add authentication, OAuth, real accounts, a backend deployment, or a connector.
 
 Before real accounts, select an identity provider, backend/database/job service, secrets strategy, provider OAuth applications/scopes, hosting/callback identities, retention policy, and authorized security assessment scope. Those remain owner decisions and are intentionally outside this change.
+
+## Optional Orbit V1.6 reply drafting
+
+Scripted generation remains the default. Optional local Ollama drafting, Windows
+launcher, and one-checkout Git update instructions are documented in
+[OPTIONAL-AI.md](OPTIONAL-AI.md). Real email sending and account connections
+remain out of scope; generated text requires review.
