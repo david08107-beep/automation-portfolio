@@ -27,6 +27,9 @@ test('Orbit remains the entry point with original assistant and additive campaig
   const app=await (await fetch(url+'/executive/app.js')).text();
   assert.match(app,/<option value="scripted">Scripted demo<\/option><option value="local" disabled>Local AI<\/option><option value="cloud" disabled>Cloud AI<\/option>/);
   assert.match(app,/AI drafts require review/);
+  assert.match(app,/AI reply options/);
+  assert.match(app,/No provider request is sent until you choose Generate reply/);
+  assert.doesNotMatch(app,/Local AI is disabled or still checking its configuration/);
   assert.doesNotMatch(app,/OLLAMA_API_KEY|Authorization:\s*Bearer|cloudApiKey/);
   const themeScript=await (await fetch(url+'/executive/theme.js')).text();
   assert.match(themeScript,/orbit-ui-theme/);

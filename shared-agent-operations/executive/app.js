@@ -1076,10 +1076,12 @@ function openMessage(i,origin,compose=false){
   const terminal=['Replied','Handled','Snoozed'].includes(messageStatus(i));
   const add=(text,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=text;if(text==='Edit Draft')b.dataset.editDraft='';b.addEventListener('click',fn);actions.append(b);};
   if(['Handled','Snoozed'].includes(messageStatus(i)))add(messageStatus(i)==='Handled'?'Reopen message':'Return to inbox',()=>{reopenMessage(i);openMessage(i,messageOrigin);});
-  if(!terminal){if(!(activeWorkspace==='personal' && [1,2].includes(i))){add(record.draft!==undefined || i===0 && state.drafts.reply?'Edit Draft':'Review Orbit Draft',()=>composeReply(true));add('Generate AI reply',()=>{
-  const button=$('#draft-ai-generate');
-  if(!button || $('#draft-mode option[value=local]').disabled){$('#message-feedback').textContent='Local AI is disabled or still checking its configuration. Review Orbit Draft is available now.';return;}
-  composeReply(true);$('#draft-mode').value='local';$('#draft-mode').dispatchEvent(new Event('change'));$('#draft-generate').scrollIntoView({block:'center',behavior:reducedMotion.matches?'auto':'smooth'});$('#draft-generate').click();
+  if(!terminal){if(!(activeWorkspace==='personal' && [1,2].includes(i))){add(record.draft!==undefined || i===0 && state.drafts.reply?'Edit Draft':'Review Orbit Draft',()=>composeReply(true));add('AI reply options',()=>{
+  composeReply(true);
+  const select=$('#draft-mode');
+  const available=[...select.options].filter(option=>['local','cloud'].includes(option.value) && !option.disabled).map(option=>option.textContent);
+  $('#draft-notice').textContent=available.length?`Choose ${available.join(' or ')}, then Generate reply. No provider request is sent until you choose Generate reply.`:'Optional AI is not enabled on this server. Scripted generation remains available.';
+  select.scrollIntoView({block:'center',behavior:reducedMotion.matches?'auto':'smooth'});select.focus({preventScroll:true});
 });add('Write my own reply',()=>composeReply(false));}
     const kinds=activeWorkspace==='personal'?(i===2?[['Create Reminder','reminder']]:i===1?[['Add to Calendar','calendar'],['Create Reminder','reminder']]:[['Add to Calendar','calendar']]):[['Create Task','task'],['Add Follow-up','followup']];
     for(const [text,kind] of kinds){const existing=record.artifacts?.some(a=>a.kind===kind);add(existing && kind!=='calendar'?({task:'Edit Task',followup:'Edit Follow-up',reminder:'Edit Reminder'}[kind]):text,()=>kind==='calendar'?createMessageArtifact(kind):editLocalAction(kind));}

@@ -2,6 +2,16 @@
 
 ## Current review
 
+V1.7 reply-shortcut maintenance: the message-level AI action no longer assumes
+Local AI when only Cloud AI is configured. It opens the shared reply editor,
+keeps Scripted selected, lists the enabled provider choices, and makes no provider
+request until the user selects a mode and chooses Generate reply. An isolated
+Chromium run confirmed zero generation requests from opening the shortcut or
+selecting Cloud, then passed scripted edit/save/send, single-execution persistence
+after reload, Light/Dark/Auto switching, and Scripted Ask Orbit with no console
+errors. The complete 104-test suite and command-line demo passed; the demo reported
+`simulated: true` and `externalActions: 0`. No live inference was used.
+
 V1.7 grounded Ask Orbit implementation: 104/104 automated tests pass. New mocked
 coverage verifies local structured output, hosted backend authentication, bounded
 workspace context, known citations, invalid/extra output rejection with one retry,

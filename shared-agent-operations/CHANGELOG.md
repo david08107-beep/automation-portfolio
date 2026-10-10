@@ -9,6 +9,7 @@
 - Refresh Orbit with a neutral professional visual system and persistent Light, Dark, and Auto themes across the Executive and Work-only views.
 - Refresh portfolio screenshots and current documentation without changing the preserved v1.5.0 demo baseline or enabling real external actions.
 - Expand the current regression suite to 104 passing tests.
+- Fix the message-level AI reply shortcut in Cloud-only configurations. It now opens the shared reply editor and requires an explicit Local or Cloud selection before any provider request.
 
 ## 0.4.0 — 2026-10-09
 
