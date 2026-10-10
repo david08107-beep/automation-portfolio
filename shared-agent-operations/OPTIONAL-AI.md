@@ -175,3 +175,12 @@ any retry. Only non-negative finite numeric provider timings are returned.
 These diagnostics do not establish a measured speed improvement on the user PC.
 All 87 automated tests passed; manual layout/keyboard and local hardware timing
 checks remain outstanding.
+
+## Reply toolbar polish
+
+More retains its compact width and opens an anchored tools popover rather than
+expanding the toolbar. Outside clicks and Escape dismiss it; keyboard focus
+returns to More after a closed history dialog when appropriate. Generation labels
+and feedback have reserved space to reduce layout shifts, and reduced-motion
+preferences disable the new transitions. All 87 regression tests and syntax
+checks passed. Visual/mobile verification remains pending on the user PC.

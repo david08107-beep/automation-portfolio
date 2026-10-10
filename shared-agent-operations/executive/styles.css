@@ -238,5 +238,24 @@ dialog .dialog-floating-close button:hover{background:#254139;border-color:var(-
 .sidebar > .dialog-floating-close{display:none}
 #navigation-drawer .sidebar > .dialog-floating-close{display:flex}
 
-/* Reply generation: one primary action, secondary tools disclosed on demand. */
-.draft-toolbar{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin:16px 0}.draft-toolbar>.action-field{flex:1;min-width:140px;margin:0}.draft-toolbar select{background:#101e29;color:var(--text);border:1px solid #a6c8be35;border-radius:8px;padding:10px;width:100%}.draft-toolbar>#draft-generate{min-height:44px}.draft-more{flex:0 0 auto}.draft-more summary{cursor:pointer;border:1px solid #a6c8be35;border-radius:8px;padding:12px;font-size:11px;min-height:44px;box-sizing:border-box}.draft-more[open]{flex-basis:100%}.draft-more .message-actions{margin:10px 0}.draft-more summary:focus-visible{outline:2px solid var(--mint);outline-offset:3px}#draft-generate:disabled{opacity:.65;cursor:wait}@media(max-width:450px){.draft-toolbar>.action-field{flex-basis:100%}.draft-toolbar>#draft-generate{flex:1}}
+/* Reply toolbar remains stable when tools or generation feedback appear. */
+.draft-toolbar{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin:16px 0}
+.draft-toolbar>.action-field{flex:1;min-width:140px;margin:0}
+.draft-toolbar select{background:#101e29;color:var(--text);border:1px solid #a6c8be35;border-radius:8px;padding:10px;width:100%;min-height:44px}
+.draft-toolbar>#draft-generate{min-height:44px;min-width:128px;transition:background .16s,opacity .16s;transform:none}
+.draft-more{position:relative;flex:0 0 68px;width:68px}
+.draft-more summary{display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;border:1px solid #a6c8be35;border-radius:8px;padding:10px;font-size:11px;height:44px;box-sizing:border-box;list-style:none;transition:background .16s,border-color .16s}
+.draft-more summary::-webkit-details-marker{display:none}
+.draft-more summary::after{content:'⌄';transition:transform .16s}
+.draft-more[open] summary::after{transform:rotate(180deg)}
+.draft-more summary:hover,.draft-more[open] summary{background:#b5e7cb10;border-color:#b5e7cb65}
+.draft-more-content{position:absolute;top:calc(100% + 8px);right:0;z-index:35;width:220px;max-width:calc(100vw - 64px);padding:10px;background:#14232f;border:1px solid #a6c8be45;border-radius:12px;box-shadow:0 14px 34px #0006;animation:reply-tools-enter .14s ease-out}
+.draft-more .message-actions{display:grid;gap:6px;margin:0}
+.draft-more .message-actions button:not([hidden]){text-align:left;min-height:40px;transition:background .16s,border-color .16s}
+.draft-more #draft-timing{margin:10px 2px 2px;font-size:10px;line-height:1.6;overflow-wrap:anywhere}
+.draft-more summary:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
+#draft-generate:disabled{opacity:.65;cursor:wait}
+#draft-notice{min-height:3.4em;margin-bottom:0}
+@keyframes reply-tools-enter{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:450px){.draft-toolbar>.action-field{flex-basis:100%}.draft-toolbar>#draft-generate{flex:1}}
+@media(prefers-reduced-motion:reduce){.draft-more-content{animation:none}.draft-more summary,.draft-more summary::after,.draft-toolbar>#draft-generate,.draft-more .message-actions button{transition:none}}
