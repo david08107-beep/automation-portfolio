@@ -158,3 +158,20 @@ still depends on hardware. The editor now shows elapsed seconds and generation
 state, with cancellation still available. The existing 15-second total deadline
 and one-repair limit are unchanged. All 85 automated tests passed; real speed
 improvement and visual progress behavior remain unverified on the user PC.
+
+## Simplified generation controls and timing
+
+Choose Scripted demo or Local AI, then use the single **Generate reply** button.
+Scripted demo remains the default, and Local AI is unavailable without server
+opt-in. **More** contains draft history, download, copy and timing details.
+Cancel, Save Draft and Send Reply remain separate; generation never confirms
+execution. The direct message action still selects Local AI and starts generation.
+
+Busy feedback is painted before synchronous draft/history persistence. After a
+successful local generation, More shows total elapsed time, editor preparation,
+number of attempts, and model load/generation durations when Ollama supplies them.
+Model load/generation durations describe the final attempt; total time includes
+any retry. Only non-negative finite numeric provider timings are returned.
+These diagnostics do not establish a measured speed improvement on the user PC.
+All 87 automated tests passed; manual layout/keyboard and local hardware timing
+checks remain outstanding.

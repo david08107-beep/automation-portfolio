@@ -23,6 +23,7 @@ export function createReplyGenerator({enabled=false, model='llama3.2', timeoutMs
     const text=(v,max)=>typeof v==='string' && v.trim() && v.length<=max && !v.includes('\0');
     if(!input || !['personal','work'].includes(input.workspace) || !text(input.message,12000) || !text(input.brief,4000) || !text(input.previousBody,12000) || !['clarify','confirm','decline'].includes(input.settings?.goal) || !['professional','warm','concise'].includes(input.settings?.tone) || !['positive','mixed','negative'].includes(input.settings?.feedback))return fail('INVALID_INPUT','Check the message, reply brief and selected settings.');
     if(!/^[a-zA-Z0-9_.:-]{1,100}$/.test(model) || model.endsWith(':cloud'))return fail('AI_CONFIG','The local model configuration is invalid.');
+    const startedAt=Date.now();
     const controller=new AbortController();
     let timer;
     try {
@@ -37,11 +38,11 @@ export function createReplyGenerator({enabled=false, model='llama3.2', timeoutMs
         if(!response.ok)throw Error('provider');
         let raw=''; let bytes=0; const decoder=new TextDecoder();
         for await(const chunk of response.body){bytes+=chunk.byteLength;if(bytes>64000){controller.abort();throw Error('output');}raw+=decoder.decode(chunk,{stream:true});}
-        raw+=decoder.decode(); let output;
-        try { const envelope=JSON.parse(raw); output=JSON.parse(envelope.message?.content); } catch {}
+        raw+=decoder.decode(); let output,envelope;
+        try { envelope=JSON.parse(raw); output=JSON.parse(envelope.message?.content); } catch {}
         if(!output || Array.isArray(output) || Object.keys(output).length!==1 || !text(output.body,10000)){
           if(attempt===0)continue;
-          return fail('AI_OUTPUT','Local AI returned invalid reply data after one retry. Your draft is preserved; try New alternative for a scripted reply.');
+          return fail('AI_OUTPUT','Local AI returned invalid reply data after one retry. Your draft is preserved; select Scripted demo and Generate reply.');
         }
         const body=normalizeReplyBody(output.body);
         if(!body){
@@ -51,13 +52,17 @@ export function createReplyGenerator({enabled=false, model='llama3.2', timeoutMs
         if(input.settings.goal==='decline' && !declineIsClear(body)){
           correction='The previous reply postponed or failed to clearly decline. State explicitly that Dave declines the proposal. Do not promise to get back later or invent reasons.';
           if(attempt===0)continue;
-          return fail('AI_GOAL_MISMATCH','Local AI did not clearly decline after one retry. Your draft is preserved; try New alternative for a scripted decline.');
+          return fail('AI_GOAL_MISMATCH','Local AI did not clearly decline after one retry. Your draft is preserved; select Scripted demo and Generate reply.');
         }
         if(body===normalizeReplyBody(input.previousBody)){
           if(attempt===0)continue;
-          return fail('AI_UNCHANGED','Local AI repeated your draft after one retry. Your draft is preserved; try New alternative for a scripted reply.');
+          return fail('AI_UNCHANGED','Local AI repeated your draft after one retry. Your draft is preserved; select Scripted demo and Generate reply.');
         }
-        return {ok:true,value:{body,source:'ollama',requiresReview:true}};
+        const timing={attempts:attempt+1,serverMs:Date.now()-startedAt};
+        for(const [field,key] of [['load_duration','loadMs'],['eval_duration','generateMs']]){
+          if(typeof envelope[field]==='number' && Number.isFinite(envelope[field]) && envelope[field]>=0)timing[key]=Math.round(envelope[field]/1000000);
+        }
+        return {ok:true,value:{body,source:'ollama',requiresReview:true,timing}};
         }
       })();
       return await Promise.race([task,new Promise(resolve=>{timer=setTimeout(()=>{controller.abort();resolve(fail('AI_TIMEOUT','Local AI timed out. Your current draft is preserved.'));},timeoutMs);})]);

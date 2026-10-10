@@ -1013,7 +1013,7 @@ function openMessage(i,origin,compose=false){
   if(!terminal){if(!(activeWorkspace==='personal' && [1,2].includes(i))){add(record.draft!==undefined || i===0 && state.drafts.reply?'Edit Draft':'Review Orbit Draft',()=>composeReply(true));add('Generate AI reply',()=>{
   const button=$('#draft-ai-generate');
   if(!button || button.disabled){$('#message-feedback').textContent='Local AI is disabled or still checking its configuration. Review Orbit Draft is available now.';return;}
-  composeReply(true);button.scrollIntoView({block:'center',behavior:reducedMotion.matches?'auto':'smooth'});button.click();
+  composeReply(true);$('#draft-mode').value='local';$('#draft-generate').scrollIntoView({block:'center',behavior:reducedMotion.matches?'auto':'smooth'});$('#draft-generate').click();
 });add('Write my own reply',()=>composeReply(false));}
     const kinds=activeWorkspace==='personal'?(i===2?[['Create Reminder','reminder']]:i===1?[['Add to Calendar','calendar'],['Create Reminder','reminder']]:[['Add to Calendar','calendar']]):[['Create Task','task'],['Add Follow-up','followup']];
     for(const [text,kind] of kinds){const existing=record.artifacts?.some(a=>a.kind===kind);add(existing && kind!=='calendar'?({task:'Edit Task',followup:'Edit Follow-up',reminder:'Edit Reminder'}[kind]):text,()=>kind==='calendar'?createMessageArtifact(kind):editLocalAction(kind));}
@@ -1385,33 +1385,43 @@ function restoreReplySettings(record){const settings=cleanReplySettings(record.r
 function draftSnapshot(label){return {label,body:$('#reply-body').value,brief:$('#draft-brief').value,to:$('#reply-to').value,subject:$('#reply-subject').value,settings:currentReplySettings(),at:new Date().toISOString()};}
 function recordDraftVersion(label){return syncReplyVersion(selectedMessage,{body:$('#reply-body').value,brief:$('#draft-brief').value,to:$('#reply-to').value,subject:$('#reply-subject').value,settings:currentReplySettings()},label);}
 (() => {
- const tools=document.createElement('section');tools.className='reply-draft-tools';tools.setAttribute('aria-label','Scripted reply preparation');tools.innerHTML='<p class="muted">Scripted alternatives · Uses this message, Dave’s identity, and the selected workspace. Scripted mode is default; local AI requires explicit server opt-in.</p><label class="action-field">Reply brief<textarea id="draft-brief" rows="2" maxlength="4000"></textarea></label><div class="draft-settings"><label class="action-field">Goal<select id="draft-goal"><option value="clarify">Request clarification</option><option value="confirm">Confirm next step</option><option value="decline">Decline respectfully</option></select></label><label class="action-field">Tone<select id="draft-tone"><option value="professional">Professional</option><option value="warm">Warm</option><option value="concise">Concise</option></select></label><label class="action-field">Your assessment<select id="draft-feedback"><option value="positive">Positive</option><option value="mixed" selected>Mixed</option><option value="negative">Negative</option></select></label></div><div class="message-actions"><button type="button" id="draft-regenerate">New alternative</button><button type="button" id="draft-history-open" aria-haspopup="dialog">Draft history</button><button type="button" id="draft-download">Download draft</button><button type="button" id="draft-copy">Copy draft</button></div><p id="draft-notice" role="status" aria-live="polite"></p>';
+ const tools=document.createElement('section');tools.className='reply-draft-tools';tools.setAttribute('aria-label','Scripted reply preparation');tools.innerHTML='<p class="muted">Scripted alternatives · Uses this message, Dave’s identity, and the selected workspace. Scripted mode is default; local AI requires explicit server opt-in.</p><label class="action-field">Reply brief<textarea id="draft-brief" rows="2" maxlength="4000"></textarea></label><div class="draft-settings"><label class="action-field">Goal<select id="draft-goal"><option value="clarify">Request clarification</option><option value="confirm">Confirm next step</option><option value="decline">Decline respectfully</option></select></label><label class="action-field">Tone<select id="draft-tone"><option value="professional">Professional</option><option value="warm">Warm</option><option value="concise">Concise</option></select></label><label class="action-field">Your assessment<select id="draft-feedback"><option value="positive">Positive</option><option value="mixed" selected>Mixed</option><option value="negative">Negative</option></select></label></div><div class="draft-toolbar"><label class="action-field">Generation mode<select id="draft-mode"><option value="scripted">Scripted demo</option><option value="local" disabled>Local AI</option></select></label><button type="button" id="draft-generate" class="approve-button">Generate reply</button><details id="draft-more" class="draft-more"><summary>More</summary><div class="message-actions"><button type="button" id="draft-history-open" aria-haspopup="dialog">Draft history</button><button type="button" id="draft-download">Download draft</button><button type="button" id="draft-copy">Copy draft</button></div><p id="draft-timing" class="muted">Timing appears after local AI generation.</p></details><button type="button" id="draft-regenerate" hidden>Scripted alternative</button></div><p id="draft-notice" role="status" aria-live="polite"></p>';
  $('#reply-body').closest('label').before(tools);
  const history=document.createElement('dialog');history.id='draft-history-dialog';history.className='action-dialog draft-history-dialog';history.setAttribute('aria-labelledby','draft-history-title');history.innerHTML='<div class="dialog-top"><h2 id="draft-history-title">Reply draft history</h2><button type="button" id="draft-history-close" class="close-button" aria-label="Close draft history">×</button></div><p>Versions are specific to this message and workspace. Restore brings back the brief, body, and selected settings; nothing is sent.</p><div id="draft-history-items"></div>';document.body.append(history);history.addEventListener('keydown',containDialogFocus);$('#draft-history-close').addEventListener('click',()=>history.close());history.addEventListener('close',()=>{if(messageDialog.open)$('#draft-history-open').focus();});
  const notice=text=>$('#draft-notice').textContent=text;
- const aiButton=document.createElement('button');aiButton.id='draft-ai-generate';aiButton.type='button';aiButton.textContent='Generate with local AI';aiButton.title='Optional Ollama · disabled by default · draft only';$('#draft-copy').after(aiButton);
+ const aiButton=document.createElement('button');aiButton.id='draft-ai-generate';aiButton.type='button';aiButton.textContent='Generate with local AI';aiButton.hidden=true;aiButton.title='Optional Ollama · disabled by default · draft only';$('#draft-copy').after(aiButton);
  aiButton.disabled=true;
- const aiStatus=document.createElement('p');aiStatus.className='muted';aiStatus.textContent='Checking optional local AI configuration…';aiButton.parentElement.after(aiStatus);
+ const aiStatus=document.createElement('p');aiStatus.className='muted';aiStatus.textContent='Checking optional local AI configuration…';$('.draft-toolbar').after(aiStatus);
  let aiEnabled=false,aiRequest=null,unlockAi=null,aiProgressTimer=null;
  fetch('/api/reply-generation/status').then(response=>{if(!response.ok)throw Error('Unavailable');return response.json();}).then(status=>{
-   aiEnabled=status.enabled===true;aiButton.disabled=!aiEnabled;
-   aiStatus.textContent=aiEnabled?'Local AI enabled · Ollama must run alongside the Orbit server · Drafts require review.':'Scripted mode · Local AI is disabled on this server.';
+   aiEnabled=status.enabled===true;aiButton.disabled=!aiEnabled;$('#draft-mode option[value=local]').disabled=!aiEnabled;
+   aiStatus.textContent=aiEnabled?'Local AI available · Choose it in Generation mode. Drafts require review.':'Scripted mode · Local AI is disabled on this server.';
  }).catch(()=>{aiStatus.textContent='Scripted mode · Optional local AI requires the local Orbit server.';});
- const cancelAi=()=>{clearInterval(aiProgressTimer);aiProgressTimer=null;$('#reply-composer').removeAttribute('aria-busy');aiButton.textContent='Generate with local AI';aiRequest?.abort();aiRequest=null;unlockAi?.();unlockAi=null;aiButton.disabled=!aiEnabled;};
+ const cancelAi=()=>{clearInterval(aiProgressTimer);aiProgressTimer=null;$('#reply-composer').removeAttribute('aria-busy');aiButton.textContent='Generate with local AI';$('#draft-generate').textContent='Generate reply';$('#draft-generate').disabled=false;aiRequest?.abort();aiRequest=null;unlockAi?.();unlockAi=null;aiButton.disabled=!aiEnabled;};
  messageDialog.addEventListener('close',cancelAi);
  $('#reply-cancel').addEventListener('click',cancelAi);
+ $('#draft-generate').addEventListener('click',()=>{
+   $('#draft-more').open=false;
+   if($('#draft-mode').value==='local')aiButton.click();else $('#draft-regenerate').click();
+ });
  aiButton.addEventListener('click',async()=>{
    if(!aiEnabled || aiRequest)return;
    const controller=new AbortController();aiRequest=controller;
    const workspace=activeWorkspace,index=selectedMessage;
-   const snapshot=draftSnapshot('Before local AI');
-   const saved=recordDraftVersion('Before local AI');if(!saved){aiRequest=null;return;}
-   const service=replyService(),context=replyContext(index);
-   unlockAi=OrbitReplyEditorState.lock($$('#reply-composer input, #reply-composer textarea, #reply-composer select, #draft-regenerate, #draft-history-open, #reply-save, #reply-send'));
-   aiButton.disabled=true;aiButton.textContent='Generating…';$('#reply-composer').setAttribute('aria-busy','true');
    const startedAt=Date.now();
+   unlockAi=OrbitReplyEditorState.lock($$('#reply-composer input, #reply-composer textarea, #reply-composer select, #draft-generate, #draft-regenerate, #draft-history-open, #reply-save, #reply-send'));
+   $('#draft-generate').textContent='Generating…';aiButton.disabled=true;$('#reply-composer').setAttribute('aria-busy','true');
+   notice('Preparing your reply… Nothing will be sent.');
+   // Yield a paint before synchronous version/history persistence.
+   await new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,0)));
+   if(controller.signal.aborted || activeWorkspace!==workspace || selectedMessage!==index || !messageDialog.open){if(aiRequest===controller)cancelAi();return;}
+   const snapshot=draftSnapshot('Before local AI');
+   const saved=recordDraftVersion('Before local AI');if(!saved){cancelAi();return;}
+   const service=replyService(),context=replyContext(index);
+   aiButton.disabled=true;aiButton.textContent='Generating…';$('#reply-composer').setAttribute('aria-busy','true');
    notice('Preparing your reply… First use may need to load the local model. Nothing will be sent.');
    aiProgressTimer=setInterval(()=>{const seconds=Math.floor((Date.now()-startedAt)/1000);notice(`Preparing your reply · ${seconds}s. ${seconds>=5?'The local model may be loading or retrying; Cancel keeps your draft.':'Settings are held steady while generating.'}`);},1000);
+   const preparationMs=Date.now()-startedAt;
    try{
      const response=await fetch('/api/reply-generation',{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({workspace,message:JSON.stringify((({sender,subject,body,summary})=>({sender,subject,body,summary}))(messageData(index))),brief:snapshot.brief,settings:snapshot.settings,previousBody:snapshot.body})});
      const result=await response.json();
@@ -1422,9 +1432,12 @@ function recordDraftVersion(label){return syncReplyVersion(selectedMessage,{body
      const revised=service.saveReplyDraftVersion({...context,draftId:saved.draft.id,expectedRevision:saved.draft.currentRevision,...snapshot,body:result.value.body});
      if(replyServiceError(revised))return;
      projectReplyDraft(index,revised.value.version,'Local AI draft');$('#reply-body').value=revised.value.version.body;
-     notice('Local AI draft ready to edit and review. '+persist()+' Nothing approved or sent.');
+     const elapsed=((Date.now()-startedAt)/1000).toFixed(1);
+     const timing=result.value.timing;
+     $('#draft-timing').textContent=`Total: ${elapsed}s · Editor preparation: ${(preparationMs/1000).toFixed(1)}s`+(timing?` · Attempts: ${timing.attempts}`:'')+(Number.isFinite(timing?.loadMs)?` · Model load: ${(timing.loadMs/1000).toFixed(1)}s`:'')+(Number.isFinite(timing?.generateMs)?` · Model generation: ${(timing.generateMs/1000).toFixed(1)}s`:'');
+     notice(`Local AI draft ready in ${elapsed}s. `+persist()+' Review before sending.');
    }catch{if(!controller.signal.aborted && activeWorkspace===workspace && selectedMessage===index)notice('Local AI is unavailable. Your draft is preserved; scripted alternatives still work.');}
-   finally{if(aiRequest===controller){clearInterval(aiProgressTimer);aiProgressTimer=null;$('#reply-composer').removeAttribute('aria-busy');aiButton.textContent='Generate with local AI';unlockAi?.();unlockAi=null;aiRequest=null;aiButton.disabled=!aiEnabled;}}
+   finally{if(aiRequest===controller){clearInterval(aiProgressTimer);aiProgressTimer=null;$('#reply-composer').removeAttribute('aria-busy');aiButton.textContent='Generate with local AI';$('#draft-generate').textContent='Generate reply';unlockAi?.();unlockAi=null;aiRequest=null;aiButton.disabled=!aiEnabled;}}
  });
  const persist=()=>{saveState();return guidedSession?'Temporary guided session only.':storageAvailable?'Saved in this browser.':'Browser storage is unavailable or full. Changes are retained only for this session; download a backup.';};
  $('#draft-regenerate').addEventListener('click',()=>{const saved=recordDraftVersion('Before alternative');if(!saved)return;const result=replyService().prepareReplyAlternative({...replyContext(selectedMessage),draftId:saved.draft.id,expectedRevision:saved.draft.currentRevision,settings:currentReplySettings(),brief:$('#draft-brief').value,to:$('#reply-to').value,subject:$('#reply-subject').value});if(replyServiceError(result))return;projectReplyDraft(selectedMessage,result.value.version,'New alternative');$('#reply-body').value=result.value.version.body;notice('Distinct scripted alternative prepared. '+persist()+' Nothing sent.');});

@@ -70,3 +70,12 @@ test('local requests cap generation and keep the model warm without changing dea
  }})(input);
  assert.equal(result.ok,true);
 });
+test('generation exposes bounded timing diagnostics without provider content',async()=>{
+ const result=await createReplyGenerator({enabled:true,fetchImpl:async()=>new Response(JSON.stringify({message:{content:JSON.stringify({body:valid})},load_duration:2500000000,eval_duration:4000000000,provider_secret:'never expose'}))})(input);
+ assert.equal(result.ok,true);assert.equal(result.value.timing.loadMs,2500);assert.equal(result.value.timing.generateMs,4000);assert.equal(result.value.timing.attempts,1);
+ assert.ok(Number.isFinite(result.value.timing.serverMs));assert.ok(!JSON.stringify(result).includes('never expose'));
+});
+test('invalid provider timing values are omitted from diagnostics',async()=>{
+ const result=await createReplyGenerator({enabled:true,fetchImpl:async()=>new Response(JSON.stringify({message:{content:JSON.stringify({body:valid})},load_duration:-100,eval_duration:'secret'}))})(input);
+ assert.equal(result.ok,true);assert.equal(result.value.timing.loadMs,undefined);assert.equal(result.value.timing.generateMs,undefined);
+});

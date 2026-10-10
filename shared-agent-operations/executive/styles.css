@@ -237,3 +237,6 @@ dialog .dialog-floating-close button:hover{background:#254139;border-color:var(-
 
 .sidebar > .dialog-floating-close{display:none}
 #navigation-drawer .sidebar > .dialog-floating-close{display:flex}
+
+/* Reply generation: one primary action, secondary tools disclosed on demand. */
+.draft-toolbar{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin:16px 0}.draft-toolbar>.action-field{flex:1;min-width:140px;margin:0}.draft-toolbar select{background:#101e29;color:var(--text);border:1px solid #a6c8be35;border-radius:8px;padding:10px;width:100%}.draft-toolbar>#draft-generate{min-height:44px}.draft-more{flex:0 0 auto}.draft-more summary{cursor:pointer;border:1px solid #a6c8be35;border-radius:8px;padding:12px;font-size:11px;min-height:44px;box-sizing:border-box}.draft-more[open]{flex-basis:100%}.draft-more .message-actions{margin:10px 0}.draft-more summary:focus-visible{outline:2px solid var(--mint);outline-offset:3px}#draft-generate:disabled{opacity:.65;cursor:wait}@media(max-width:450px){.draft-toolbar>.action-field{flex-basis:100%}.draft-toolbar>#draft-generate{flex:1}}
