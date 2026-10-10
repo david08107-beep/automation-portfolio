@@ -124,3 +124,12 @@ a decline goal acknowledges the proposal without accepting it. One retry is
 allowed for invalid or unchanged output, within the same 15-second deadline.
 Unchanged and malformed replies now report distinct errors. All 73 automated
 tests passed; actual local-model quality for these settings remains to be checked.
+
+## Editor stability
+
+Reply fields, scripted regeneration, history restoration, save and send are
+temporarily disabled during local generation. Cancel and close remain available
+and restore the previous control states. The edit check compares only editable
+values, not history metadata or platform line endings. All 76 tests passed,
+including regression checks for actual edits and control restoration; live browser
+confirmation remains pending.

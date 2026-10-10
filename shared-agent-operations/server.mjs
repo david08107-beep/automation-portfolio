@@ -22,7 +22,7 @@ export function createDashboardServer(system = createDemoSystem(), replyGenerato
     try {
       const path = new URL(req.url, `http://${expectedHost}`).pathname;
       const showcaseFiles = {'/showcase': ['showcase.html', 'text/html'], '/showcase.js': ['showcase.js', 'text/javascript'], '/showcase.css': ['showcase.css', 'text/css']};
-      const executiveFiles = {'/': 'index.html', '/executive/index.html': 'index.html', '/executive/app.js': 'app.js', '/executive/workspace-policy.js': 'workspace-policy.js', '/executive/styles.css': 'styles.css', '/executive/integration.js': 'integration.js', '/executive/integration.css': 'integration.css', '/executive/workspace.css': 'workspace.css', '/executive/reply/core.js': 'reply/core.js', '/executive/reply/fixtures.js': 'reply/fixtures.js', '/executive/reply/browser-adapter.js': 'reply/browser-adapter.js'};
+      const executiveFiles = {'/': 'index.html', '/executive/index.html': 'index.html', '/executive/app.js': 'app.js', '/executive/workspace-policy.js': 'workspace-policy.js', '/executive/styles.css': 'styles.css', '/executive/integration.js': 'integration.js', '/executive/integration.css': 'integration.css', '/executive/workspace.css': 'workspace.css', '/executive/reply/editor-state.js': 'reply/editor-state.js', '/executive/reply/core.js': 'reply/core.js', '/executive/reply/fixtures.js': 'reply/fixtures.js', '/executive/reply/browser-adapter.js': 'reply/browser-adapter.js'};
       if (req.method === 'GET' && Object.hasOwn(executiveFiles, path)) {
         const file = executiveFiles[path];
         const type = file.endsWith('.html') ? 'text/html' : file.endsWith('.css') ? 'text/css' : 'text/javascript';

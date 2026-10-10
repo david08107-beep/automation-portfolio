@@ -19,7 +19,7 @@ test('Orbit remains the entry point with original assistant and additive campaig
   assert.match(html,/href="#studio" data-work-only/);
   assert.equal((await fetch(url+'/executive/workspace-policy.js')).status,200);
   assert.ok(!html.includes('<iframe'));
-  for(const path of ['/executive/app.js','/executive/styles.css','/executive/reply/core.js','/executive/reply/fixtures.js','/executive/reply/browser-adapter.js','/executive/integration.js','/executive/workspace.css']) assert.equal((await fetch(url+path)).status,200,path);
+  for(const path of ['/executive/app.js','/executive/styles.css','/executive/reply/core.js','/executive/reply/editor-state.js','/executive/reply/fixtures.js','/executive/reply/browser-adapter.js','/executive/integration.js','/executive/workspace.css']) assert.equal((await fetch(url+path)).status,200,path);
   assert.equal((await fetch(url+'/executive/tests/reply-service.cjs')).status,404);
   assert.equal((await fetch(url+'/executive/README.md')).status,404);
   assert.deepEqual((await (await fetch(url+'/api/workflows')).json()).workflows,[]);
