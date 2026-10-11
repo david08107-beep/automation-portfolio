@@ -1,6 +1,6 @@
 # Local preview changes
 
-## Unreleased — active development
+## 0.5.0 — 2026-10-11
 
 - Add V1.7 grounded optional-AI answers to Ask Orbit through the existing Local/Cloud generation adapter. Scripted remains the default; model answers are limited to a bounded fictional workspace snapshot and must cite validated fact IDs.
 - Add explicit Ask Orbit mode selection, responsive generation feedback, cancellation, and clear no-fallback/no-action states. Model output cannot invoke tools, approve work, or execute an action.

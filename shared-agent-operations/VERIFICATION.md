@@ -2,6 +2,21 @@
 
 ## Current review
 
+Final portfolio stabilization audit: Git started clean at `aec15b0`, matching
+`origin/main`, with no untracked files. Tracked-file checks found no private-key,
+long bearer-token, hosted-key, or tracked environment/credential file pattern;
+local history and `.env` files remain ignored. The working checkout and a clean
+source snapshot each passed 104/104 automated tests and `npm run demo`; both demo
+runs reported `simulated: true` and `externalActions: 0`. A fresh isolated
+Chromium profile passed Scripted reply selection, generation, editing,
+save/reload persistence, cancellation, duplicate-send prevention, Personal/Work
+separation, approval cancellation, Light/Dark/Auto themes, and 390-pixel layout
+with no console errors or horizontal overflow. Browser resource tracking recorded
+zero reply-generation or assistant-query requests. With all provider variables
+removed, generation status reported Scripted as the default with Local and Cloud
+both disabled. No live inference, external account action, commit, tag, push,
+deployment, or publication occurred during this audit.
+
 Employer case-study refresh: the local `/showcase` route now presents eight
 evidence-backed product and engineering decisions instead of the older dark-only
 campaign walkthrough. Fresh Chromium QA at 1440 × 1000 and 390 × 844 passed all

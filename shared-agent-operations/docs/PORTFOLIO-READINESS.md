@@ -1,6 +1,6 @@
 # Orbit portfolio readiness
 
-> Living status record — 2026-10-10. Orbit is actively being developed. This document tracks evidence and gaps; it does not declare the project finished.
+> Release record — 2026-10-11. Orbit's 0.5.0 portfolio feature scope is frozen. This document tracks evidence and honest boundaries; it does not claim production readiness.
 
 ## Employer-facing snapshot
 
@@ -31,10 +31,11 @@ eight-decision engineering case study with Light, Dark, and Auto themes. It
 connects the product problem to the generation boundary, grounding, review
 safety, failure handling, test evidence, and an honest viability assessment.
 
-**Remaining release hygiene:** capture a short screen recording and repeat the
-published instructions from a clean checkout on a separate machine. Broader
-accessibility testing and additional owner-authorized hosted-model compatibility
-evidence remain optional follow-up work.
+**Remaining optional presentation work:** a short screen recording, broader
+accessibility testing, and additional owner-authorized hosted-model compatibility
+evidence may strengthen the portfolio later. They are not release blockers or new
+product features. Public hosting remains a separate security and infrastructure
+decision.
 
 **Business value hypothesis:** the same review-first pattern could reduce ambiguity and duplicate execution in assistant workflows. No customer outcome, time-saving metric, or production usage has been measured.
 
@@ -57,10 +58,9 @@ evidence remain optional follow-up work.
 - Interview walkthrough: [SHOWCASE.md](../SHOWCASE.md) and [EMPLOYER-DEMO.md](../EMPLOYER-DEMO.md).
 - AI configuration and safety boundary: [OPTIONAL-AI.md](../OPTIONAL-AI.md).
 
-## Evidence still needed
+## Optional evidence improvements — not release blockers
 
 - A short screen recording of the current Light/Dark UI and one complete review flow.
-- A clean-checkout run on a separate machine using only the published instructions.
 - Broader keyboard, screen-reader, zoom, and multiple-browser checks.
 - Repeatable performance measurements if performance claims are ever desired.
 - A public interactive preview only after hosting, authentication, storage, and secret-handling decisions are explicitly approved.

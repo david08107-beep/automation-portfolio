@@ -4,7 +4,7 @@ A review-first Executive Assistant prototype with separate Personal and Work con
 
 **Quick access:** [Download the source ZIP](https://github.com/david08107-beep/automation-portfolio/archive/refs/heads/main.zip) · [View the repository](https://github.com/david08107-beep/automation-portfolio)
 
-**Portfolio status:** active development with a runnable local demonstration. The current review-first workflow is evaluable now; production hosting and connected integrations remain separate future decisions.
+**Portfolio status:** feature-frozen 0.5.0 portfolio release with a runnable local demonstration. The current review-first workflow is evaluable now; production hosting and connected integrations are outside this portfolio release.
 
 The repository links above reflect the last published `main` branch. Review and publish any newer local changes before presenting them as current.
 
@@ -39,7 +39,7 @@ same persistent Light, Dark, and Auto themes as the working app.
 
 1. **Executive Assistant:** run Try Orbit to see a Work briefing, inspect a prepared reply, simulate sending it, and view the separate Personal inbox.
 2. **Personal versus Work:** switch using the visible context buttons. Business campaign tools appear only in Work. Personal and Work have separate fictional messages and tasks.
-3. **Campaign workflow:** in Work, open Content Studio, enter a fictional campaign brief, and prepare a request. Campaign content is a fixed sample; optional Ollama generation is limited to editable inbox reply drafts.
+3. **Campaign workflow:** in Work, open Content Studio, enter a fictional campaign brief, and prepare a request. Campaign content is a fixed sample; optional Ollama applies to editable inbox replies and grounded Ask Orbit answers, not campaign generation.
 4. **Review-first safety:** edit a draft, save the new version, and approve that exact version. Unsaved edits and stale approvals cannot authorize execution.
 5. **Simulation and recovery:** simulate execution, inspect the receipt, and reload to check saved campaign history. Nothing is sent or posted externally.
 

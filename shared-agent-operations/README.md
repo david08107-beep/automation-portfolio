@@ -1,14 +1,14 @@
-# Orbit — Executive Assistant preview 0.4.0
+# Orbit — Executive Assistant portfolio prototype 0.5.0
 
-> **Status: active development.** Orbit is a runnable, fictional local prototype—not a finished product, public service, or production integration. Implemented, in-progress, and planned work are kept separate below.
+> **Status: feature-frozen portfolio release.** Orbit is a runnable, fictional local prototype—not a finished product, public service, or production integration. No additional product features are planned for this release.
 
 Orbit brings executive briefings, Personal and Work context, editable reply drafts, explicit approvals, campaign workflows, and local history into one review-first workspace.
 
 ## Current status
 
-| Implemented now | In progress | Planned / requires a separate decision |
+| Implemented now | Release status | Outside the frozen portfolio scope |
 | --- | --- | --- |
-| Scripted demo by default; Personal/Work separation; inbox, calendar, task, document and campaign review flows; exact-version approvals; restart-safe local campaign history; responsive Light, Dark and Auto themes; optional grounded Ask Orbit answers | Continued UI refinement, documentation alignment, cleanup of development changes, broader accessibility review, and hosted-model compatibility testing | Production authentication, connected email/calendar/social accounts, shared backend storage, public hosting, retention policy, and real external actions |
+| Scripted demo by default; Personal/Work separation; inbox, calendar, task, document and campaign review flows; exact-version approvals; restart-safe local campaign history; responsive Light, Dark and Auto themes; optional grounded Ask Orbit answers | Version 0.5.0 is verified for local portfolio demonstration; public hosting remains separate | Production authentication, connected email/calendar/social accounts, shared backend storage, public hosting, retention policy, and real external actions |
 
 Optional local Ollama and hosted Ollama Cloud reply drafting and grounded Ask Orbit answers are implemented behind the existing server-side generation boundary. Both providers require explicit server opt-in; Cloud credentials remain backend-only. Reply output is always an editable draft, assistant answers can use only validated fictional workspace facts, and neither path can approve, send, or execute. See [OPTIONAL-AI.md](OPTIONAL-AI.md).
 
@@ -121,13 +121,13 @@ The running dashboard uses explicit fixtures corresponding to the three applicat
 
 Before real accounts, select an identity provider, backend/database/job service, secrets strategy, provider OAuth applications/scopes, hosting/callback identities, retention policy, and authorized security assessment scope. Those remain owner decisions and are intentionally outside this change.
 
-## Optional Orbit V1.6 reply drafting
+## Implemented milestone: optional Orbit V1.6 reply drafting
 
 Scripted generation remains the default. Optional local and hosted Ollama
 drafting, the Windows local launcher, and one-checkout Git update instructions are documented in
 [OPTIONAL-AI.md](OPTIONAL-AI.md). Real email sending and account connections
 remain out of scope; generated text requires review.
 
-## Orbit V1.7 grounded Ask Orbit answers
+## Implemented milestone: Orbit V1.7 grounded Ask Orbit answers
 
 Ask Orbit now offers explicit Scripted, Local AI, and Cloud AI response modes. Scripted remains selected by default. Optional model modes receive only a bounded snapshot of the active fictional Personal or Work workspace, must return cited JSON using known fact IDs, and get one repair attempt for invalid or unsupported output. The server rejects unknown citations and never substitutes another provider or a scripted answer. Responses are rendered as text, cannot invoke tools, and do not create approvals or executions. Configuration and test boundaries are documented in [OPTIONAL-AI.md](OPTIONAL-AI.md).
