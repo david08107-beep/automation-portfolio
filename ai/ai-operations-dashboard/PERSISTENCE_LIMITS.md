@@ -1,0 +1,11 @@
+# Local persistence limits
+
+`src/limits.js` is the canonical policy: 500 workflows, 1,000 saved versions per workflow, 20,000 activity records, 10,000 timeline entries per workflow, 500 request characters, and 100,000 result characters. The serialized snapshot ceiling is 10,000,000 JavaScript string characters (not bytes). Domain admission reserves 2,000 characters for allowlisted view preferences and their JSON envelope. Escaping and metadata count toward the serialized budget; individual maxima cannot necessarily be combined.
+
+`perform(state, operation, ...args)` applies the whole mutation to an isolated candidate. A rejected operation returns `{ok:false, reason:{code,message,actual?,limit?}}` and leaves the original state untouched, including results, versions, events and task progress. Compatible boolean/null engine wrappers use the same boundary. Storage also refuses over-limit writes. The UI explains capacity rejections and prevents approval of a rejected, unsaved edit. Nothing is automatically trimmed or deleted.
+
+Structurally valid legacy version 1/2 snapshots above admission counts remain readable within the snapshot ceiling, with a warning. Existing content remains available for review/download. Mutations and writes must satisfy current admission limits; an oversized legacy workspace cannot silently overwrite its original snapshot. Reset remains an explicitly confirmed destructive action. Malformed or oversized raw snapshots retain the existing invalid-storage recovery behavior and original browser data.
+
+Browser quotas may be lower than the serialization policy. Quota/access failures still produce the existing session-only warning; these limits cannot guarantee localStorage availability. Candidate cloning/serialization is synchronous and grows with workspace size. This remains a fictional browser demo, not durable server persistence or transactional multi-user storage. No agents, authentication, connectors or backend were added.
+
+Regression coverage includes actual runtime count boundaries, atomic rejection, maximum serialization size, save/reload, activity/timeline limits and oversized legacy recovery. Browser journeys cover capacity feedback and unchanged persisted data on desktop and mobile.
